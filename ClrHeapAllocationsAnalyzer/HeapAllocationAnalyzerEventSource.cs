@@ -118,9 +118,17 @@
             }
         }
 
-        public void ReadonlyMethodGroupAllocation(string filePath) {
+        public void ReadonlyMethodGroupAllocation(string filePath) 
+        {
             if (this.IsEnabled()) {
                 this.WriteEvent(15, filePath);
+            }
+        }
+        
+        public void PossiblyAllocatingMethodCall(string filePath) 
+        {
+            if (this.IsEnabled()) {
+                this.WriteEvent(16, filePath);
             }
         }
     }

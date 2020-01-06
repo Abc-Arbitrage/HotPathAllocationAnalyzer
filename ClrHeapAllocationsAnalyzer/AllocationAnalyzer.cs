@@ -29,17 +29,14 @@ namespace ClrHeapAllocationAnalyzer
 
         private void Analyze(SyntaxNodeAnalysisContext context)
         {
-            var  analyze = ShouldAnalyze(context.ContainingSymbol);
+            var  analyze = _forceEnableAnalysis || HasRestrictedAllocatioAttribute(context.ContainingSymbol);
 
             if (analyze)
                 AnalyzeNode(context);
         }
 
-        private bool ShouldAnalyze(ISymbol containingSymbol)
+        public static bool HasRestrictedAllocatioAttribute(ISymbol containingSymbol)
         {
-            if (_forceEnableAnalysis)
-                return true;
-            
             if (containingSymbol.GetAttributes().Any(AllocationRules.IsRestrictedAllocationAttribute))
                 return true;
 
@@ -52,13 +49,13 @@ namespace ClrHeapAllocationAnalyzer
                 if (method.IsOverride && method.OverriddenMethod.GetAttributes().Any(AllocationRules.IsRestrictedAllocationAttribute))
                     return true;
                 if (method.IsOverride)
-                    return ShouldAnalyze(method.OverriddenMethod);
+                    return HasRestrictedAllocatioAttribute(method.OverriddenMethod);
             }
 
             return false;
         }
 
-        private bool ImplementedInterfaceHasAttribute(IMethodSymbol method)
+        private static bool ImplementedInterfaceHasAttribute(IMethodSymbol method)
         {
             var type = method.ContainingType;
             
@@ -74,12 +71,5 @@ namespace ClrHeapAllocationAnalyzer
             return false;
         }
         
-        public static bool IsInterfaceImplementation(IMethodSymbol method)
-        {
-            return method.ContainingType.AllInterfaces.SelectMany(@interface => @interface.GetMembers()
-                                                                                          .OfType<IMethodSymbol>())
-                         .Any(interfaceMethod => method.ContainingType.FindImplementationForInterfaceMember(interfaceMethod)
-                                                       .Equals(method));
-        }
     }
 }
