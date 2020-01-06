@@ -21,7 +21,6 @@ namespace ClrHeapAllocationAnalyzer
             _forceEnableAnalysis = forceEnableAnalysis;
         }
 
-        
         public override void Initialize(AnalysisContext context)
         {
             context.RegisterSyntaxNodeAction(Analyze, Expressions);
@@ -29,13 +28,13 @@ namespace ClrHeapAllocationAnalyzer
 
         private void Analyze(SyntaxNodeAnalysisContext context)
         {
-            var  analyze = _forceEnableAnalysis || HasRestrictedAllocatioAttribute(context.ContainingSymbol);
+            var analyze = _forceEnableAnalysis || HasRestrictedAllocationAttribute(context.ContainingSymbol);
 
             if (analyze)
                 AnalyzeNode(context);
         }
 
-        public static bool HasRestrictedAllocatioAttribute(ISymbol containingSymbol)
+        public static bool HasRestrictedAllocationAttribute(ISymbol containingSymbol)
         {
             if (containingSymbol.GetAttributes().Any(AllocationRules.IsRestrictedAllocationAttribute))
                 return true;
@@ -49,7 +48,7 @@ namespace ClrHeapAllocationAnalyzer
                 if (method.IsOverride && method.OverriddenMethod.GetAttributes().Any(AllocationRules.IsRestrictedAllocationAttribute))
                     return true;
                 if (method.IsOverride)
-                    return HasRestrictedAllocatioAttribute(method.OverriddenMethod);
+                    return HasRestrictedAllocationAttribute(method.OverriddenMethod);
             }
 
             return false;

@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Linq;
+using System.Linq.Expressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -25,13 +26,45 @@ namespace ClrHeapAllocationAnalyzer
             
             if (semanticModel.GetSymbolInfo(invocationExpression, cancellationToken).Symbol is IMethodSymbol methodInfo)
             {
-                if (!HasRestrictedAllocatioAttribute(methodInfo))
+                if (!HasRestrictedAllocationAttribute(methodInfo) && !IsInSafeScope(semanticModel, invocationExpression))
                     ReportError(context, invocationExpression);
             }
-
         }
 
-        void ReportError(SyntaxNodeAnalysisContext context, SyntaxNode node)
+        private static bool IsInSafeScope(SemanticModel semanticModel, SyntaxNode symbol)
+        {
+            if (symbol == null)
+                return false;
+            
+            if (symbol.Parent is UsingStatementSyntax usingStatement && usingStatement.Expression is ObjectCreationExpressionSyntax creationExpressionSyntax)
+            {
+                var type = semanticModel.GetTypeInfo(creationExpressionSyntax).Type;
+                if (IsSafeScopeType(type))
+                    return true;
+            }
+            
+            if (symbol.Parent is BlockSyntax blockSyntax)
+            {
+                var usingStatements = blockSyntax.Statements
+                                                 .TakeWhile(x => !x.Equals(symbol))
+                                                 .OfType<LocalDeclarationStatementSyntax>()
+                                                 .Where(x => x.UsingKeyword != null)
+                                                 .Select(x => semanticModel.GetTypeInfo(x.Declaration.Type).Type)
+                                                 .ToArray();
+                
+                if (usingStatements.Any(IsSafeScopeType))
+                    return true;
+            }
+
+            return IsInSafeScope(semanticModel, symbol.Parent);
+        }
+
+        private static bool IsSafeScopeType(ITypeSymbol type)
+        {
+            return type.Name == nameof(AllocationFreeScope) && type.ContainingNamespace.Name == typeof(AllocationFreeScope).Namespace;
+        }
+
+        private static void ReportError(SyntaxNodeAnalysisContext context, SyntaxNode node)
         {
             context.ReportDiagnostic(Diagnostic.Create(ExternalMethodCallRule, node.GetLocation(), EmptyMessageArgs));
             HeapAllocationAnalyzerEventSource.Logger.PossiblyAllocatingMethodCall(node.SyntaxTree.FilePath);
