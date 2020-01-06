@@ -29,7 +29,7 @@ public void ParamsWithObjects(params object[] args)
 {
 }";
 
-            var analyser = new CallSiteImplicitAllocationAnalyzer();
+            var analyser = new CallSiteImplicitAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.InvocationExpression));
 
             Assert.AreEqual(3, info.Allocations.Count, "Should report 3 allocations");
@@ -63,7 +63,7 @@ struct OverrideToHashCode
     }
 }";
 
-            var analyser = new CallSiteImplicitAllocationAnalyzer();
+            var analyser = new CallSiteImplicitAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.InvocationExpression));
 
             Assert.AreEqual(1, info.Allocations.Count);
@@ -75,7 +75,7 @@ struct OverrideToHashCode
         public void CallSiteImplicitAllocation_DoNotReportNonOverriddenMethodCallForStaticCalls() {
             var snippet = @"var t = System.Enum.GetUnderlyingType(typeof(System.StringComparison));";
 
-            var analyser = new CallSiteImplicitAllocationAnalyzer();
+            var analyser = new CallSiteImplicitAllocationAnalyzer(true);
             var info = ProcessCode(analyser, snippet, ImmutableArray.Create(SyntaxKind.InvocationExpression));
 
             Assert.AreEqual(0, info.Allocations.Count);
@@ -90,7 +90,7 @@ FileAttributes attr = FileAttributes.System;
 attr.HasFlag (FileAttributes.Directory);
 ";
 
-            var analyser = new CallSiteImplicitAllocationAnalyzer();
+            var analyser = new CallSiteImplicitAllocationAnalyzer(true);
             var info = ProcessCode(analyser, snippet, ImmutableArray.Create(SyntaxKind.InvocationExpression));
 
             Assert.AreEqual(0, info.Allocations.Count);

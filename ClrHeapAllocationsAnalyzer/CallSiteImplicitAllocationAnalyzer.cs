@@ -22,6 +22,15 @@ namespace ClrHeapAllocationAnalyzer
 
         private static readonly object[] EmptyMessageArgs = { };
 
+        public CallSiteImplicitAllocationAnalyzer()
+        {
+        }
+
+        public CallSiteImplicitAllocationAnalyzer(bool forceAnalysis) : base(forceAnalysis)
+        {
+        }
+
+        
         protected override void AnalyzeNode(SyntaxNodeAnalysisContext context)
         {
             var node = context.Node;

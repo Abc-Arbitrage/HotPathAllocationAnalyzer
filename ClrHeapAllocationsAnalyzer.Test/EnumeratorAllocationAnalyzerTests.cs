@@ -39,7 +39,7 @@ foreach (var i in (IEnumerable<int>)intData) // Allocations (line 24)
     Console.WriteLine(i);
 }";
 
-            var analyser = new EnumeratorAllocationAnalyzer();
+            var analyser = new EnumeratorAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ForEachStatement));
 
             Assert.AreEqual(2, info.Allocations.Count);
@@ -72,7 +72,7 @@ foreach (var f in fx2) // NO Allocations
 {
 }";
 
-            var analyser = new EnumeratorAllocationAnalyzer();
+            var analyser = new EnumeratorAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ForEachStatement, SyntaxKind.InvocationExpression));
 
             Assert.AreEqual(1, info.Allocations.Count);
@@ -111,7 +111,7 @@ private IEnumerator<int> GetIEnumeratorViaIEnumerable()
     return (IEnumerator<int>)intData.GetEnumerator();
 }";
 
-            var analyser = new EnumeratorAllocationAnalyzer();
+            var analyser = new EnumeratorAllocationAnalyzer(true);
             var expectedNodes = ImmutableArray.Create(SyntaxKind.InvocationExpression);
             var info = ProcessCode(analyser, sampleProgram, expectedNodes);
 
@@ -125,7 +125,7 @@ private IEnumerator<int> GetIEnumeratorViaIEnumerable()
         {
             var sampleProgram = "foreach (char c in \"foo\") { }";
 
-            var analyser = new EnumeratorAllocationAnalyzer();
+            var analyser = new EnumeratorAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ForEachStatement));
 
             Assert.AreEqual(0, info.Allocations.Count);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -17,7 +18,10 @@ namespace ClrHeapAllocationAnalyzer.Test
                 MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(System.CodeDom.Compiler.GeneratedCodeAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(IList<>).Assembly.Location)
+                MetadataReference.CreateFromFile(typeof(IList<>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(RestrictedAllocation).Assembly.Location),
+                MetadataReference.CreateFromFile(Assembly.Load("mscorlib").Location),
+                MetadataReference.CreateFromFile(Assembly.Load("netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51").Location)
             };
 
         protected IList<SyntaxNode> GetExpectedDescendants(IEnumerable<SyntaxNode> nodes, ImmutableArray<SyntaxKind> expected)

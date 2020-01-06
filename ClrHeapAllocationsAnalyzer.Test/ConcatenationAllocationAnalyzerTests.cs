@@ -12,7 +12,7 @@ namespace ClrHeapAllocationAnalyzer.Test
             var snippet0 = @"string s0 = ""hello"" + 0.ToString() + ""world"" + 1.ToString();";
             var snippet1 = @"string s2 = ""ohell"" + 2.ToString() + ""world"" + 3.ToString() + 4.ToString();";
 
-            var analyser = new ConcatenationAllocationAnalyzer();
+            var analyser = new ConcatenationAllocationAnalyzer(true);
             var info0 = ProcessCode(analyser, snippet0, ImmutableArray.Create(SyntaxKind.AddExpression, SyntaxKind.AddAssignmentExpression));
             var info1 = ProcessCode(analyser, snippet1, ImmutableArray.Create(SyntaxKind.AddExpression, SyntaxKind.AddAssignmentExpression));
 
@@ -31,7 +31,7 @@ namespace ClrHeapAllocationAnalyzer.Test
                 @"string s0 = nameof(System.String) + new System.UIntPtr();"
             };
 
-            var analyser = new ConcatenationAllocationAnalyzer();
+            var analyser = new ConcatenationAllocationAnalyzer(true);
             foreach (var snippet in snippets) {
                 var info = ProcessCode(analyser, snippet, ImmutableArray.Create(SyntaxKind.AddExpression, SyntaxKind.AddAssignmentExpression));
                 Assert.AreEqual(0, info.Allocations.Count(x => x.Id == ConcatenationAllocationAnalyzer.ValueTypeToReferenceTypeInAStringConcatenationRule.Id));
@@ -48,7 +48,7 @@ namespace ClrHeapAllocationAnalyzer.Test
                 @"string s0 = nameof(System.String) + ""."";"
             };
 
-            var analyser = new ConcatenationAllocationAnalyzer();
+            var analyser = new ConcatenationAllocationAnalyzer(true);
             foreach (var snippet in snippets) {
                 var info = ProcessCode(analyser, snippet, ImmutableArray.Create(SyntaxKind.AddExpression, SyntaxKind.AddAssignmentExpression));
                 Assert.AreEqual(0, info.Allocations.Count);

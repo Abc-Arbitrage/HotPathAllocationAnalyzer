@@ -26,7 +26,7 @@ public class TestClass
     public string Name { get; set; }
 }";
 
-            var analyser = new ExplicitAllocationAnalyzer();
+            var analyser = new ExplicitAllocationAnalyzer(true);
             // SyntaxKind.ObjectInitializerExpression IS linked to InitializerExpressionSyntax (naming is a bit confusing)
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
 
@@ -46,7 +46,7 @@ public class TestClass
 
 int[] intData = new[] { 123, 32, 4 };";
 
-            var analyser = new ExplicitAllocationAnalyzer();
+            var analyser = new ExplicitAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ImplicitArrayCreationExpression));
 
             Assert.AreEqual(1, info.Allocations.Count);
@@ -62,7 +62,7 @@ int[] intData = new[] { 123, 32, 4 };";
 
 var temp = new { A = 123, Name = ""Test"", };";
 
-            var analyser = new ExplicitAllocationAnalyzer();
+            var analyser = new ExplicitAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.AnonymousObjectCreationExpression));
 
             Assert.AreEqual(1, info.Allocations.Count);
@@ -78,7 +78,7 @@ var temp = new { A = 123, Name = ""Test"", };";
 
 int[] intData = new int[] { 123, 32, 4 };";
 
-            var analyser = new ExplicitAllocationAnalyzer();
+            var analyser = new ExplicitAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ArrayCreationExpression));
 
             Assert.AreEqual(1, info.Allocations.Count);
@@ -95,7 +95,7 @@ int[] intData = new int[] { 123, 32, 4 };";
 var allocation = new String('a', 10);
 var noAllocation = new DateTime();";
 
-            var analyser = new ExplicitAllocationAnalyzer();
+            var analyser = new ExplicitAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ObjectCreationExpression));
 
             Assert.AreEqual(1, info.Allocations.Count);
@@ -116,7 +116,7 @@ var result = (from a in intData
               select b).ToList();
 ";
 
-            var analyser = new ExplicitAllocationAnalyzer();
+            var analyser = new ExplicitAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.LetClause));
 
             Assert.AreEqual(2, info.Allocations.Count);
@@ -163,7 +163,7 @@ public class TestClass
 }";
 
             // This test is here so that we use SyntaxKindsOfInterest explicitly, to make sure it works
-            var analyser = new ExplicitAllocationAnalyzer();
+            var analyser = new ExplicitAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ObjectCreationExpression, SyntaxKind.AnonymousObjectCreationExpression, SyntaxKind.ArrayInitializerExpression, SyntaxKind.CollectionInitializerExpression,SyntaxKind.ComplexElementInitializerExpression, SyntaxKind.ObjectInitializerExpression, SyntaxKind.ArrayCreationExpression, SyntaxKind.ImplicitArrayCreationExpression, SyntaxKind.LetClause));
 
             Assert.AreEqual(8, info.Allocations.Count);

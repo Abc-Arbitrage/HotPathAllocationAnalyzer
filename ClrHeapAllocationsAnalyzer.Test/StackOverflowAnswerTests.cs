@@ -16,7 +16,7 @@ namespace ClrHeapAllocationAnalyzer.Test
             var @script =
                     @"struct S { }
                     object box = new S();";
-            var analyser = new ExplicitAllocationAnalyzer();
+            var analyser = new ExplicitAllocationAnalyzer(true);
             var info = ProcessCode(analyser, @script, ImmutableArray.Create(SyntaxKind.ObjectCreationExpression, SyntaxKind.AnonymousObjectCreationExpression, SyntaxKind.ArrayInitializerExpression, SyntaxKind.CollectionInitializerExpression, SyntaxKind.ComplexElementInitializerExpression, SyntaxKind.ObjectInitializerExpression, SyntaxKind.ArrayCreationExpression, SyntaxKind.ImplicitArrayCreationExpression, SyntaxKind.LetClause));
             Assert.AreEqual(1, info.Allocations.Count);
             // Diagnostic: (2,34): info HeapAnalyzerExplicitNewObjectRule: Explicit new reference type allocation
@@ -29,7 +29,7 @@ namespace ClrHeapAllocationAnalyzer.Test
             var @script =
                     @"struct S { }
                     System.ValueType box = new S();";
-            var analyser = new ExplicitAllocationAnalyzer();
+            var analyser = new ExplicitAllocationAnalyzer(true);
             var info = ProcessCode(analyser, @script, ImmutableArray.Create(SyntaxKind.ObjectCreationExpression, SyntaxKind.AnonymousObjectCreationExpression, SyntaxKind.ArrayInitializerExpression, SyntaxKind.CollectionInitializerExpression, SyntaxKind.ComplexElementInitializerExpression, SyntaxKind.ObjectInitializerExpression, SyntaxKind.ArrayCreationExpression, SyntaxKind.ImplicitArrayCreationExpression, SyntaxKind.LetClause));
             Assert.AreEqual(1, info.Allocations.Count);
             // Diagnostic: (2,44): info HeapAnalyzerExplicitNewObjectRule: Explicit new reference type allocation
@@ -42,7 +42,7 @@ namespace ClrHeapAllocationAnalyzer.Test
             var @script =
                 @"enum E { A }
                 System.Enum box = E.A;";
-            var analyser = new TypeConversionAllocationAnalyzer();
+            var analyser = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyser, @script, ImmutableArray.Create(
                 SyntaxKind.SimpleAssignmentExpression,
                 SyntaxKind.ReturnStatement,
@@ -66,7 +66,7 @@ namespace ClrHeapAllocationAnalyzer.Test
                 @"interface I { }
                 struct S : I { }
                 I box = new S();";
-            var analyser = new ExplicitAllocationAnalyzer();
+            var analyser = new ExplicitAllocationAnalyzer(true);
             var info = ProcessCode(analyser, @script, ImmutableArray.Create(SyntaxKind.ObjectCreationExpression, SyntaxKind.AnonymousObjectCreationExpression, SyntaxKind.ArrayInitializerExpression, SyntaxKind.CollectionInitializerExpression, SyntaxKind.ComplexElementInitializerExpression, SyntaxKind.ObjectInitializerExpression, SyntaxKind.ArrayCreationExpression, SyntaxKind.ImplicitArrayCreationExpression, SyntaxKind.LetClause));
             Assert.AreEqual(1, info.Allocations.Count);
             // Diagnostic: (3,25): info HeapAnalyzerExplicitNewObjectRule: Explicit new reference type allocation
@@ -79,7 +79,7 @@ namespace ClrHeapAllocationAnalyzer.Test
             var @script =
                 @"System.DateTime c = System.DateTime.Now;;
                 string s1 = ""char value will box"" + c;";
-            var analyser = new ConcatenationAllocationAnalyzer();
+            var analyser = new ConcatenationAllocationAnalyzer(true);
             var info = ProcessCode(analyser, @script, ImmutableArray.Create(SyntaxKind.AddExpression, SyntaxKind.AddAssignmentExpression));
             Assert.AreEqual(1, info.Allocations.Count);
             //Diagnostic: (2,53): warning HeapAnalyzerBoxingRule: Value type (char) is being boxed to a reference type for a string concatenation.
@@ -93,7 +93,7 @@ namespace ClrHeapAllocationAnalyzer.Test
                 @"using System;
                 struct S { public void M() {} }
                 Action box = new S().M;";
-            var analyser = new TypeConversionAllocationAnalyzer();
+            var analyser = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyser, @script, ImmutableArray.Create(
                 SyntaxKind.SimpleAssignmentExpression,
                 SyntaxKind.ReturnStatement,
@@ -118,7 +118,7 @@ namespace ClrHeapAllocationAnalyzer.Test
             var @script =
                 @"enum E { A }
                 E.A.GetHashCode();";
-            var analyser = new CallSiteImplicitAllocationAnalyzer();
+            var analyser = new CallSiteImplicitAllocationAnalyzer(true);
             var info = ProcessCode(analyser, @script, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(1, info.Allocations.Count);
             // Diagnostic: (2,17): warning HeapAnalyzerValueTypeNonOverridenCallRule: Non-overriden virtual method call on a value type adds a boxing or constrained instruction

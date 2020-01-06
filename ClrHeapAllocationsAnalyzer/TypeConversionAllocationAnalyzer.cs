@@ -40,6 +40,14 @@
 
         private static readonly object[] EmptyMessageArgs = { };
 
+        public TypeConversionAllocationAnalyzer()
+        {
+        }
+
+        public TypeConversionAllocationAnalyzer(bool forceAnalysis) : base(forceAnalysis)
+        {
+        }
+
         protected override void AnalyzeNode(SyntaxNodeAnalysisContext context)
         {
             var node = context.Node;

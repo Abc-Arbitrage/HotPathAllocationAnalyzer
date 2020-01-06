@@ -19,6 +19,14 @@
         protected override SyntaxKind[] Expressions => new[] { SyntaxKind.AddExpression, SyntaxKind.AddAssignmentExpression };
 
         private static readonly object[] EmptyMessageArgs = { };
+
+        public ConcatenationAllocationAnalyzer()
+        {
+        }
+
+        public ConcatenationAllocationAnalyzer(bool forceAnalysis) : base(forceAnalysis)
+        {
+        }
         
         protected override void AnalyzeNode(SyntaxNodeAnalysisContext context)
         {

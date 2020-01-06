@@ -32,7 +32,7 @@ class Test
     }
 }";
 
-            var analyser = new DisplayClassAllocationAnalyzer();
+            var analyser = new DisplayClassAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ParenthesizedLambdaExpression, SyntaxKind.SimpleLambdaExpression, SyntaxKind.AnonymousMethodExpression));
 
             Assert.AreEqual(3, info.Allocations.Count);
@@ -62,7 +62,7 @@ public class Testing<T>
     }
 }";
 
-            var analyser = new DisplayClassAllocationAnalyzer();
+            var analyser = new DisplayClassAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.SimpleLambdaExpression));
 
             Assert.AreEqual(2, info.Allocations.Count);
@@ -87,7 +87,7 @@ foreach (string word in words) // <-- captured closure
     actions.Add(() => Console.WriteLine(word)); // <-- reason for closure capture
 }";
 
-            var analyser = new DisplayClassAllocationAnalyzer();
+            var analyser = new DisplayClassAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ParenthesizedLambdaExpression));
 
             Assert.AreEqual(2, info.Allocations.Count);
@@ -105,7 +105,7 @@ foreach (string word in words) // <-- captured closure
                     System.Array.Sort(arr, delegate(int x, int y) { return x - y; });
                 }";
 
-            var analyser = new DisplayClassAllocationAnalyzer();
+            var analyser = new DisplayClassAllocationAnalyzer(true);
             var info = ProcessCode(analyser, snippet, ImmutableArray.Create<SyntaxKind>());
             Assert.AreEqual(0, info.Allocations.Count);
         }
@@ -118,7 +118,7 @@ foreach (string word in words) // <-- captured closure
                     System.Array.Sort(arr, (x, y) => x - y);
                 }";
 
-            var analyser = new DisplayClassAllocationAnalyzer();
+            var analyser = new DisplayClassAllocationAnalyzer(true);
             var info = ProcessCode(analyser, snippet, ImmutableArray.Create<SyntaxKind>());
             Assert.AreEqual(0, info.Allocations.Count);
         }
@@ -132,7 +132,7 @@ foreach (string word in words) // <-- captured closure
                     System.Array.Sort(arr, delegate(int x, int y) { return x - z; });
                 }";
 
-            var analyser = new DisplayClassAllocationAnalyzer();
+            var analyser = new DisplayClassAllocationAnalyzer(true);
             var info = ProcessCode(analyser, snippet, ImmutableArray.Create<SyntaxKind>());
             Assert.AreEqual(2, info.Allocations.Count);
             AssertEx.ContainsDiagnostic(info.Allocations, id: DisplayClassAllocationAnalyzer.ClosureCaptureRule.Id, line: 3, character: 25);

@@ -6,10 +6,21 @@ namespace ClrHeapAllocationAnalyzer
 {
     public abstract class AllocationAnalyzer : DiagnosticAnalyzer
     {
+        private readonly bool _forceEnableAnalysis;
         protected abstract SyntaxKind[] Expressions { get; }
 
         protected abstract void AnalyzeNode(SyntaxNodeAnalysisContext context);
 
+        public AllocationAnalyzer()
+        {
+        }
+
+        public AllocationAnalyzer(bool forceEnableAnalysis)
+        {
+            _forceEnableAnalysis = forceEnableAnalysis;
+        }
+
+        
         public override void Initialize(AnalysisContext context)
         {
             context.RegisterSyntaxNodeAction(Analyze, Expressions);
@@ -17,7 +28,7 @@ namespace ClrHeapAllocationAnalyzer
 
         private void Analyze(SyntaxNodeAnalysisContext context)
         {
-            if (!context.ContainingSymbol.GetAttributes().Any(AllocationRules.IsRestrictedAllocationAttribute))
+            if (!_forceEnableAnalysis && !context.ContainingSymbol.GetAttributes().Any(AllocationRules.IsRestrictedAllocationAttribute))
             {
                 return;
             }

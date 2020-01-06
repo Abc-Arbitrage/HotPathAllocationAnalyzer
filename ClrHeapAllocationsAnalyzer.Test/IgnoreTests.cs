@@ -8,51 +8,37 @@ namespace ClrHeapAllocationAnalyzer.Test
     public class IgnoreTests : AllocationAnalyzerTests
     {
         [TestMethod]
-        public void AnalyzeProgram_TakesIgnoredAttributesIntoAccount()
+        public void AnalyzeProgram_IgnoreWhenThereIsNoRestrictedAttributes()
         {
-            const string sampleProgram =
+            const string sample =
                 @"using System;
                 
-                [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
                 public void CreateString1() {
                     string str = new string('a', 5);
-                }
-
-                [System.CodeDom.Compiler.GeneratedCodeAttribute(""MyCompiler"", ""1.0.0.3"")]
-                public void CreateString2() {
-                    string str = new string('a', 5);
-                }
-
-                [System.ObsoleteAttribute]
-                public void CreateString3() {
-                    string str = new string('a', 5);
                 }";
-
+            
             var analyser = new ExplicitAllocationAnalyzer();
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
-            Assert.AreEqual(1, info.Allocations.Count);
+           
+            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
+            Assert.AreEqual(0, info.Allocations.Count);
         }
-
+        
         [TestMethod]
-        public void AnalyzeProgram_TakesIgnoredFilesIntoAccount()
+        public void AnalyzeProgram_AnalyzeWhenThereIsARestrictedAttributes()
         {
-            const string sampleProgram =
+            const string sample =
                 @"using System;
-                public void CreateString() {
+                using ClrHeapAllocationAnalyzer;
+
+                [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                public void CreateString1() {
                     string str = new string('a', 5);
                 }";
 
             var analyser = new ExplicitAllocationAnalyzer();
-            void Check(int expectedCount, string path)
-            {
-                var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression), filePath: path);
-                Assert.AreEqual(expectedCount, info.Allocations.Count);
-            }
-
-            Check(0, "test.g.cs");
-            Check(0, "test.G.cS");
-            Check(1, "test.cs");
-            Check(1, "test.cpp");
+            
+            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
+            Assert.AreEqual(1, info.Allocations.Count);
         }
     }
 }

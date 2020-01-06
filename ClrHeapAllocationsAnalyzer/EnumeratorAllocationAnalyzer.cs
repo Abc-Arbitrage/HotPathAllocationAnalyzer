@@ -19,6 +19,14 @@
 
         private static readonly object[] EmptyMessageArgs = { };
 
+        public EnumeratorAllocationAnalyzer()
+        {
+        }
+
+        public EnumeratorAllocationAnalyzer(bool forceAnalysis) : base(forceAnalysis)
+        {
+        }
+
         protected override void AnalyzeNode(SyntaxNodeAnalysisContext context)
         {
             var node = context.Node;

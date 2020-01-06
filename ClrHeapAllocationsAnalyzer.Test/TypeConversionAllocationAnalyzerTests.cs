@@ -33,7 +33,7 @@ public class MyObject
     }
 }";
 
-            var analyser = new TypeConversionAllocationAnalyzer();
+            var analyser = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.Argument));
 
             Assert.AreEqual(2, info.Allocations.Count);
@@ -87,7 +87,7 @@ public struct MyStruct
     }
 }";
 
-            var analyser = new TypeConversionAllocationAnalyzer();
+            var analyser = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.Argument));
 
             Assert.AreEqual(4, info.Allocations.Count);
@@ -116,7 +116,7 @@ public class MyObject
     public Object ObjNoAllocation { get { return 0.ToString(); } }
 }";
 
-            var analyser = new TypeConversionAllocationAnalyzer();
+            var analyser = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ReturnStatement));
 
             Assert.AreEqual(1, info.Allocations.Count);
@@ -152,7 +152,7 @@ public IEnumerable<int> GetItemsNoAllocation()
     yield break;
 }";
 
-            var analyser = new TypeConversionAllocationAnalyzer();
+            var analyser = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.YieldReturnStatement));
 
             Assert.AreEqual(1, info.Allocations.Count);
@@ -177,7 +177,7 @@ var b1 = 10 as object; // Allocation
 var b2 = 10.ToString() as object; // No Allocation
 ";
 
-            var analyser = new TypeConversionAllocationAnalyzer();
+            var analyser = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.CoalesceExpression, SyntaxKind.AsExpression));
 
             Assert.AreEqual(2, info.Allocations.Count);
@@ -224,7 +224,7 @@ public struct MyStruct
     }
 }";
 
-            var analyser = new TypeConversionAllocationAnalyzer();
+            var analyser = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.CoalesceExpression, SyntaxKind.AsExpression));
 
             Assert.AreEqual(4, info.Allocations.Count);
@@ -253,7 +253,7 @@ for (int i = 0;;) // NO Allocation
 {
 }";
 
-            var analyser = new TypeConversionAllocationAnalyzer();
+            var analyser = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(
                 SyntaxKind.SimpleAssignmentExpression,
                 SyntaxKind.ReturnStatement,
@@ -306,7 +306,7 @@ public struct MyStruct
     }
 }";
 
-            var analyser = new TypeConversionAllocationAnalyzer();
+            var analyser = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.CoalesceExpression, SyntaxKind.EqualsValueClause));
 
             Assert.AreEqual(4, info.Allocations.Count);
@@ -353,7 +353,7 @@ public struct MyStruct
     }
 }";
 
-            var analyser = new TypeConversionAllocationAnalyzer();
+            var analyser = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.EqualsValueClause));
 
             Assert.AreEqual(3, info.Allocations.Count);
@@ -370,7 +370,7 @@ object test1 = true ? 0 : obj; // Allocation
 object test2 = true ? 0.ToString() : obj; // NO Allocation
 ";
 
-            var analyser = new TypeConversionAllocationAnalyzer();
+            var analyser = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ConditionalExpression));
 
             Assert.AreEqual(1, info.Allocations.Count);
@@ -389,7 +389,7 @@ var f1 = (object)5; // Allocation
 var f2 = (object)""5""; // NO Allocation
 ";
 
-            var analyser = new TypeConversionAllocationAnalyzer();
+            var analyser = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.CastExpression));
 
             Assert.AreEqual(1, info.Allocations.Count);
@@ -432,7 +432,7 @@ var f2 = (object)""5""; // NO Allocation
                 }
             ";
 
-            var analyzer = new TypeConversionAllocationAnalyzer();
+            var analyzer = new TypeConversionAllocationAnalyzer(true);
 
             var info0 = ProcessCode(analyzer, programWithoutImplicitCastOperator, ImmutableArray.Create(SyntaxKind.Argument));
             AssertEx.ContainsDiagnostic(info0.Allocations, id: TypeConversionAllocationAnalyzer.ValueTypeToReferenceTypeConversionRule.Id, line: 6, character: 50);
@@ -469,7 +469,7 @@ var f2 = (object)""5""; // NO Allocation
                 }
             ";
 
-            var analyzer = new TypeConversionAllocationAnalyzer();
+            var analyzer = new TypeConversionAllocationAnalyzer(true);
 
             var info0 = ProcessCode(analyzer, programWithoutImplicitCastOperator, ImmutableArray.Create(SyntaxKind.Argument));
             AssertEx.ContainsDiagnostic(info0.Allocations, id: TypeConversionAllocationAnalyzer.ValueTypeToReferenceTypeConversionRule.Id, line: 6, character: 38);
@@ -482,7 +482,7 @@ var f2 = (object)""5""; // NO Allocation
         public void TypeConversionAllocation_InterpolatedStringWithInt_BoxingWarning() {
             var sampleProgram = @"string s = $""{1}"";";
 
-            var analyser = new TypeConversionAllocationAnalyzer();
+            var analyser = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.Interpolation));
 
             Assert.AreEqual(1, info.Allocations.Count);
@@ -493,7 +493,7 @@ var f2 = (object)""5""; // NO Allocation
         public void TypeConversionAllocation_InterpolatedStringWithString_NoWarning() {
             var sampleProgram = @"string s = $""{1.ToString()}"";";
 
-            var analyser = new TypeConversionAllocationAnalyzer();
+            var analyser = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.Interpolation));
 
             Assert.AreEqual(0, info.Allocations.Count);
@@ -510,7 +510,7 @@ var f2 = (object)""5""; // NO Allocation
                 @"private static System.Func<string, bool> fileExists { get; } = System.IO.File.Exists;"
             };
 
-            var analyzer = new TypeConversionAllocationAnalyzer();
+            var analyzer = new TypeConversionAllocationAnalyzer(true);
             foreach (var snippet in snippets)
             {
                 var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(SyntaxKind.Argument));
@@ -527,7 +527,7 @@ var f2 = (object)""5""; // NO Allocation
                 }
             ";
 
-            var analyzer = new TypeConversionAllocationAnalyzer();
+            var analyzer = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(
                 SyntaxKind.ArrowExpressionClause));
             AssertEx.ContainsDiagnostic(info.Allocations, id: TypeConversionAllocationAnalyzer.ValueTypeToReferenceTypeConversionRule.Id, line: 4, character: 35);
@@ -542,7 +542,7 @@ var f2 = (object)""5""; // NO Allocation
                 }
             ";
 
-            var analyzer = new TypeConversionAllocationAnalyzer();
+            var analyzer = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(
                 SyntaxKind.ArrowExpressionClause));
             Assert.AreEqual(0, info.Allocations.Count);
@@ -560,7 +560,7 @@ var f2 = (object)""5""; // NO Allocation
                 }
             ";
 
-            var analyzer = new TypeConversionAllocationAnalyzer();
+            var analyzer = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(
                 SyntaxKind.ArrowExpressionClause));
             AssertEx.ContainsDiagnostic(info.Allocations, id: TypeConversionAllocationAnalyzer.MethodGroupAllocationRule.Id, line: 7, character: 40);
@@ -580,7 +580,7 @@ var f2 = (object)""5""; // NO Allocation
                 }
             ";
 
-            var analyzer = new TypeConversionAllocationAnalyzer();
+            var analyzer = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(
                 SyntaxKind.ArrowExpressionClause));
             Assert.AreEqual(0, info.Allocations.Count);
@@ -604,7 +604,7 @@ struct Foo
 }
             ";
 
-            var analyzer = new TypeConversionAllocationAnalyzer();
+            var analyzer = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(SyntaxKind.Argument));
             AssertEx.ContainsNoDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 7, 16 );
         }
@@ -628,7 +628,7 @@ public struct MyStruct {
 }
             ";
 
-            var analyzer = new TypeConversionAllocationAnalyzer();
+            var analyzer = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(SyntaxKind.Argument));
             AssertEx.ContainsDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 6, 54 );
         } 
@@ -652,7 +652,7 @@ public struct MyStruct {
 }
             ";
 
-            var analyzer = new TypeConversionAllocationAnalyzer();
+            var analyzer = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(SyntaxKind.Argument));
             AssertEx.ContainsNoDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 6, 54 );
         }
@@ -676,7 +676,7 @@ public struct MyStruct {
 }
             ";
 
-            var analyzer = new TypeConversionAllocationAnalyzer();
+            var analyzer = new TypeConversionAllocationAnalyzer(true);
             var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(SyntaxKind.Argument));
             AssertEx.ContainsNoDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 6, 26 );
             AssertEx.ContainsNoDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 7, 26 );
