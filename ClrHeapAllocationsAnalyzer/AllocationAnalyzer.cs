@@ -17,12 +17,7 @@ namespace ClrHeapAllocationAnalyzer
 
         private void Analyze(SyntaxNodeAnalysisContext context)
         {
-            if (AllocationRules.IsIgnoredFile(context.Node.SyntaxTree.FilePath))
-            {
-                return;
-            }
-
-            if (context.ContainingSymbol.GetAttributes().Any(AllocationRules.IsIgnoredAttribute))
+            if (!context.ContainingSymbol.GetAttributes().Any(AllocationRules.IsRestrictedAllocationAttribute))
             {
                 return;
             }

@@ -6,20 +6,10 @@ namespace ClrHeapAllocationAnalyzer
 {
     public class AllocationRules
     {
-        private static readonly HashSet<ValueTuple<string, string>> IgnoredAttributes = new HashSet<(string, string)>
+        public static bool IsRestrictedAllocationAttribute(AttributeData attribute)
         {
-            ("System.Runtime.CompilerServices", "CompilerGeneratedAttribute"),
-            ("System.CodeDom.Compiler", "GeneratedCodeAttribute")
-        };
-
-        public static bool IsIgnoredFile(string filePath)
-        {
-            return filePath.EndsWith(".g.cs", StringComparison.OrdinalIgnoreCase);
-        }
-
-        public static bool IsIgnoredAttribute(AttributeData attribute)
-        {
-            return IgnoredAttributes.Contains((attribute.AttributeClass.ContainingNamespace.ToString(), attribute.AttributeClass.Name));
+            return attribute.AttributeClass.Name == nameof(RestrictedAllocation)
+                && attribute.AttributeClass.ContainingNamespace.Name == typeof(RestrictedAllocation).Namespace;
         }
     }
 }
