@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 
 namespace ClrHeapAllocationAnalyzer
 {
@@ -28,12 +29,57 @@ namespace ClrHeapAllocationAnalyzer
 
         private void Analyze(SyntaxNodeAnalysisContext context)
         {
-            if (!_forceEnableAnalysis && !context.ContainingSymbol.GetAttributes().Any(AllocationRules.IsRestrictedAllocationAttribute))
+            var  analyze = ShouldAnalyze(context.ContainingSymbol);
+
+            if (analyze)
+                AnalyzeNode(context);
+        }
+
+        private bool ShouldAnalyze(ISymbol containingSymbol)
+        {
+            if (_forceEnableAnalysis)
+                return true;
+            
+            if (containingSymbol.GetAttributes().Any(AllocationRules.IsRestrictedAllocationAttribute))
+                return true;
+
+            if (containingSymbol is IMethodSymbol method)
             {
-                return;
+                if (method.ExplicitInterfaceImplementations.Any(x => x.GetAttributes().Any(AllocationRules.IsRestrictedAllocationAttribute)))
+                    return true;
+                if (ImplementedInterfaceHasAttribute(method))
+                    return true;
+                if (method.IsOverride && method.OverriddenMethod.GetAttributes().Any(AllocationRules.IsRestrictedAllocationAttribute))
+                    return true;
+                if (method.IsOverride)
+                    return ShouldAnalyze(method.OverriddenMethod);
             }
 
-            AnalyzeNode(context);
+            return false;
+        }
+
+        private bool ImplementedInterfaceHasAttribute(IMethodSymbol method)
+        {
+            var type = method.ContainingType;
+            
+            foreach (var iface in type.AllInterfaces)
+            {
+                var interfaceMethods = iface.GetMembers().OfType<IMethodSymbol>();
+                var interfaceMethod = interfaceMethods.SingleOrDefault(x => type.FindImplementationForInterfaceMember(x).Equals(method));
+                if (interfaceMethod?.GetAttributes().Any(AllocationRules.IsRestrictedAllocationAttribute)?? false)
+                    return true;
+
+            }
+
+            return false;
+        }
+        
+        public static bool IsInterfaceImplementation(IMethodSymbol method)
+        {
+            return method.ContainingType.AllInterfaces.SelectMany(@interface => @interface.GetMembers()
+                                                                                          .OfType<IMethodSymbol>())
+                         .Any(interfaceMethod => method.ContainingType.FindImplementationForInterfaceMember(interfaceMethod)
+                                                       .Equals(method));
         }
     }
 }
