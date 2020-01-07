@@ -24,16 +24,7 @@ namespace ClrHeapAllocationAnalyzer
 
         public override void AddToWhiteList(string method)
         {
-            _whitelistedMethods.Add(NormalizeMethodSignature(method));
-        }
-
-        private static string NormalizeMethodSignature(string method)
-        {
-            method = method.Replace(" ", "");
-            method = method.Replace(".String.", ".string.");
-            method = method.Replace(".String)", ".string)");
-            method = method.Replace(".String,", ".string,");
-            return method;
+            _whitelistedMethods.Add(method);
         }
 
         protected override void AnalyzeNode(SyntaxNodeAnalysisContext context)
@@ -51,12 +42,7 @@ namespace ClrHeapAllocationAnalyzer
 
         private bool IsWhitelisted(IMethodSymbol methodInfo)
         {
-            // TODO
-            // return _whitelistedMethods.Contains((methodInfo.ContainingNamespace.Name, methodInfo.ContainingType.Name, methodInfo.Name));
-            var parameters = string.Join(",", methodInfo.Parameters.Select(x => $"{x.ContainingNamespace.Name}.{x.ContainingType.Name}"));
-            var signature = $"{methodInfo.ContainingNamespace.Name}.{methodInfo.ContainingType.Name}.{methodInfo.Name}({parameters})";
-            
-            return _whitelistedMethods.Contains(NormalizeMethodSignature(signature));
+            return _whitelistedMethods.Contains(MethodSymbolSerializer.Serialize(methodInfo));
         }
 
         private static bool IsInSafeScope(SemanticModel semanticModel, SyntaxNode symbol)

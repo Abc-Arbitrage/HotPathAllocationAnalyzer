@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClrHeapAllocationAnalyzer.V
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClrHeapAllocationAnalyzer", "ClrHeapAllocationsAnalyzer\ClrHeapAllocationAnalyzer.csproj", "{EAF46154-6613-4CD6-BE70-9015FF94F9CF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigurationFileGenerator", "ConfigurationFileGenerator\ConfigurationFileGenerator.csproj", "{F91314DA-FD70-4170-B7B8-765A66331751}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{EAF46154-6613-4CD6-BE70-9015FF94F9CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EAF46154-6613-4CD6-BE70-9015FF94F9CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EAF46154-6613-4CD6-BE70-9015FF94F9CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F91314DA-FD70-4170-B7B8-765A66331751}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F91314DA-FD70-4170-B7B8-765A66331751}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F91314DA-FD70-4170-B7B8-765A66331751}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F91314DA-FD70-4170-B7B8-765A66331751}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
