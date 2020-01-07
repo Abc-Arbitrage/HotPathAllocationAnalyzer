@@ -98,12 +98,17 @@ namespace ClrHeapAllocationAnalyzer
                     return true;
                 if (method.IsOverride)
                     return HasRestrictedAllocationAttribute(method.OverriddenMethod);
+            }    
+            
+            if (containingSymbol is IPropertySymbol property)
+            {
+                return HasRestrictedAllocationAttribute(property.GetMethod);
             }
 
             return false;
         }
 
-        private static bool ImplementedInterfaceHasAttribute(IMethodSymbol method)
+        private static bool ImplementedInterfaceHasAttribute(ISymbol method)
         {
             var type = method.ContainingType;
             
@@ -113,7 +118,6 @@ namespace ClrHeapAllocationAnalyzer
                 var interfaceMethod = interfaceMethods.SingleOrDefault(x => type.FindImplementationForInterfaceMember(x).Equals(method));
                 if (interfaceMethod?.GetAttributes().Any(AllocationRules.IsRestrictedAllocationAttribute)?? false)
                     return true;
-
             }
 
             return false;

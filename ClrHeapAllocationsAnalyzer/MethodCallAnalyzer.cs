@@ -15,10 +15,11 @@ namespace ClrHeapAllocationAnalyzer
         private readonly HashSet<string> _whitelistedMethods = new HashSet<string>();
         
         public static DiagnosticDescriptor ExternalMethodCallRule = new DiagnosticDescriptor("HAA0701", "Unsafe method call", "All method call from here should be marked as RestrictedAllocation or whitelisted", "Performance", DiagnosticSeverity.Warning, true);
+        public static DiagnosticDescriptor UnsafePropertyAccessRule = new DiagnosticDescriptor("HAA0702", "Unsafe property access", "All property access from here should be marked as RestrictedAllocation or whitelisted", "Performance", DiagnosticSeverity.Warning, true);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ExternalMethodCallRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ExternalMethodCallRule, UnsafePropertyAccessRule);
         
-        protected override SyntaxKind[] Expressions => new[] { SyntaxKind.InvocationExpression };
+        protected override SyntaxKind[] Expressions => new[] { SyntaxKind.InvocationExpression, SyntaxKind.SimpleMemberAccessExpression };
         
         private static readonly object[] EmptyMessageArgs = { };
 
@@ -29,18 +30,28 @@ namespace ClrHeapAllocationAnalyzer
 
         protected override void AnalyzeNode(SyntaxNodeAnalysisContext context)
         {
-            var invocationExpression = context.Node as InvocationExpressionSyntax;
             var semanticModel = context.SemanticModel;
             var cancellationToken = context.CancellationToken;
-            
-            if (semanticModel.GetSymbolInfo(invocationExpression, cancellationToken).Symbol is IMethodSymbol methodInfo)
+
+            if (context.Node is InvocationExpressionSyntax invocationExpression && semanticModel.GetSymbolInfo(invocationExpression, cancellationToken).Symbol is IMethodSymbol methodInfo)
             {
                 if (!HasRestrictedAllocationAttribute(methodInfo) && !IsWhitelisted(methodInfo) && !IsInSafeScope(semanticModel, invocationExpression))
-                    ReportError(context, invocationExpression);
+                    ReportError(context, invocationExpression, ExternalMethodCallRule);
+            }
+
+            if (context.Node is MemberAccessExpressionSyntax memberAccessExpression && semanticModel.GetSymbolInfo(memberAccessExpression, cancellationToken).Symbol is IPropertySymbol propertyInfo)
+            {
+                if (!HasRestrictedAllocationAttribute(propertyInfo) && !IsWhitelisted(propertyInfo) && !IsInSafeScope(semanticModel, memberAccessExpression))
+                    ReportError(context, memberAccessExpression, UnsafePropertyAccessRule);
             }
         }
 
         private bool IsWhitelisted(IMethodSymbol methodInfo)
+        {
+            return _whitelistedMethods.Contains(MethodSymbolSerializer.Serialize(methodInfo));
+        }
+        
+        private bool IsWhitelisted(IPropertySymbol methodInfo)
         {
             return _whitelistedMethods.Contains(MethodSymbolSerializer.Serialize(methodInfo));
         }
@@ -78,9 +89,9 @@ namespace ClrHeapAllocationAnalyzer
             return type.Name == nameof(AllocationFreeScope) && type.ContainingNamespace.Name == typeof(AllocationFreeScope).Namespace;
         }
 
-        private static void ReportError(SyntaxNodeAnalysisContext context, SyntaxNode node)
+        private static void ReportError(SyntaxNodeAnalysisContext context, SyntaxNode node, DiagnosticDescriptor externalMethodCallRule)
         {
-            context.ReportDiagnostic(Diagnostic.Create(ExternalMethodCallRule, node.GetLocation(), EmptyMessageArgs));
+            context.ReportDiagnostic(Diagnostic.Create(externalMethodCallRule, node.GetLocation(), EmptyMessageArgs));
             HeapAllocationAnalyzerEventSource.Logger.PossiblyAllocatingMethodCall(node.SyntaxTree.FilePath);
         }
     }

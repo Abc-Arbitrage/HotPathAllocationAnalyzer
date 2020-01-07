@@ -8,7 +8,7 @@ namespace ClrHeapAllocationAnalyzer.Test
     public class MethodCallTests : AllocationAnalyzerTests
     {
         [TestMethod]
-        public void AnalyzeProgram_NotAllowCallingOwnedUnflagedMethod()
+        public void AnalyzeProgram_NotAllowCallingOwnedUnFlaggedMethod()
         {
             //language=cs
             const string sample =
@@ -40,7 +40,7 @@ namespace ClrHeapAllocationAnalyzer.Test
                 
                 [ClrHeapAllocationAnalyzer.RestrictedAllocation]
                 public int StringLength(string str) {
-                    return str.Length;
+                    return 0;
                 }
 
                 [ClrHeapAllocationAnalyzer.RestrictedAllocation]
@@ -72,7 +72,7 @@ namespace ClrHeapAllocationAnalyzer.Test
                 {
                      public int StringLength(string str)
                      {
-                        return str.Length;
+                        return 0;
                      }
                 }
                 
@@ -87,8 +87,6 @@ namespace ClrHeapAllocationAnalyzer.Test
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(0, info.Allocations.Count);
         }
-        
-        
         
         [TestMethod]
         public void AnalyzeProgram_NotAllowCallingExternalMethod()
@@ -108,7 +106,7 @@ namespace ClrHeapAllocationAnalyzer.Test
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(1, info.Allocations.Count);
         }
-
+        
         [TestMethod]
         public void AnalyzeProgram_NotAllowCallingExternalMethod_UnlessItIsInSafeScope()
         {
