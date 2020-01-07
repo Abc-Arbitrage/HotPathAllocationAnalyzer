@@ -1,6 +1,6 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Linq.Expressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -12,12 +12,21 @@ namespace ClrHeapAllocationAnalyzer
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class MethodCallAnalyzer : AllocationAnalyzer
     {
+        private readonly HashSet<(string ns, string type, string method)> _whitelistedMethods = new HashSet<(string ns, string type, string method)>();
+        
         public static DiagnosticDescriptor ExternalMethodCallRule = new DiagnosticDescriptor("HAA0701", "Unsafe method call", "All method call from here should be marked as RestrictedAllocation or whitelisted", "Performance", DiagnosticSeverity.Warning, true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ExternalMethodCallRule);
+        
         protected override SyntaxKind[] Expressions => new[] { SyntaxKind.InvocationExpression };
+        
         private static readonly object[] EmptyMessageArgs = { };
 
+        protected override void AddToWhiteList(ISymbol symbol)
+        {
+            _whitelistedMethods.Add((symbol.ContainingNamespace.Name, symbol.ContainingType.Name, symbol.Name));
+        }
+        
         protected override void AnalyzeNode(SyntaxNodeAnalysisContext context)
         {
             var invocationExpression = context.Node as InvocationExpressionSyntax;
@@ -26,9 +35,14 @@ namespace ClrHeapAllocationAnalyzer
             
             if (semanticModel.GetSymbolInfo(invocationExpression, cancellationToken).Symbol is IMethodSymbol methodInfo)
             {
-                if (!HasRestrictedAllocationAttribute(methodInfo) && !IsInSafeScope(semanticModel, invocationExpression))
+                if (!HasRestrictedAllocationAttribute(methodInfo) && !IsWhitelisted(methodInfo) && !IsInSafeScope(semanticModel, invocationExpression))
                     ReportError(context, invocationExpression);
             }
+        }
+
+        private bool IsWhitelisted(IMethodSymbol methodInfo)
+        {
+            return _whitelistedMethods.Contains((methodInfo.ContainingNamespace.Name, methodInfo.ContainingType.Name, methodInfo.Name));
         }
 
         private static bool IsInSafeScope(SemanticModel semanticModel, SyntaxNode symbol)

@@ -184,17 +184,44 @@ namespace ClrHeapAllocationAnalyzer.Test
                 @"using System;
                 using ClrHeapAllocationAnalyzer;
                 
+                public class Config : IAllocationConfiguration 
+                {
+                    public void String(string str) 
+                    {
+                        MakeSafe(() => str.IsNormalized());
+                        MakeSafe(() => str.Contains(default));
+                    } 
+                }
+                
                 [ClrHeapAllocationAnalyzer.RestrictedAllocation]
-                public int PerfCritical(string str) {
-                    return str.Length;
+                public bool PerfCritical(string str) {
+                    return str.IsNormalized();
                 }";
-
+            
             var analyser = new MethodCallAnalyzer();
             
-            // TODO Add to whitelist
+            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression, SyntaxKind.ClassDeclaration));
+            Assert.AreEqual(0, info.Allocations.Count);
+        }
+
+        [TestMethod]
+        public void AnalyzeProgram_NotAllowCallingExternalMethod_UnlessItIsWhitelisted_ByConvetionProject()
+        {
+            //language=cs
+            const string sample =
+                @"using System;
+                using ClrHeapAllocationAnalyzer;                
+                
+                [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                public bool PerfCritical(string str) {
+                    return str.IsNormalized();
+                }";
             
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
-            Assert.AreEqual(1, info.Allocations.Count);
+            var analyser = new MethodCallAnalyzer();
+            var currentFilePath = new System.Diagnostics.StackTrace(true).GetFrame(0).GetFileName();
+            
+            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression), filePath: currentFilePath);
+            Assert.AreEqual(0, info.Allocations.Count);
         }
     }
 }
