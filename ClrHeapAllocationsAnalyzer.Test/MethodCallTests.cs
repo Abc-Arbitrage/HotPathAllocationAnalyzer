@@ -191,8 +191,8 @@ namespace ClrHeapAllocationAnalyzer.Test
             
             var analyser = new MethodCallAnalyzer();
             
-            analyser.AddToWhiteList("System.String.IsNormalized()");
-            analyser.AddToWhiteList("System.String.Contains(System.String)");
+            analyser.AddToWhiteList("string.IsNormalized()");
+            analyser.AddToWhiteList("string.Contains(string)");
             
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression, SyntaxKind.ClassDeclaration));
             Assert.AreEqual(0, info.Allocations.Count);
