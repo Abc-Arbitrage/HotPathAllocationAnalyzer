@@ -12,7 +12,7 @@ namespace ClrHeapAllocationAnalyzer
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class MethodCallAnalyzer : AllocationAnalyzer
     {
-        private readonly HashSet<(string ns, string type, string method)> _whitelistedMethods = new HashSet<(string ns, string type, string method)>();
+        private readonly HashSet<string> _whitelistedMethods = new HashSet<string>();
         
         public static DiagnosticDescriptor ExternalMethodCallRule = new DiagnosticDescriptor("HAA0701", "Unsafe method call", "All method call from here should be marked as RestrictedAllocation or whitelisted", "Performance", DiagnosticSeverity.Warning, true);
 
@@ -22,11 +22,20 @@ namespace ClrHeapAllocationAnalyzer
         
         private static readonly object[] EmptyMessageArgs = { };
 
-        protected override void AddToWhiteList(ISymbol symbol)
+        public override void AddToWhiteList(string method)
         {
-            _whitelistedMethods.Add((symbol.ContainingNamespace.Name, symbol.ContainingType.Name, symbol.Name));
+            _whitelistedMethods.Add(NormalizeMethodSignature(method));
         }
-        
+
+        private static string NormalizeMethodSignature(string method)
+        {
+            method = method.Replace(" ", "");
+            method = method.Replace(".String.", ".string.");
+            method = method.Replace(".String)", ".string)");
+            method = method.Replace(".String,", ".string,");
+            return method;
+        }
+
         protected override void AnalyzeNode(SyntaxNodeAnalysisContext context)
         {
             var invocationExpression = context.Node as InvocationExpressionSyntax;
@@ -42,7 +51,12 @@ namespace ClrHeapAllocationAnalyzer
 
         private bool IsWhitelisted(IMethodSymbol methodInfo)
         {
-            return _whitelistedMethods.Contains((methodInfo.ContainingNamespace.Name, methodInfo.ContainingType.Name, methodInfo.Name));
+            // TODO
+            // return _whitelistedMethods.Contains((methodInfo.ContainingNamespace.Name, methodInfo.ContainingType.Name, methodInfo.Name));
+            var parameters = string.Join(",", methodInfo.Parameters.Select(x => $"{x.ContainingNamespace.Name}.{x.ContainingType.Name}"));
+            var signature = $"{methodInfo.ContainingNamespace.Name}.{methodInfo.ContainingType.Name}.{methodInfo.Name}({parameters})";
+            
+            return _whitelistedMethods.Contains(NormalizeMethodSignature(signature));
         }
 
         private static bool IsInSafeScope(SemanticModel semanticModel, SyntaxNode symbol)

@@ -184,28 +184,22 @@ namespace ClrHeapAllocationAnalyzer.Test
                 @"using System;
                 using ClrHeapAllocationAnalyzer;
                 
-                public class Config : IAllocationConfiguration 
-                {
-                    public void String(string str) 
-                    {
-                        MakeSafe(() => str.IsNormalized());
-                        MakeSafe(() => str.Contains(default));
-                    } 
-                }
-                
                 [ClrHeapAllocationAnalyzer.RestrictedAllocation]
                 public bool PerfCritical(string str) {
-                    return str.IsNormalized();
+                    return str.Contains(""zig"");
                 }";
             
             var analyser = new MethodCallAnalyzer();
+            
+            analyser.AddToWhiteList("System.String.IsNormalized()");
+            analyser.AddToWhiteList("System.String.Contains(System.String)");
             
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression, SyntaxKind.ClassDeclaration));
             Assert.AreEqual(0, info.Allocations.Count);
         }
 
         [TestMethod]
-        public void AnalyzeProgram_NotAllowCallingExternalMethod_UnlessItIsWhitelisted_ByConvetionProject()
+        public void AnalyzeProgram_NotAllowCallingExternalMethod_UnlessItIsWhitelisted_ByConventionProject()
         {
             //language=cs
             const string sample =
