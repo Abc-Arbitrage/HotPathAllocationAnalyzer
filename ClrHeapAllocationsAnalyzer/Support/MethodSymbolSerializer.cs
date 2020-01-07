@@ -9,5 +9,10 @@ namespace ClrHeapAllocationAnalyzer
         {
             return symbol.ToString();
         }
+        
+        public static string Serialize(IPropertySymbol symbol)
+        {
+            return symbol.ToString();
+        }
     }
 }

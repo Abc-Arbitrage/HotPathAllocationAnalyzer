@@ -87,9 +87,19 @@ namespace ConfigurationFileGenerator
                     continue;
 
                 var method = lambda.Body as InvocationExpressionSyntax;
-                var methodSymbol = semanticModel.GetSymbolInfo(method, cancellationToken).Symbol;
+                var memberAccess = lambda.Body as MemberAccessExpressionSyntax;
+
+                if (method != null)
+                {
+                    var methodSymbol = semanticModel.GetSymbolInfo(method, cancellationToken).Symbol;
+                    Console.WriteLine(MethodSymbolSerializer.Serialize(methodSymbol as IMethodSymbol));
+                }
                 
-                Console.WriteLine(MethodSymbolSerializer.Serialize(methodSymbol as IMethodSymbol));
+                if (memberAccess != null)
+                {
+                    var propertySymbol = semanticModel.GetSymbolInfo(memberAccess, cancellationToken).Symbol;
+                    Console.WriteLine(MethodSymbolSerializer.Serialize(propertySymbol as IPropertySymbol));
+                }
             }
         }
         

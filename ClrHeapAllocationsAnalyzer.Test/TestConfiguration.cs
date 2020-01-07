@@ -6,6 +6,7 @@ namespace ClrHeapAllocationAnalyzer.Test
     {
         public void WhitelistString(string str)
         {
+            MakeSafe(() => str.Length);
             MakeSafe(() => str.IsNormalized());
             MakeSafe(() => str.Contains(default));
         }
