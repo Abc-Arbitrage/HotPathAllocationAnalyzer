@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ClrHeapAllocationAnalyzer
+namespace ClrHeapAllocationAnalyzer.Support
 {
     public class RestrictedAllocation : Attribute
     {

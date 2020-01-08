@@ -1,7 +1,7 @@
 using System;
 using System.Linq.Expressions;
 
-namespace ClrHeapAllocationAnalyzer
+namespace ClrHeapAllocationAnalyzer.Support
 {
     public abstract class AllocationConfiguration
     {

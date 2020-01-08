@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using System.Collections.Immutable;
+using ClrHeapAllocationAnalyzer.Analyzers;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace ClrHeapAllocationAnalyzer.Test

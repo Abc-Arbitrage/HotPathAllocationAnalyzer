@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using ClrHeapAllocationAnalyzer.Support;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace ClrHeapAllocationAnalyzer
+namespace ClrHeapAllocationAnalyzer.Analyzers
 {
     
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
@@ -35,13 +36,13 @@ namespace ClrHeapAllocationAnalyzer
 
             if (context.Node is InvocationExpressionSyntax invocationExpression && semanticModel.GetSymbolInfo(invocationExpression, cancellationToken).Symbol is IMethodSymbol methodInfo)
             {
-                if (!HasRestrictedAllocationAttribute(methodInfo) && !IsWhitelisted(methodInfo) && !IsInSafeScope(semanticModel, invocationExpression))
+                if (!RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(methodInfo) && !IsWhitelisted(methodInfo) && !IsInSafeScope(semanticModel, invocationExpression))
                     ReportError(context, invocationExpression, ExternalMethodCallRule);
             }
 
             if (context.Node is MemberAccessExpressionSyntax memberAccessExpression && semanticModel.GetSymbolInfo(memberAccessExpression, cancellationToken).Symbol is IPropertySymbol propertyInfo)
             {
-                if (!HasRestrictedAllocationAttribute(propertyInfo) && !IsWhitelisted(propertyInfo) && !IsInSafeScope(semanticModel, memberAccessExpression))
+                if (!RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(propertyInfo) && !IsWhitelisted(propertyInfo) && !IsInSafeScope(semanticModel, memberAccessExpression))
                     ReportError(context, memberAccessExpression, UnsafePropertyAccessRule);
             }
         }

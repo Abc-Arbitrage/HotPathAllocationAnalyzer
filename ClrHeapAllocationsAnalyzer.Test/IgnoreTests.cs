@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using ClrHeapAllocationAnalyzer.Analyzers;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

@@ -1,10 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
-using System;
-using System.Collections.Generic;
 
-namespace ClrHeapAllocationAnalyzer
+namespace ClrHeapAllocationAnalyzer.Support
 {
-    public static class AllocationRules
+    internal static class AllocationRules
     {
         public const string ConfigurationDirectoryName = "ClrHeapAllocationsAnalyzer";
         
