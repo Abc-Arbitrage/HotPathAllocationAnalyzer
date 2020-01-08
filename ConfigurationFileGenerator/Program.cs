@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using Buildalyzer;
@@ -17,93 +18,25 @@ namespace ConfigurationFileGenerator
         {
             if (args.Length < 1)
             {
-                Console.WriteLine("Usage: ConfigureFileGenerator ConfigProject.csproj");
+                Console.WriteLine("Usage: ConfigureFileGenerator ConfigProjectDirectory [OutputFile]");
                 return;
             }
             
-            var csProjPath = args[0];
-            var manager = new AnalyzerManager();
-            var analyzer = manager.GetProject(csProjPath);
-                   
-            var workspace = new AdhocWorkspace();
-            var roslynProject = analyzer.AddToWorkspace(workspace);
-
+            var configurationReader = new ConfigurationReader(args[0]);
+            
             var cancellationTokenSource = new CancellationTokenSource();
-            var token = cancellationTokenSource.Token;
-                    
-            foreach (var document in roslynProject.Documents)
-            {
-                if (!document.TryGetSyntaxTree(out var syntaxTree))
-                    syntaxTree = document.GetSyntaxTreeAsync().Result;
-                        
-                if (!document.TryGetSemanticModel(out var semanticModel))
-                    semanticModel = document.GetSemanticModelAsync().Result;
-                            
-                if ( syntaxTree != null && semanticModel != null)
-                    InitializeConfiguration(syntaxTree.GetRoot(token), semanticModel, token);
-            }
+            var whiteList = configurationReader.GenerateWhitelistAsync(cancellationTokenSource.Token).Result;
+
+            var outputFile = GetOutputFile(args);
+            File.WriteAllLines(outputFile, whiteList);
         }
-        
-        
-        private static void InitializeConfiguration(SyntaxNode syntaxNode, SemanticModel semanticModel, CancellationToken cancellationToken)
+
+        private static string GetOutputFile(string[] args)
         {
-            Configure(syntaxNode, semanticModel, cancellationToken);
+            if (args.Length >= 2)
+                return args[1];
 
-            foreach (var childNode in syntaxNode.ChildNodes())
-            {
-                InitializeConfiguration(childNode, semanticModel, cancellationToken);
-            }
+            return Path.Combine(args[0], AllocationRules.WhitelistFileName);
         }
-
-        private static void Configure(SyntaxNode node, SemanticModel semanticModel, CancellationToken cancellationToken)
-        {
-            if (!(node is ClassDeclarationSyntax classNode))
-                return;
-    
-            var baseTypes = classNode.BaseList?.Types.Select(b => semanticModel.GetTypeInfo(b.Type).Type);
-            if (!baseTypes?.Any(b => b.Name == nameof(AllocationConfiguration) && b.ContainingNamespace.Name == typeof(AllocationConfiguration).Namespace) ?? true)
-                return;
-            
-            foreach (var member in classNode.Members.OfType<MethodDeclarationSyntax>())
-            {
-                ReadConfiguration(member, semanticModel, cancellationToken);
-            }
-        }
-
-        private static void ReadConfiguration(BaseMethodDeclarationSyntax member, SemanticModel semanticModel, CancellationToken cancellationToken)
-        {
-            var body = member.Body;
-            var statements = body.Statements;
-
-            foreach (var invocationExpression in statements.OfType<ExpressionStatementSyntax>().Select(x => x.Expression).OfType<InvocationExpressionSyntax>())
-            {
-                var symbol = semanticModel.GetSymbolInfo(invocationExpression, cancellationToken).Symbol;
-                if (symbol.Name != nameof(AllocationConfiguration.MakeSafe))
-                    continue;
-
-                if (invocationExpression.ArgumentList.Arguments.Count != 1)
-                    continue;
-                
-                var lambda = invocationExpression.ArgumentList.Arguments.Single().Expression as ParenthesizedLambdaExpressionSyntax;
-                if (lambda == null)
-                    continue;
-
-                var method = lambda.Body as InvocationExpressionSyntax;
-                var memberAccess = lambda.Body as MemberAccessExpressionSyntax;
-
-                if (method != null)
-                {
-                    var methodSymbol = semanticModel.GetSymbolInfo(method, cancellationToken).Symbol;
-                    Console.WriteLine(MethodSymbolSerializer.Serialize(methodSymbol as IMethodSymbol));
-                }
-                
-                if (memberAccess != null)
-                {
-                    var propertySymbol = semanticModel.GetSymbolInfo(memberAccess, cancellationToken).Symbol;
-                    Console.WriteLine(MethodSymbolSerializer.Serialize(propertySymbol as IPropertySymbol));
-                }
-            }
-        }
-        
     }
 }

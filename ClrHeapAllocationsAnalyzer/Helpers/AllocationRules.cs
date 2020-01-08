@@ -1,9 +1,11 @@
-﻿using ClrHeapAllocationAnalyzer.Support;
+﻿using System.Linq;
+using ClrHeapAllocationAnalyzer.Support;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ClrHeapAllocationAnalyzer.Helpers
 {
-    internal static class AllocationRules
+    public static class AllocationRules
     {
         public const string ConfigurationDirectoryName = "ClrHeapAllocationsAnalyzer";
         
@@ -13,6 +15,26 @@ namespace ClrHeapAllocationAnalyzer.Helpers
         {
             return attribute.AttributeClass.Name == nameof(RestrictedAllocation)
                 && attribute.AttributeClass.ContainingNamespace.ToDisplayString() == typeof(RestrictedAllocation).Namespace;
+        }
+
+        public static ClassDeclarationSyntax GetConfigurationClass(SyntaxNode syntaxNode, SemanticModel semanticModel)
+        {
+            bool IsConfigurationBaseType(ITypeSymbol typeSymbol)
+            {
+                return typeSymbol.Name == nameof(AllocationConfiguration)
+                       && typeSymbol.ContainingNamespace.ToString() == typeof(AllocationConfiguration).Namespace;
+                
+            }
+            
+            if (syntaxNode is ClassDeclarationSyntax classDeclarationSyntax)
+            {
+                var baseTypes = classDeclarationSyntax.BaseList?.Types
+                                                      .Select(t => semanticModel.GetTypeInfo(t.Type).Type);
+                if (baseTypes?.Any(IsConfigurationBaseType) ?? false)
+                    return classDeclarationSyntax;
+            }
+
+            return null;
         }
     }
 }
