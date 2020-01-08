@@ -1,17 +1,16 @@
 using System;
 using System.IO;
 using System.Linq;
-using ClrHeapAllocationAnalyzer.Analyzers;
 using ClrHeapAllocationAnalyzer.Support;
 
 internal static class ConfigurationHelper
 {
     public static void ReadConfiguration(string filePath, Action<string> AddToWhiteList)
     {
-        if (!String.IsNullOrEmpty(filePath))
+        if (!string.IsNullOrEmpty(filePath))
         {
             var configDir = FindConfigurationDirectory(filePath);
-            if (!String.IsNullOrEmpty(configDir))
+            if (!string.IsNullOrEmpty(configDir))
             {
                 var whitelist = File.ReadAllLines(Path.Combine(configDir, AllocationRules.WhitelistFileName));
 
