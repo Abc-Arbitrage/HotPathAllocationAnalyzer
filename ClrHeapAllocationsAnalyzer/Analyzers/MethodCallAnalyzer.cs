@@ -86,9 +86,10 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
             return IsInSafeScope(semanticModel, symbol.Parent);
         }
 
-        private static bool IsSafeScopeType(ITypeSymbol type)
+        private static bool IsSafeScopeType(ITypeSymbol? type)
         {
-            return type.Name == nameof(AllocationFreeScope) 
+            return type != null
+                   && type.Name == nameof(AllocationFreeScope)
                    && type.ContainingNamespace.ToDisplayString() == typeof(AllocationFreeScope).Namespace;
         }
 

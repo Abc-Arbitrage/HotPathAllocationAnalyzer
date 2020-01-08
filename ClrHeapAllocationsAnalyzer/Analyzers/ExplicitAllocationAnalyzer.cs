@@ -60,9 +60,8 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
             //               |             |--------------| <- InitializerExpressionSyntax or SyntaxKind.ObjectInitializerExpression
             //               |----------------------------| <- ObjectCreationExpressionSyntax or SyntaxKind.ObjectCreationExpression
             var initializerExpression = node as InitializerExpressionSyntax;
-            if (initializerExpression?.Parent is ObjectCreationExpressionSyntax)
+            if (initializerExpression?.Parent is ObjectCreationExpressionSyntax objectCreation)
             {
-                var objectCreation = node.Parent as ObjectCreationExpressionSyntax;
                 var typeInfo = semanticModel.GetTypeInfo(objectCreation, cancellationToken);
                 if (typeInfo.ConvertedType?.TypeKind != TypeKind.Error &&
                     typeInfo.ConvertedType?.IsReferenceType == true &&
@@ -75,32 +74,28 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
                 }
             }
 
-            var implicitArrayExpression = node as ImplicitArrayCreationExpressionSyntax;
-            if (implicitArrayExpression != null)
+            if (node is ImplicitArrayCreationExpressionSyntax implicitArrayExpression)
             {
                 reportDiagnostic(Diagnostic.Create(ImplicitArrayCreationRule, implicitArrayExpression.NewKeyword.GetLocation(), EmptyMessageArgs));
                 HeapAllocationAnalyzerEventSource.Logger.NewImplicitArrayCreationExpression(filePath);
                 return;
             }
 
-            var newAnon = node as AnonymousObjectCreationExpressionSyntax;
-            if (newAnon != null)
+            if (node is AnonymousObjectCreationExpressionSyntax newAnon)
             {
                 reportDiagnostic(Diagnostic.Create(AnonymousNewObjectRule, newAnon.NewKeyword.GetLocation(), EmptyMessageArgs));
                 HeapAllocationAnalyzerEventSource.Logger.NewAnonymousObjectCreationExpression(filePath);
                 return;
             }
 
-            var newArr = node as ArrayCreationExpressionSyntax;
-            if (newArr != null)
+            if (node is ArrayCreationExpressionSyntax newArr)
             {
                 reportDiagnostic(Diagnostic.Create(NewArrayRule, newArr.NewKeyword.GetLocation(), EmptyMessageArgs));
                 HeapAllocationAnalyzerEventSource.Logger.NewArrayExpression(filePath);
                 return;
             }
 
-            var newObj = node as ObjectCreationExpressionSyntax;
-            if (newObj != null)
+            if (node is ObjectCreationExpressionSyntax newObj)
             {
                 var typeInfo = semanticModel.GetTypeInfo(newObj, cancellationToken);
                 if (typeInfo.ConvertedType != null && typeInfo.ConvertedType.TypeKind != TypeKind.Error && typeInfo.ConvertedType.IsReferenceType)
@@ -111,8 +106,7 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
                 return;
             }
 
-            var letKind = node as LetClauseSyntax;
-            if (letKind != null)
+            if (node is LetClauseSyntax letKind)
             {
                 reportDiagnostic(Diagnostic.Create(LetCauseRule, letKind.LetKeyword.GetLocation(), EmptyMessageArgs));
                 HeapAllocationAnalyzerEventSource.Logger.LetClauseExpression(filePath);

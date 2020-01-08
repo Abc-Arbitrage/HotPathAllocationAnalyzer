@@ -1,5 +1,5 @@
-﻿using ClrHeapAllocationAnalyzer.Helpers;
-using ClrHeapAllocationAnalyzer.Support;
+﻿using System;
+using ClrHeapAllocationAnalyzer.Helpers;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -46,7 +46,14 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
             if (_isInitialized)
                 return;
 
-            ConfigurationHelper.ReadConfiguration(context.Node.GetLocation().SourceTree.FilePath, AddToWhiteList);
+            try
+            {
+                ConfigurationHelper.ReadConfiguration(context.Node.GetLocation().SourceTree.FilePath, AddToWhiteList);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Failed to read configuration: ", e);
+            }
 
             _isInitialized = true;
         }

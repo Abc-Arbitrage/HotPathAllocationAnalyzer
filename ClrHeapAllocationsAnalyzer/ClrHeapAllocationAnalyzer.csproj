@@ -4,6 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeBuildOutput>true</IncludeBuildOutput>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <LangVersion>8</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup>

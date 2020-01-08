@@ -24,7 +24,7 @@ namespace ClrHeapAllocationAnalyzer.Helpers
             }
         }
     
-        private static string FindConfigurationDirectory(string filePath)
+        private static string? FindConfigurationDirectory(string? filePath)
         {
             if (string.IsNullOrEmpty(filePath))
                 return null;

@@ -65,7 +65,7 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
         
         private static void ClosureCaptureDataFlowAnalysis(DataFlowAnalysis flow, Action<Diagnostic> reportDiagnostic, Location location)
         {
-            if (flow?.Captured.Length <= 0)
+            if (flow == null || flow.Captured.Length <= 0)
             {
                 return;
             }
@@ -75,7 +75,7 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
                 if (capture.Name != null && capture.Locations != null)
                 {
                     foreach (var l in capture.Locations)
-                     {
+                    {
                         reportDiagnostic(Diagnostic.Create(ClosureCaptureRule, l, EmptyMessageArgs));
                     }
                 }
@@ -88,7 +88,7 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
         {
             if (semanticModel.GetSymbolInfo(node, cancellationToken).Symbol != null)
             {
-                var containingSymbol = semanticModel.GetSymbolInfo(node, cancellationToken).Symbol.ContainingSymbol as IMethodSymbol;
+                var containingSymbol = semanticModel.GetSymbolInfo(node, cancellationToken).Symbol?.ContainingSymbol as IMethodSymbol;
                 if (containingSymbol != null && containingSymbol.Arity > 0)
                 {
                     reportDiagnostic(Diagnostic.Create(LambaOrAnonymousMethodInGenericMethodRule, location, EmptyMessageArgs));

@@ -60,71 +60,70 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
 
             // this.fooObjCall(10);
             // new myobject(10);
-            if (node is ArgumentSyntax)
+            if (node is ArgumentSyntax argumentSyntax)
             {
-                ArgumentSyntaxCheck(node, semanticModel, assignedToReadonlyFieldOrProperty, reportDiagnostic, filePath, cancellationToken);
+                ArgumentSyntaxCheck(argumentSyntax, semanticModel, assignedToReadonlyFieldOrProperty, reportDiagnostic, filePath, cancellationToken);
             }
 
             // object foo { get { return 0; } }
-            if (node is ReturnStatementSyntax)
+            if (node is ReturnStatementSyntax returnStatementSyntax)
             {
-                ReturnStatementExpressionCheck(node, semanticModel, reportDiagnostic, filePath, cancellationToken);
+                ReturnStatementExpressionCheck(returnStatementSyntax, semanticModel, reportDiagnostic, filePath, cancellationToken);
                 return;
             }
 
             // yield return 0
-            if (node is YieldStatementSyntax)
+            if (node is YieldStatementSyntax yieldStatementSyntax)
             {
-                YieldReturnStatementExpressionCheck(node, semanticModel, reportDiagnostic, filePath, cancellationToken);
+                YieldReturnStatementExpressionCheck(yieldStatementSyntax, semanticModel, reportDiagnostic, filePath, cancellationToken);
                 return;
             }
 
             // object a = x ?? 0;
             // var a = 10 as object;
-            if (node is BinaryExpressionSyntax)
+            if (node is BinaryExpressionSyntax binaryExpressionSyntax)
             {
-                BinaryExpressionCheck(node, semanticModel, assignedToReadonlyFieldOrProperty, reportDiagnostic, filePath, cancellationToken);
+                BinaryExpressionCheck(binaryExpressionSyntax, semanticModel, assignedToReadonlyFieldOrProperty, reportDiagnostic, filePath, cancellationToken);
                 return;
             }
 
             // for (object i = 0;;)
-            if (node is EqualsValueClauseSyntax)
+            if (node is EqualsValueClauseSyntax equalsValueClauseSyntax)
             {
-                EqualsValueClauseCheck(node, semanticModel, assignedToReadonlyFieldOrProperty, reportDiagnostic, filePath, cancellationToken);
+                EqualsValueClauseCheck(equalsValueClauseSyntax, semanticModel, assignedToReadonlyFieldOrProperty, reportDiagnostic, filePath, cancellationToken);
                 return;
             }
 
             // object = true ? 0 : obj
-            if (node is ConditionalExpressionSyntax)
+            if (node is ConditionalExpressionSyntax conditionalExpressionSyntax)
             {
-                ConditionalExpressionCheck(node, semanticModel, reportDiagnostic, filePath, cancellationToken);
+                ConditionalExpressionCheck(conditionalExpressionSyntax, semanticModel, reportDiagnostic, filePath, cancellationToken);
                 return;
             }
 
             // string a = $"{1}";
-            if (node is InterpolationSyntax) {
-                InterpolationCheck(node, semanticModel, reportDiagnostic, filePath, cancellationToken);
+            if (node is InterpolationSyntax interpolationSyntax) {
+                InterpolationCheck(interpolationSyntax, semanticModel, reportDiagnostic, filePath, cancellationToken);
                 return;
             }
 
             // var f = (object)
-            if (node is CastExpressionSyntax)
+            if (node is CastExpressionSyntax castExpressionSyntax)
             {
-                CastExpressionCheck(node, semanticModel, reportDiagnostic, filePath, cancellationToken);
+                CastExpressionCheck(castExpressionSyntax, semanticModel, reportDiagnostic, filePath, cancellationToken);
                 return;
             }
 
             // object Foo => 1
-            if (node is ArrowExpressionClauseSyntax)
+            if (node is ArrowExpressionClauseSyntax arrowExpressionClauseSyntax)
             {
-                ArrowExpressionCheck(node, semanticModel, assignedToReadonlyFieldOrProperty, reportDiagnostic, filePath, cancellationToken);
+                ArrowExpressionCheck(arrowExpressionClauseSyntax, semanticModel, assignedToReadonlyFieldOrProperty, reportDiagnostic, filePath, cancellationToken);
                 return;
             }
         }
 
-        private static void ReturnStatementExpressionCheck(SyntaxNode node, SemanticModel semanticModel, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
+        private static void ReturnStatementExpressionCheck(ReturnStatementSyntax returnStatementExpression, SemanticModel semanticModel, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
         {
-            var returnStatementExpression = node as ReturnStatementSyntax;
             if (returnStatementExpression.Expression != null)
             {
                 var returnConversionInfo = semanticModel.GetConversion(returnStatementExpression.Expression, cancellationToken);
@@ -132,9 +131,8 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
             }
         }
 
-        private static void YieldReturnStatementExpressionCheck(SyntaxNode node, SemanticModel semanticModel, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
+        private static void YieldReturnStatementExpressionCheck(YieldStatementSyntax yieldExpression, SemanticModel semanticModel, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
         {
-            var yieldExpression = node as YieldStatementSyntax;
             if (yieldExpression.Expression != null)
             {
                 var returnConversionInfo = semanticModel.GetConversion(yieldExpression.Expression, cancellationToken);
@@ -142,9 +140,8 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
             }
         }
 
-        private static void ArgumentSyntaxCheck(SyntaxNode node, SemanticModel semanticModel, bool isAssignmentToReadonly, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
+        private static void ArgumentSyntaxCheck(ArgumentSyntax argument, SemanticModel semanticModel, bool isAssignmentToReadonly, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
         {
-            var argument = node as ArgumentSyntax;
             if (argument.Expression != null)
             {
                 var argumentTypeInfo = semanticModel.GetTypeInfo(argument.Expression, cancellationToken);
@@ -154,10 +151,8 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
             }
         }
 
-        private static void BinaryExpressionCheck(SyntaxNode node, SemanticModel semanticModel, bool isAssignmentToReadonly, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
+        private static void BinaryExpressionCheck(BinaryExpressionSyntax binaryExpression, SemanticModel semanticModel, bool isAssignmentToReadonly, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
         {
-            var binaryExpression = node as BinaryExpressionSyntax;
-
             // as expression
             if (binaryExpression.IsKind(SyntaxKind.AsExpression) && binaryExpression.Left != null && binaryExpression.Right != null)
             {
@@ -183,9 +178,8 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
             }
         }
 
-        private static void InterpolationCheck(SyntaxNode node, SemanticModel semanticModel, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
+        private static void InterpolationCheck(InterpolationSyntax interpolation, SemanticModel semanticModel, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
         {
-            var interpolation = node as InterpolationSyntax;
             var typeInfo = semanticModel.GetTypeInfo(interpolation.Expression, cancellationToken);
             if (typeInfo.Type?.IsValueType == true) {
                 reportDiagnostic(Diagnostic.Create(ValueTypeToReferenceTypeConversionRule, interpolation.Expression.GetLocation(), EmptyMessageArgs));
@@ -193,9 +187,8 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
             }
         }
 
-        private static void CastExpressionCheck(SyntaxNode node, SemanticModel semanticModel, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
+        private static void CastExpressionCheck(CastExpressionSyntax castExpression, SemanticModel semanticModel, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
         {
-            var castExpression = node as CastExpressionSyntax;
             if (castExpression.Expression != null)
             {
                 var castTypeInfo = semanticModel.GetTypeInfo(castExpression, cancellationToken);
@@ -208,10 +201,8 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
             }
         }
 
-        private static void ConditionalExpressionCheck(SyntaxNode node, SemanticModel semanticModel, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
+        private static void ConditionalExpressionCheck(ConditionalExpressionSyntax conditionalExpression, SemanticModel semanticModel, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
         {
-            var conditionalExpression = node as ConditionalExpressionSyntax;
-
             var trueExp = conditionalExpression.WhenTrue;
             var falseExp = conditionalExpression.WhenFalse;
 
@@ -226,9 +217,8 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
             }
         }
 
-        private static void EqualsValueClauseCheck(SyntaxNode node, SemanticModel semanticModel, bool isAssignmentToReadonly, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
+        private static void EqualsValueClauseCheck(EqualsValueClauseSyntax initializer, SemanticModel semanticModel, bool isAssignmentToReadonly, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
         {
-            var initializer = node as EqualsValueClauseSyntax;
             if (initializer.Value != null)
             {
                 var typeInfo = semanticModel.GetTypeInfo(initializer.Value, cancellationToken);
@@ -239,10 +229,8 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
         }
 
 
-        private static void ArrowExpressionCheck(SyntaxNode node, SemanticModel semanticModel, bool isAssignmentToReadonly, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
+        private static void ArrowExpressionCheck(ArrowExpressionClauseSyntax syntax, SemanticModel semanticModel, bool isAssignmentToReadonly, Action<Diagnostic> reportDiagnostic, string filePath, CancellationToken cancellationToken)
         {
-            var syntax = node as ArrowExpressionClauseSyntax;
-
             var typeInfo = semanticModel.GetTypeInfo(syntax.Expression, cancellationToken);
             var conversionInfo = semanticModel.GetConversion(syntax.Expression, cancellationToken);
             CheckTypeConversion(conversionInfo, reportDiagnostic, syntax.Expression.GetLocation(), filePath);
@@ -265,7 +253,7 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
             if (typeInfo.ConvertedType?.TypeKind == TypeKind.Delegate)
             {
                 // new Action<Foo>(MethodGroup); should skip this one
-                var insideObjectCreation = node?.Parent?.Parent?.Parent?.Kind() == SyntaxKind.ObjectCreationExpression;
+                var insideObjectCreation = node.Parent?.Parent?.Parent?.Kind() == SyntaxKind.ObjectCreationExpression;
                 if (node is ParenthesizedLambdaExpressionSyntax || node is SimpleLambdaExpressionSyntax ||
                     node is AnonymousMethodExpressionSyntax || node is ObjectCreationExpressionSyntax ||
                     insideObjectCreation)
@@ -283,8 +271,7 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
                     }
                     else if (node.IsKind(SyntaxKind.SimpleMemberAccessExpression))
                     {
-                        var memberAccess = node as MemberAccessExpressionSyntax;
-                        if (semanticModel.GetSymbolInfo(memberAccess.Name, cancellationToken).Symbol is IMethodSymbol)
+                        if (node is MemberAccessExpressionSyntax memberAccess && semanticModel.GetSymbolInfo(memberAccess.Name, cancellationToken).Symbol is IMethodSymbol)
                         {
                             if (isAssignmentToReadonly)
                             {
@@ -298,9 +285,8 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
                             }
                         }
                     } 
-                    else if (node is ArrowExpressionClauseSyntax)
+                    else if (node is ArrowExpressionClauseSyntax arrowClause)
                     {
-                        var arrowClause = node as ArrowExpressionClauseSyntax;
                         if (semanticModel.GetSymbolInfo(arrowClause.Expression, cancellationToken).Symbol is IMethodSymbol) {
                             reportDiagnostic(Diagnostic.Create(MethodGroupAllocationRule, location, EmptyMessageArgs));
                             HeapAllocationAnalyzerEventSource.Logger.MethodGroupAllocation(filePath);

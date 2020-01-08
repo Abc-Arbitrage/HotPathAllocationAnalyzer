@@ -39,8 +39,9 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
             var cancellationToken = context.CancellationToken;
             string filePath = node.SyntaxTree.FilePath;
 
-            var invocationExpression = node as InvocationExpressionSyntax;
-
+            if (!(node is InvocationExpressionSyntax invocationExpression))
+                return;
+            
             if (semanticModel.GetSymbolInfo(invocationExpression, cancellationToken).Symbol is IMethodSymbol methodInfo)
             {
                 if (methodInfo.IsOverride)

@@ -77,7 +77,7 @@ namespace ClrHeapAllocationAnalyzer.Analyzers {
                        type.SpecialType == SpecialType.System_UIntPtr;
             }
 
-            if (conversionInfo.IsBoxing && !IsOptimizedValueType(typeInfo.Type)) {
+            if (conversionInfo.IsBoxing && !IsOptimizedValueType(typeInfo.Type ?? throw new Exception("Type is null in check conversion"))) {
                 reportDiagnostic(Diagnostic.Create(ValueTypeToReferenceTypeInAStringConcatenationRule, location, new[] { typeInfo.Type.ToDisplayString() }));
                 HeapAllocationAnalyzerEventSource.Logger.BoxingAllocationInStringConcatenation(filePath);
             }
