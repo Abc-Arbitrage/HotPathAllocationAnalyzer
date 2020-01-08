@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Project = Microsoft.CodeAnalysis.Project;
 
-namespace ConfigurationFileGenerator
+namespace ClrHeapAllocationAnalyzer.Configuration
 {
     public class ConfigurationReader
     {

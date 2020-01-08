@@ -1,16 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
-using Buildalyzer;
-using Buildalyzer.Workspaces;
-using ClrHeapAllocationAnalyzer;
 using ClrHeapAllocationAnalyzer.Helpers;
-using ClrHeapAllocationAnalyzer.Support;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace ConfigurationFileGenerator
+namespace ClrHeapAllocationAnalyzer.Configuration
 {
     class Program
     {

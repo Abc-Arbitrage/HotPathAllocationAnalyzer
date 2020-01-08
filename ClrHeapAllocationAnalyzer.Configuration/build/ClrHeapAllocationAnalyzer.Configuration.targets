@@ -1,0 +1,14 @@
+<Project>
+    <PropertyGroup>
+        <ClrHeapAllocationAnalyzerConfigurationOutputPath>$(MSBuildProjectDirectory)</ClrHeapAllocationAnalyzerConfigurationOutputPath>
+        <ClrHeapAllocationAnalyzerConfigurationBinary>$(PkgClrHeapAllocationAnalyzer_Configuration)/bin/ClrHeapAllocationAnalyzer.Configuration.exe</ClrHeapAllocationAnalyzerConfigurationBinary>
+    </PropertyGroup>
+
+    <Target Name="GenerateAnalyzerConfiguration"
+            BeforeTargets="CoreCompile"
+            Inputs="@(Compile)"
+            Outputs="$(ClrHeapAllocationAnalyzerConfigurationOutputPath)/whitelist.txt">
+            <Exec Command="$(ClrHeapAllocationAnalyzerConfigurationBinary) $(ClrHeapAllocationAnalyzerConfigurationOutputPath)" />
+    </Target>
+
+</Project>

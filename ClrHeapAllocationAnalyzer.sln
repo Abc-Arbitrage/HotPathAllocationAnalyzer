@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClrHeapAllocationsAnalyzer.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClrHeapAllocationAnalyzer", "ClrHeapAllocationsAnalyzer\ClrHeapAllocationAnalyzer.csproj", "{EAF46154-6613-4CD6-BE70-9015FF94F9CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigurationFileGenerator", "ConfigurationFileGenerator\ConfigurationFileGenerator.csproj", "{F91314DA-FD70-4170-B7B8-765A66331751}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClrHeapAllocationAnalyzer.Configuration", "ClrHeapAllocationAnalyzer.Configuration\ClrHeapAllocationAnalyzer.Configuration.csproj", "{F91314DA-FD70-4170-B7B8-765A66331751}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
