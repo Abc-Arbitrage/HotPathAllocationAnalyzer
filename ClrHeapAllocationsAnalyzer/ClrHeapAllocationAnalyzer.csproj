@@ -8,7 +8,7 @@
 
   <PropertyGroup>
     <PackageId>ClrHeapAllocationAnalyzer</PackageId>
-    <PackageVersion>2.0.0.8</PackageVersion>
+    <PackageVersion>2.0.0.9</PackageVersion>
     <Authors>mjsabby</Authors>
     <PackageLicenseUrl>https://github.com/Microsoft/RoslynClrHeapAllocationAnalyzer/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/Microsoft/RoslynClrHeapAllocationAnalyzer</PackageProjectUrl>

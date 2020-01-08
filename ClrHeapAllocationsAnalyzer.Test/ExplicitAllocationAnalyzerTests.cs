@@ -103,6 +103,38 @@ var noAllocation = new DateTime();";
             // Diagnostic: (3,18): info HeapAnalyzerExplicitNewObjectRule: Explicit new reference type allocation
             AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewObjectRule.Id, line: 3, character: 18);
         }
+        
+        [TestMethod]
+        public void ExplicitAllocation_ObjectCreationExpressionSyntax2()
+        {
+            var sampleProgram =
+@"using System;
+using System.Collections.Generic;
+using ClrHeapAllocationAnalyzer.Support;
+
+    class Foo
+    {
+        [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
+        private static void Bar()
+        {
+            var data = new DateTime();
+        }
+
+        [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
+        private static void Bis()
+        {
+            var data = new List<int>();
+        }
+    }
+";
+
+            var analyser = new ExplicitAllocationAnalyzer();
+            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ObjectCreationExpression));
+
+            Assert.AreEqual(1, info.Allocations.Count);
+            // Diagnostic: (3,18): info HeapAnalyzerExplicitNewObjectRule: Explicit new reference type allocation
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewObjectRule.Id, line: 16, character: 24);
+        }
 
         [TestMethod]
         public void ExplicitAllocation_LetClauseSyntax()
