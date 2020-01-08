@@ -25,6 +25,56 @@ namespace ClrHeapAllocationAnalyzer.Test
             
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(1, info.Allocations.Count);
+        }    
+        
+        [TestMethod]
+        public void AnalyzeProgram_AllowCallingSafePropertyGetter()
+        {
+            //language=cs
+            const string sample =
+                @"using System;
+                using System.Collections.Generic;
+                using ClrHeapAllocationAnalyzer;
+                
+                public class Foo
+                {
+                    public List<int> Data { [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation] get; } = new List<int>();
+                }
+                
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
+                public List<int> PerfCritical(Foo foo) {
+                    return foo.Data;
+                }";
+
+            var analyser = new ExplicitAllocationAnalyzer();
+            
+            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectCreationExpression));
+            Assert.AreEqual(0, info.Allocations.Count);
+        }
+        
+        [TestMethod]
+        public void AnalyzeProgram_NotAllowCallingUnSafePropertyGetter()
+        {
+            //language=cs
+            const string sample =
+                @"using System;
+                using System.Collections.Generic;
+                using ClrHeapAllocationAnalyzer;
+                
+                public class Foo
+                {
+                    public List<int> Data { [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation] get { return new List<int>(); } }
+                }
+                
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
+                public List<int> PerfCritical(Foo foo) {
+                    return foo.Data;
+                }";
+
+            var analyser = new ExplicitAllocationAnalyzer();
+            
+            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectCreationExpression));
+            Assert.AreEqual(1, info.Allocations.Count);
         }
                 
         [TestMethod]

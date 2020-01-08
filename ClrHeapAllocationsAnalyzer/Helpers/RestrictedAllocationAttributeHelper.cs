@@ -28,10 +28,10 @@ namespace ClrHeapAllocationAnalyzer.Helpers
                         return HasRestrictedAllocationAttribute(method.OverriddenMethod);
                 }
 
-                if (containingSymbol is IPropertySymbol property && property.GetMethod != null)
-                {
-                    return HasRestrictedAllocationAttribute(property.GetMethod);
-                }
+                // if (containingSymbol is IPropertySymbol property && property.GetMethod != null)
+                // {
+                //     return HasRestrictedAllocationAttribute(property.GetMethod);
+                // }
 
                 return false;
             }

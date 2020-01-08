@@ -43,7 +43,7 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
 
             if (context.Node is MemberAccessExpressionSyntax memberAccessExpression && semanticModel.GetSymbolInfo(memberAccessExpression, cancellationToken).Symbol is IPropertySymbol propertyInfo)
             {
-                if (!RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(propertyInfo) && !IsWhitelisted(propertyInfo) && !IsInSafeScope(semanticModel, memberAccessExpression))
+                if (!RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(propertyInfo) && !RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(propertyInfo.GetMethod) && !IsWhitelisted(propertyInfo) && !IsInSafeScope(semanticModel, memberAccessExpression))
                     ReportError(context, memberAccessExpression, UnsafePropertyAccessRule);
             }
         }
