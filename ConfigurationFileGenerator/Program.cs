@@ -4,6 +4,7 @@ using System.Threading;
 using Buildalyzer;
 using Buildalyzer.Workspaces;
 using ClrHeapAllocationAnalyzer;
+using ClrHeapAllocationAnalyzer.Helpers;
 using ClrHeapAllocationAnalyzer.Support;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

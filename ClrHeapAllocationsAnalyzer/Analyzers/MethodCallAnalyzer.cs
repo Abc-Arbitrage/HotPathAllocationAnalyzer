@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using ClrHeapAllocationAnalyzer.Helpers;
 using ClrHeapAllocationAnalyzer.Support;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -87,7 +88,8 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
 
         private static bool IsSafeScopeType(ITypeSymbol type)
         {
-            return type.Name == nameof(AllocationFreeScope) && type.ContainingNamespace.Name == typeof(AllocationFreeScope).Namespace;
+            return type.Name == nameof(AllocationFreeScope) 
+                   && type.ContainingNamespace.ToDisplayString() == typeof(AllocationFreeScope).Namespace;
         }
 
         private static void ReportError(SyntaxNodeAnalysisContext context, SyntaxNode node, DiagnosticDescriptor externalMethodCallRule)

@@ -1,6 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using ClrHeapAllocationAnalyzer.Support;
+using Microsoft.CodeAnalysis;
 
-namespace ClrHeapAllocationAnalyzer.Support
+namespace ClrHeapAllocationAnalyzer.Helpers
 {
     internal static class AllocationRules
     {
@@ -11,7 +12,7 @@ namespace ClrHeapAllocationAnalyzer.Support
         public static bool IsRestrictedAllocationAttribute(AttributeData attribute)
         {
             return attribute.AttributeClass.Name == nameof(RestrictedAllocation)
-                && attribute.AttributeClass.ContainingNamespace.Name == typeof(RestrictedAllocation).Namespace;
+                && attribute.AttributeClass.ContainingNamespace.ToDisplayString() == typeof(RestrictedAllocation).Namespace;
         }
     }
 }

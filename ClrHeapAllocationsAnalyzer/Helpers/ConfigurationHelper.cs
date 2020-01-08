@@ -3,39 +3,42 @@ using System.IO;
 using System.Linq;
 using ClrHeapAllocationAnalyzer.Support;
 
-internal static class ConfigurationHelper
+namespace ClrHeapAllocationAnalyzer.Helpers
 {
-    public static void ReadConfiguration(string filePath, Action<string> AddToWhiteList)
+    internal static class ConfigurationHelper
     {
-        if (!string.IsNullOrEmpty(filePath))
+        public static void ReadConfiguration(string filePath, Action<string> AddToWhiteList)
         {
-            var configDir = FindConfigurationDirectory(filePath);
-            if (!string.IsNullOrEmpty(configDir))
-            {
-                var whitelist = File.ReadAllLines(Path.Combine(configDir, AllocationRules.WhitelistFileName));
-
-                foreach (var item in whitelist)
+			if (!string.IsNullOrEmpty(filePath))
+			{
+				var configDir = FindConfigurationDirectory(filePath);
+				if (!string.IsNullOrEmpty(configDir))
                 {
-                    AddToWhiteList(item);
+                    var whitelist = File.ReadAllLines(Path.Combine(configDir, AllocationRules.WhitelistFileName));
+
+                    foreach (var item in whitelist)
+                    {
+                        AddToWhiteList(item);
+                    }
                 }
             }
         }
-    }
     
-    private static string FindConfigurationDirectory(string filePath)
-    {
-        if (string.IsNullOrEmpty(filePath))
-            return null;
-            
-        var directory = Directory.Exists(filePath) ? filePath : Path.GetDirectoryName(filePath);
-
-        if (Directory.Exists(Path.Combine(directory, AllocationRules.ConfigurationDirectoryName)))
+        private static string FindConfigurationDirectory(string filePath)
         {
-            var referencesFile = Directory.EnumerateFiles(Path.Combine(directory, AllocationRules.ConfigurationDirectoryName)).FirstOrDefault(x => x.EndsWith(AllocationRules.WhitelistFileName));
-            if (referencesFile != null)
-                return Path.Combine(directory, AllocationRules.ConfigurationDirectoryName);
-        }
+            if (string.IsNullOrEmpty(filePath))
+                return null;
+            
+            var directory = Directory.Exists(filePath) ? filePath : Path.GetDirectoryName(filePath);
 
-        return FindConfigurationDirectory(Directory.GetParent(directory)?.FullName);
-    }    
+            if (Directory.Exists(Path.Combine(directory, AllocationRules.ConfigurationDirectoryName)))
+            {
+                var referencesFile = Directory.EnumerateFiles(Path.Combine(directory, AllocationRules.ConfigurationDirectoryName)).FirstOrDefault(x => x.EndsWith(AllocationRules.WhitelistFileName));
+                if (referencesFile != null)
+                    return Path.Combine(directory, AllocationRules.ConfigurationDirectoryName);
+            }
+
+            return FindConfigurationDirectory(Directory.GetParent(directory)?.FullName);
+        }    
+    }
 }

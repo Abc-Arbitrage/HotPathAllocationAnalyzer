@@ -14,13 +14,13 @@ namespace ClrHeapAllocationAnalyzer.Test
             //language=cs
             const string sample =
                 @"using System;
-                using ClrHeapAllocationAnalyzer;
+                using ClrHeapAllocationAnalyzer.Support;
                 
                 public string CreateString() {
                     return new string('a', 5);
                 }
 
-                [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                 public void PerfCritical() {
                     string str = CreateString();
                 }";
@@ -37,14 +37,14 @@ namespace ClrHeapAllocationAnalyzer.Test
             //language=cs
             const string sample =
                 @"using System;
-                using ClrHeapAllocationAnalyzer;
+                using ClrHeapAllocationAnalyzer.Support;
                 
-                [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                 public int StringLength(string str) {
                     return 0;
                 }
 
-                [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                 public void PerfCritical(string str) {
                     int l = StringLength(str);
                 }";
@@ -61,11 +61,11 @@ namespace ClrHeapAllocationAnalyzer.Test
             //language=cs
             const string sample =
                 @"using System;
-                using ClrHeapAllocationAnalyzer;
+                using ClrHeapAllocationAnalyzer.Support;
 
                 interface IFoo
                 {
-                    [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                    [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                     int StringLength(string str);
                 }
 
@@ -77,7 +77,7 @@ namespace ClrHeapAllocationAnalyzer.Test
                      }
                 }
                 
-                [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                 public void PerfCritical(Foo foo, string str)
                 {
                     int l = foo.StringLength(str);
@@ -95,9 +95,9 @@ namespace ClrHeapAllocationAnalyzer.Test
             //language=cs
             const string sample =
                 @"using System;
-                using ClrHeapAllocationAnalyzer;
+                using ClrHeapAllocationAnalyzer.Support;
                 
-                [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                 public string PerfCritical(string str) {
                     return string.Copy(str);
                 }";
@@ -114,9 +114,9 @@ namespace ClrHeapAllocationAnalyzer.Test
             //language=cs
             const string sample =
                 @"using System;
-                using ClrHeapAllocationAnalyzer;
+                using ClrHeapAllocationAnalyzer.Support;
                 
-                [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                 public bool PerfCritical(string str)
                  {
                     using (new AllocationFreeScope())
@@ -137,9 +137,9 @@ namespace ClrHeapAllocationAnalyzer.Test
             //language=cs
             const string sample =
                 @"using System;
-                using ClrHeapAllocationAnalyzer;
+                using ClrHeapAllocationAnalyzer.Support;
                 
-                [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                 public bool PerfCritical(string str)
                 {                                     
                     using var safeScope = new AllocationFreeScope();
@@ -159,9 +159,9 @@ namespace ClrHeapAllocationAnalyzer.Test
             //language=cs
             const string sample =
                 @"using System;
-                using ClrHeapAllocationAnalyzer;
+                using ClrHeapAllocationAnalyzer.Support;
                 
-                [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                 public bool PerfCritical(string str)
                 {                 
                     var result = str.IsNormalized();                    
@@ -181,9 +181,9 @@ namespace ClrHeapAllocationAnalyzer.Test
             //language=cs
             const string sample =
                 @"using System;
-                using ClrHeapAllocationAnalyzer;
+                using ClrHeapAllocationAnalyzer.Support;
                 
-                [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                 public bool PerfCritical(string str) {
                     return str.Contains(""zig"");
                 }";
@@ -203,9 +203,9 @@ namespace ClrHeapAllocationAnalyzer.Test
             //language=cs
             const string sample =
                 @"using System;
-                using ClrHeapAllocationAnalyzer;                
+                using ClrHeapAllocationAnalyzer.Support;                
                 
-                [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                 public bool PerfCritical(string str) {
                     return str.IsNormalized();
                 }";

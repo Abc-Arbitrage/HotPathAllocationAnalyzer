@@ -1,4 +1,5 @@
-﻿using ClrHeapAllocationAnalyzer.Support;
+﻿using ClrHeapAllocationAnalyzer.Helpers;
+using ClrHeapAllocationAnalyzer.Support;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 

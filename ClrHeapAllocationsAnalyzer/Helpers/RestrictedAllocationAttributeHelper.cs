@@ -1,7 +1,7 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace ClrHeapAllocationAnalyzer.Support
+namespace ClrHeapAllocationAnalyzer.Helpers
 {
     static internal class RestrictedAllocationAttributeHelper
     {

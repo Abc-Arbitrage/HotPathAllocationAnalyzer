@@ -4,7 +4,7 @@
 
     internal sealed class HeapAllocationAnalyzerEventSource : EventSource
     {
-        public static HeapAllocationAnalyzerEventSource Logger = new HeapAllocationAnalyzerEventSource();
+        public static readonly HeapAllocationAnalyzerEventSource Logger = new HeapAllocationAnalyzerEventSource();
 
         public void StringConcatenationAllocation(string filePath)
         {

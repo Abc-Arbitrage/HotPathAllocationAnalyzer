@@ -1,6 +1,6 @@
 using Microsoft.CodeAnalysis;
 
-namespace ClrHeapAllocationAnalyzer.Support
+namespace ClrHeapAllocationAnalyzer.Helpers
 {
     public static class MethodSymbolSerializer
     {

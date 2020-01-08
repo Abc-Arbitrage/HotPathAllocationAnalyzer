@@ -29,9 +29,9 @@ namespace ClrHeapAllocationAnalyzer.Test
         {
             const string sample =
                 @"using System;
-                using ClrHeapAllocationAnalyzer;
+                using ClrHeapAllocationAnalyzer.Support;
 
-                [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                 public void CreateString() {
                     string str = new string('a', 5);
                 }";
@@ -48,11 +48,11 @@ namespace ClrHeapAllocationAnalyzer.Test
             //language=cs
             const string sample =
                 @"using System;
-                using ClrHeapAllocationAnalyzer;
+                using ClrHeapAllocationAnalyzer.Support;
 
                 interface IFoo     
                 {
-                    [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                    [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                     void CreateString();
                 }
 
@@ -75,11 +75,11 @@ namespace ClrHeapAllocationAnalyzer.Test
             //language=cs
             const string sample =
                 @"using System;
-                using ClrHeapAllocationAnalyzer;
+                using ClrHeapAllocationAnalyzer.Support;
 
                 interface IFoo     
                 {
-                    [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                    [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                     void CreateString();
                 }
 
@@ -102,11 +102,11 @@ namespace ClrHeapAllocationAnalyzer.Test
             //language=cs
             const string sample =
                 @"using System;
-                using ClrHeapAllocationAnalyzer;
+                using ClrHeapAllocationAnalyzer.Support;
 
                 class BaseFoo     
                 {
-                    [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                    [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                     public virtual void CreateString() {}
                 }
 
@@ -129,11 +129,11 @@ namespace ClrHeapAllocationAnalyzer.Test
             //language=cs
             const string sample =
                 @"using System;
-                using ClrHeapAllocationAnalyzer;
+                using ClrHeapAllocationAnalyzer.Support;
 
                 class BaseFoo     
                 {
-                    [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                    [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                     public virtual void CreateString() {}
                 }
 
@@ -161,11 +161,11 @@ namespace ClrHeapAllocationAnalyzer.Test
             //language=cs
             const string sample =
                 @"using System;
-                using ClrHeapAllocationAnalyzer;
+                using ClrHeapAllocationAnalyzer.Support;
 
                 interface IFoo     
                 {
-                    [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                    [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                     void CreateString();
                 }
 

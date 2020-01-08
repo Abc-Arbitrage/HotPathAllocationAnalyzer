@@ -16,7 +16,7 @@ namespace ClrHeapAllocationAnalyzer.Test
                 @"using System;
                 using ClrHeapAllocationAnalyzer;
                 
-                [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                 public int PerfCritical(string str) {
                     return str.Length;
                 }";
@@ -37,7 +37,7 @@ namespace ClrHeapAllocationAnalyzer.Test
                 
                 public interface IFoo 
                 {                
-                    string Name { [ClrHeapAllocationAnalyzer.RestrictedAllocation] get; }
+                    string Name { [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation] get; }
                 }            
                     
                 public class Foo : IFoo
@@ -45,7 +45,7 @@ namespace ClrHeapAllocationAnalyzer.Test
                     public string Name { get; }
                 }
                 
-                [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                 public string PerfCritical(Foo f) {
                     return f.Name;
                 }";
@@ -62,11 +62,11 @@ namespace ClrHeapAllocationAnalyzer.Test
             //language=cs
             const string sample =
                 @"using System;
-                using ClrHeapAllocationAnalyzer;
+                using ClrHeapAllocationAnalyzer.Support;
                 
                 public class FooBase 
                 {                
-                    public virtual string Name { [ClrHeapAllocationAnalyzer.RestrictedAllocation] get; }
+                    public virtual string Name { [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation] get; }
                 }            
                     
                 public class Foo : FooBase
@@ -74,7 +74,7 @@ namespace ClrHeapAllocationAnalyzer.Test
                     public override string Name { get; }
                 }
                 
-                [ClrHeapAllocationAnalyzer.RestrictedAllocation]
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                 public string PerfCritical(Foo f) {
                     return f.Name;
                 }";
