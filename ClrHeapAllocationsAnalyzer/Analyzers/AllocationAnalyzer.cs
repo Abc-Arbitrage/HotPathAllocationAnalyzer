@@ -36,7 +36,7 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
         {
             InitializeConfiguration(context);
             
-            var analyze = _forceEnableAnalysis || RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(context.ContainingSymbol);
+            var analyze = _forceEnableAnalysis || (RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(context.ContainingSymbol) && !RestrictedAllocationAttributeHelper.HasRestrictedAllocationIgnoreAttribute(context.ContainingSymbol));
             if (analyze)
                 AnalyzeNode(context);
         }
