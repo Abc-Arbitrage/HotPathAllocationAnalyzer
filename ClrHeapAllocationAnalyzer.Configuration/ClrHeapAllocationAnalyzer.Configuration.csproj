@@ -4,8 +4,21 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp3.0</TargetFramework>
         <RootNamespace>ConfigurationFileGenerator</RootNamespace>
-        <PackageType></PackageType>
+        <PackageId>ClrHeapAllocationAnalyzer.Configuration</PackageId>
+        <PackageVersion>1.0.0</PackageVersion>
+        <PackageLicenseUrl>https://github.com/Abc-Arbitrage/RoslynClrHeapAllocationAnalyzer/blob/master/LICENSE</PackageLicenseUrl>
+        <PackageProjectUrl>https://github.com/Abc-Arbitrage/RoslynClrHeapAllocationAnalyzer</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Abc-Arbitrage/RoslynClrHeapAllocationAnalyzer</RepositoryUrl>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <Description>
+            
+        </Description>
+        <PackageReleaseNotes></PackageReleaseNotes>
+        <Copyright></Copyright>
+        <PackageTags></PackageTags>
+        <NoPackageAnalysis>true</NoPackageAnalysis>
     </PropertyGroup>
+
 
     <ItemGroup>
         <PackageReference Include="Buildalyzer" Version="2.4.0" />
@@ -19,8 +32,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="build\**"  Pack="true" PackagePath=""/>
+        <None Update="build\**" Pack="true" PackagePath="" />
         <None Include="$(OutputPath)\publish\**" Pack="true" PackagePath="bin" />
     </ItemGroup>
 
+    <Target Name="ReplaceVersion" BeforeTargets="CoreCompile">
+        <XmlPoke XmlInputPath="build\ClrHeapAllocationAnalyzer.Configuration.targets" Value="$(PackageVersion)" Query="Project/PropertyGroup/ClrHeapAllocationAnalyzerConfigurationVersion" />
+    </Target>
+    
 </Project>

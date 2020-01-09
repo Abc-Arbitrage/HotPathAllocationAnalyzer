@@ -1,15 +1,10 @@
 <Project>
-    <PropertyGroup>
-        <ClrHeapAllocationAnalyzerConfigurationOutputPath>$(MSBuildProjectDirectory)</ClrHeapAllocationAnalyzerConfigurationOutputPath>
-        <ClrHeapAllocationAnalyzerConfigurationBinary>$(PkgClrHeapAllocationAnalyzer_Configuration)/bin/ClrHeapAllocationAnalyzer.Configuration.exe</ClrHeapAllocationAnalyzerConfigurationBinary>
-    </PropertyGroup>
-
-    <Target Name="GenerateAnalyzerConfiguration"
-            BeforeTargets="CoreCompile"
-            Condition="'$(IsRunningClrHeapAllocationAnalyzerConfiguration)' == ''"
-            Inputs="@(Compile)"
-            Outputs="$(ClrHeapAllocationAnalyzerConfigurationOutputPath)/whitelist.txt">
-            <Exec Command="$(ClrHeapAllocationAnalyzerConfigurationBinary) $(ClrHeapAllocationAnalyzerConfigurationOutputPath)" />
-    </Target>
-
+  <PropertyGroup>
+    <ClrHeapAllocationAnalyzerConfigurationVersion>1.0.0</ClrHeapAllocationAnalyzerConfigurationVersion>
+    <ClrHeapAllocationAnalyzerConfigurationOutputPath>$(MSBuildProjectDirectory)</ClrHeapAllocationAnalyzerConfigurationOutputPath>
+    <ClrHeapAllocationAnalyzerConfigurationBinary>$(NuGetPackageRoot)clrheapallocationanalyzer.configuration/$(ClrHeapAllocationAnalyzerConfigurationVersion)/bin/ClrHeapAllocationAnalyzer.Configuration.exe</ClrHeapAllocationAnalyzerConfigurationBinary>
+  </PropertyGroup>
+  <Target Name="GenerateAnalyzerConfiguration" BeforeTargets="CoreCompile" Condition="'$(IsRunningClrHeapAllocationAnalyzerConfiguration)' == ''" Inputs="@(Compile)" Outputs="$(ClrHeapAllocationAnalyzerConfigurationOutputPath)/whitelist.txt">
+    <Exec Command="$(ClrHeapAllocationAnalyzerConfigurationBinary) $(ClrHeapAllocationAnalyzerConfigurationOutputPath)" />
+  </Target>
 </Project>
