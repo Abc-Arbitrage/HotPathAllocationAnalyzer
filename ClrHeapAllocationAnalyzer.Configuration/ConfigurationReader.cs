@@ -37,7 +37,7 @@ namespace ClrHeapAllocationAnalyzer.Configuration
 
         public async Task<IEnumerable<string>> GenerateWhitelistAsync(CancellationToken token)
         {
-            var whiteListSymbols = new List<string>();
+            var whiteListSymbols = new HashSet<string>();
             
             foreach (var document in _configurationProject.Documents)
             {
@@ -47,7 +47,7 @@ namespace ClrHeapAllocationAnalyzer.Configuration
                 if (syntaxTree != null && semanticModel != null)
                 {
                     var configurationClasses = GetConfigurationClasses(syntaxTree.GetRoot(token), semanticModel);
-                    whiteListSymbols.AddRange(configurationClasses.SelectMany(x => GenerateWhitelistSymbols(x, semanticModel, token)));
+                    whiteListSymbols.UnionWith(configurationClasses.SelectMany(x => GenerateWhitelistSymbols(x, semanticModel, token)));
                 }
             }
 
