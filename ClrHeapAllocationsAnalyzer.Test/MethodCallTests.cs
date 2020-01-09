@@ -216,6 +216,52 @@ namespace ClrHeapAllocationAnalyzer.Test
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression), filePath: currentFilePath);
             Assert.AreEqual(0, info.Allocations.Count);
         }
+
+        [TestMethod]
+        public void AnalyzeProgram_AllowCallingGenericWhitelistedMethods()
+        {
+            //language=cs
+            const string sample =
+                @"
+                    using System;
+                    using System.Collections.Generic;
+                    using ClrHeapAllocationAnalyzer.Support;                
+                
+                    [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
+                    public int PerfCritical(List<int> l) {
+                        return l.IndexOf(10);
+                    }
+                ";
+            
+            var analyser = new MethodCallAnalyzer();
+            analyser.AddToWhiteList("System.Collections.Generic.List<T>.IndexOf(T)");
+            
+            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            Assert.AreEqual(0, info.Allocations.Count);
+        }
+        
+        [TestMethod]
+        public void AnalyzeProgram_NotAllowCallingNonGenericWhitelistedMethods()
+        {
+            //language=cs
+            const string sample =
+                @"
+                    using System;
+                    using System.Collections.Generic;
+                    using ClrHeapAllocationAnalyzer.Support;                
+                
+                    [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
+                    public int PerfCritical<T>(List<T> l, T val) {
+                        return l.IndexOf(val);
+                    }
+                ";
+            
+            var analyser = new MethodCallAnalyzer();
+            analyser.AddToWhiteList("System.Collections.Generic.List<double>.IndexOf(double)");
+            
+            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            Assert.AreEqual(1, info.Allocations.Count);
+        }
         
     }
 }
