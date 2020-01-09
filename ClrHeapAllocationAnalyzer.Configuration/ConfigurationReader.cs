@@ -55,9 +55,9 @@ namespace ClrHeapAllocationAnalyzer.Configuration
         }
 
         private static IEnumerable<string> GenerateWhitelistSymbols(ClassDeclarationSyntax classDecl, SemanticModel semanticModel, CancellationToken token)
-            => classDecl.Members.OfType<MethodDeclarationSyntax>().Select(m => GenerateWhitelistSymbol(m, semanticModel, token));
+            => classDecl.Members.OfType<MethodDeclarationSyntax>().SelectMany(m => GenerateWhitelistSymbol(m, semanticModel, token));
 
-        private static string GenerateWhitelistSymbol(BaseMethodDeclarationSyntax methodDecl, SemanticModel semanticModel, CancellationToken token)
+        private static IEnumerable<string> GenerateWhitelistSymbol(BaseMethodDeclarationSyntax methodDecl, SemanticModel semanticModel, CancellationToken token)
         {
             var body = methodDecl.Body;
             var statements = body.Statements;
@@ -81,26 +81,21 @@ namespace ClrHeapAllocationAnalyzer.Configuration
                 if (lambdaExpr == null)
                     continue;
 
-                switch (lambdaExpr.Body)
+                var childSymbol = semanticModel.GetSymbolInfo(lambdaExpr.Body, token).Symbol;
+                switch (childSymbol)
                 {
-                    case InvocationExpressionSyntax methodExpr:
+                    case IMethodSymbol methodExpr:
                     {
-                        var methodSymbol = semanticModel.GetSymbolInfo(methodExpr, token).Symbol;
-                        if (methodSymbol != null)
-                            return MethodSymbolSerializer.Serialize(methodSymbol as IMethodSymbol);
+                        yield return MethodSymbolSerializer.Serialize(methodExpr);
                         break;
                     }
-                    case MemberAccessExpressionSyntax memberExpr:
+                    case IPropertySymbol memberExpr:
                     {
-                        var propertySymbol = semanticModel.GetSymbolInfo(memberExpr, token).Symbol;
-                        if (propertySymbol != null)
-                            return MethodSymbolSerializer.Serialize(propertySymbol as IPropertySymbol);
+                        yield return MethodSymbolSerializer.Serialize(memberExpr);
                         break;
                     }
                 }
             }
-
-            return null;
         }
 
         private static IEnumerable<ClassDeclarationSyntax> GetConfigurationClasses(SyntaxNode syntaxNode, SemanticModel model)
