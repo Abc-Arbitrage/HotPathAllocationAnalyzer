@@ -6,6 +6,7 @@
 
     <Target Name="GenerateAnalyzerConfiguration"
             BeforeTargets="CoreCompile"
+            Condition="'$(IsRunningClrHeapAllocationAnalyzerConfiguration)' == ''"
             Inputs="@(Compile)"
             Outputs="$(ClrHeapAllocationAnalyzerConfigurationOutputPath)/whitelist.txt">
             <Exec Command="$(ClrHeapAllocationAnalyzerConfigurationBinary) $(ClrHeapAllocationAnalyzerConfigurationOutputPath)" />

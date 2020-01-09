@@ -29,7 +29,8 @@ namespace ClrHeapAllocationAnalyzer.Configuration
             
             var manager = new AnalyzerManager();
             var analyzer = manager.GetProject(csProjPath);
-                   
+            analyzer.SetGlobalProperty("IsRunningClrHeapAllocationAnalyzerConfiguration", "true");
+            
             var workspace = new AdhocWorkspace();
             _configurationProject = analyzer.AddToWorkspace(workspace);
         }
