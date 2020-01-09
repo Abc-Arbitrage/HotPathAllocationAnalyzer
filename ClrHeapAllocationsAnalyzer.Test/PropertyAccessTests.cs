@@ -134,5 +134,29 @@ namespace ClrHeapAllocationAnalyzer.Test
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(0, info.Allocations.Count);
         }
+
+        [TestMethod]
+        public void AnalyzeProgram_AllowCallingGenericWhitelistedProperty()
+        {
+            //language=cs
+            const string sample =
+                @"using System;
+                using ClrHeapAllocationAnalyzer;
+
+                public class DateProvider
+                {
+                    public DateTime? Date { [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation] get; }
+                }
+
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
+                public DateTime PerfCritical(DateProvider dp) {
+                    return dp.Date.Value;
+                }";
+
+            var analyser = new MethodCallAnalyzer();
+            analyser.AddToWhiteList("System.Nullable<T>.Value");
+            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            Assert.AreEqual(0, info.Allocations.Count);
+        }
     }
 }

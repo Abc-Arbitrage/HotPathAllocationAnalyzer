@@ -6,12 +6,12 @@ namespace ClrHeapAllocationAnalyzer.Helpers
     {
         public static string Serialize(IMethodSymbol symbol)
         {
-            return symbol.ToString();
+            return symbol.OriginalDefinition.ToString();
         }
         
         public static string Serialize(IPropertySymbol symbol)
         {
-            return symbol.ToString();
+            return symbol.OriginalDefinition.ToString();
         }
     }
 }

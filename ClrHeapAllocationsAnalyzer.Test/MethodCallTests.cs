@@ -216,5 +216,6 @@ namespace ClrHeapAllocationAnalyzer.Test
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression), filePath: currentFilePath);
             Assert.AreEqual(0, info.Allocations.Count);
         }
+        
     }
 }

@@ -16,5 +16,11 @@ namespace ClrHeapAllocationAnalyzer.Test
         {
             MakeSafe(() => list.Clear());
         }
+
+        public void WhitelistNullable<T>(T? arg)
+            where T: struct
+        {
+            MakeSafe(() => arg.Value); 
+        }
     }
 }
