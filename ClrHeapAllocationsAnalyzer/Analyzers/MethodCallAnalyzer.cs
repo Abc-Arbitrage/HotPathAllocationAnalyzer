@@ -37,14 +37,26 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
 
             if (context.Node is InvocationExpressionSyntax invocationExpression && semanticModel.GetSymbolInfo(invocationExpression, cancellationToken).Symbol is IMethodSymbol methodInfo)
             {
-                if (!RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(methodInfo) && !IsWhitelisted(methodInfo) && !IsInSafeScope(semanticModel, invocationExpression))
+                if (!RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(methodInfo)
+                    && !RestrictedAllocationAttributeHelper.HasRestrictedAllocationIgnoreAttribute(methodInfo)
+                    && !IsWhitelisted(methodInfo)
+                    && !IsInSafeScope(semanticModel, invocationExpression))
+                {
                     ReportError(context, invocationExpression, ExternalMethodCallRule);
+                }
             }
 
             if (context.Node is MemberAccessExpressionSyntax memberAccessExpression && semanticModel.GetSymbolInfo(memberAccessExpression, cancellationToken).Symbol is IPropertySymbol propertyInfo)
             {
-                if (!RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(propertyInfo) && !RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(propertyInfo.GetMethod) && !IsWhitelisted(propertyInfo) && !IsInSafeScope(semanticModel, memberAccessExpression))
+                if (!RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(propertyInfo)
+                    && !RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(propertyInfo.GetMethod)
+                    && !RestrictedAllocationAttributeHelper.HasRestrictedAllocationIgnoreAttribute(propertyInfo)
+                    && !RestrictedAllocationAttributeHelper.HasRestrictedAllocationIgnoreAttribute(propertyInfo.GetMethod)
+                    && !IsWhitelisted(propertyInfo)
+                    && !IsInSafeScope(semanticModel, memberAccessExpression))
+                {
                     ReportError(context, memberAccessExpression, UnsafePropertyAccessRule);
+                }
             }
         }
 
