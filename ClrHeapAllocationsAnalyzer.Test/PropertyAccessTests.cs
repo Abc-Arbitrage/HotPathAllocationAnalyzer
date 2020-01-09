@@ -158,5 +158,30 @@ namespace ClrHeapAllocationAnalyzer.Test
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(0, info.Allocations.Count);
         }
+        
+        [TestMethod]
+        public void AnalyzeProgram_ConsiderAutoPropertyAsSafe()
+        {
+            //language=cs
+            const string sample =
+                @"using System;
+                using ClrHeapAllocationAnalyzer.Support;
+                
+                public class Foo
+                {
+                    public string Name { get; set; }
+                }
+                
+                [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
+                public string PerfCritical(Foo f) 
+                {
+                    return f.Name;
+                }";
+
+            var analyser = new MethodCallAnalyzer();
+            
+            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            Assert.AreEqual(0, info.Allocations.Count);
+        }
     }
 }
