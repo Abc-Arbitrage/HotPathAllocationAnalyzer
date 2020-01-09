@@ -1,0 +1,58 @@
+using System;
+using System.Collections.Immutable;
+using System.Linq;
+using Buildalyzer;
+using Buildalyzer.Workspaces;
+using ClrHeapAllocationAnalyzer.Analyzers;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace ClrHeapAllocationAnalyzer.Test.ManualTests
+{
+    [TestClass]
+    public class TestProject : AllocationAnalyzerTests
+    {
+        [TestMethod]
+        public void AnalyzeProgram()
+        {
+            if (!System.Diagnostics.Debugger.IsAttached) 
+                return;
+            
+            var csProjPath = @"....csproj";
+            
+            var testAnalyser = new MethodCallAnalyzer();
+            
+
+            var manager = new AnalyzerManager();
+
+            var analyzer = manager.GetProject(csProjPath);
+            analyzer.SetGlobalProperty("IsRunningClrHeapAllocationAnalyzerConfiguration", "true");
+            analyzer.IgnoreFaultyImports = true;
+
+            var workspace = new AdhocWorkspace();
+            var project = analyzer.AddToWorkspace(workspace)
+                                  .WithAnalyzerReferences(new AnalyzerReference[0]);
+
+            var trees = project.Documents.Select(x => x.GetSyntaxTreeAsync().Result)
+                               .ToArray();
+
+            // Run the code tree through the analyzer and record the allocations it reports
+            var compilation = CSharpCompilation.Create(project.AssemblyName, trees, project.MetadataReferences, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+     
+            var diagnostics = compilation.GetDiagnostics();
+            if (diagnostics.Count(d => d.Severity == DiagnosticSeverity.Error) > 0)
+            {
+                var msg = "There were Errors in the sample code\n";
+                Console.WriteLine(msg);
+                foreach (var info in diagnostics)
+                    Console.WriteLine(info);
+            }
+            
+            var compilationWithAnalyzers = compilation.WithAnalyzers(ImmutableArray.Create((DiagnosticAnalyzer)testAnalyser));
+            var allocations = compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync().GetAwaiter().GetResult().Distinct(DiagnosticEqualityComparer.Instance).ToList();
+
+        }
+    }
+}

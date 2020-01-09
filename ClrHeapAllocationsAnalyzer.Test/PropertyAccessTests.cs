@@ -167,18 +167,26 @@ namespace ClrHeapAllocationAnalyzer.Test
                 @"using System;
                 using ClrHeapAllocationAnalyzer.Support;
                 
-                public class Foo
+                public abstract class FooBase
                 {
-                    public string Name { get; set; }
+                    public string Name { get; } = ""Hello"";
+                    public int[] Data { get; } = new int[10];
+                }
+                
+                public class Foo : FooBase
+                {
+                    public int[] Data { get; } = new int[10];
                 }
                 
                 [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
-                public string PerfCritical(Foo f) 
+                public int PerfCritical(Foo f) 
                 {
-                    return f.Name;
+                    return f.Name.Length + f.Data.Length;
                 }";
 
             var analyser = new MethodCallAnalyzer();
+            analyser.AddToWhiteList("string.Length");
+            analyser.AddToWhiteList("System.Array.Length");
             
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(0, info.Allocations.Count);
