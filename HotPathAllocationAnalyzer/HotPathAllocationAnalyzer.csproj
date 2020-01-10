@@ -12,9 +12,9 @@
     <PackageId>HotPathAllocationAnalyzer</PackageId>
     <PackageVersion>1.0.0</PackageVersion>
     <Authors>Abc Arbitrage, Microsoft</Authors>
-    <PackageLicenseUrl>https://github.com/Abc-Arbitrage/RoslynClrHeapAllocationAnalyzer/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>httpshttps://github.com/Abc-Arbitrage/RoslynClrHeapAllocationAnalyzer</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Abc-Arbitrage/RoslynClrHeapAllocationAnalyzer</RepositoryUrl>
+    <PackageLicenseUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>httpshttps://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</RepositoryUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Description>
       Roslyn Analyzer detecting heap allocation in *hot path*

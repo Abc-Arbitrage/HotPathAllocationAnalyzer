@@ -6,9 +6,9 @@
         <RootNamespace>HotPathAllocationAnalyzer.Configuration</RootNamespace>
         <PackageId>HotPathAllocationAnalyzer.Configuration</PackageId>
         <PackageVersion>1.0.0</PackageVersion>
-        <PackageLicenseUrl>https://github.com/Abc-Arbitrage/RoslynHotPathAllocationAnalyzer/blob/master/LICENSE</PackageLicenseUrl>
-        <PackageProjectUrl>https://github.com/Abc-Arbitrage/RoslynHotPathAllocationAnalyzer</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/Abc-Arbitrage/RoslynHotPathAllocationAnalyzer</RepositoryUrl>
+        <PackageLicenseUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer/blob/master/LICENSE</PackageLicenseUrl>
+        <PackageProjectUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</RepositoryUrl>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <Description>
             This package should be installed only on the project used to define the HotPathAlloacationAnalyzer whitelist
