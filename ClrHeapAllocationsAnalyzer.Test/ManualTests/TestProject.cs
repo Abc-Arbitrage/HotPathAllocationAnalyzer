@@ -20,7 +20,7 @@ namespace ClrHeapAllocationAnalyzer.Test.ManualTests
             if (!System.Diagnostics.Debugger.IsAttached) 
                 return;
             
-            var csProjPath = @"....csproj";
+            var csProjPath = @"C:\Dev\dotnet\src\Abc.Trading.Strategies\Abc.Trading.Services.Common\Abc.Trading.Services.Common.csproj";
             
             var testAnalyser = new MethodCallAnalyzer();
             
@@ -33,13 +33,14 @@ namespace ClrHeapAllocationAnalyzer.Test.ManualTests
 
             var workspace = new AdhocWorkspace();
             var project = analyzer.AddToWorkspace(workspace)
+                                  .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true, metadataImportOptions: MetadataImportOptions.Public ))
                                   .WithAnalyzerReferences(new AnalyzerReference[0]);
 
             var trees = project.Documents.Select(x => x.GetSyntaxTreeAsync().Result)
                                .ToArray();
 
             // Run the code tree through the analyzer and record the allocations it reports
-            var compilation = CSharpCompilation.Create(project.AssemblyName, trees, project.MetadataReferences, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            var compilation = CSharpCompilation.Create(project.AssemblyName, trees, project.MetadataReferences, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true, metadataImportOptions: MetadataImportOptions.Public));
      
             var diagnostics = compilation.GetDiagnostics();
             if (diagnostics.Count(d => d.Severity == DiagnosticSeverity.Error) > 0)

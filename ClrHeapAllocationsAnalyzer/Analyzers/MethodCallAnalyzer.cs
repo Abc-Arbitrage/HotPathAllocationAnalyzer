@@ -52,7 +52,7 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
                     && !RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(propertyInfo.GetMethod)
                     && !RestrictedAllocationAttributeHelper.HasRestrictedAllocationIgnoreAttribute(propertyInfo)
                     && !RestrictedAllocationAttributeHelper.HasRestrictedAllocationIgnoreAttribute(propertyInfo.GetMethod)
-                    && !IsAutoProperty(propertyInfo)
+                    && !IsAutoProperty(context, propertyInfo)
                     && !IsWhitelisted(propertyInfo)
                     && !IsInSafeScope(semanticModel, memberAccessExpression))
                 {
@@ -71,13 +71,13 @@ namespace ClrHeapAllocationAnalyzer.Analyzers
             return _whitelistedMethods.Contains(MethodSymbolSerializer.Serialize(methodInfo));
         }
 
-        private static bool IsAutoProperty(IPropertySymbol propertyInfo)
+        private static bool IsAutoProperty(SyntaxNodeAnalysisContext context, IPropertySymbol propertyInfo)
         {
             var name = propertyInfo.Name;
             var fields = propertyInfo.ContainingType.GetMembers()
                                      .Where(x => x.Name.Contains($"<{name}>"));
-
-            return fields.Any();
+            
+            return fields.Any() || (propertyInfo.GetMethod?.GetAttributes().Any(AllocationRules.IsCompilerGeneratedAttribute) ?? false);
         }
 
         private static bool IsInSafeScope(SemanticModel semanticModel, SyntaxNode symbol)

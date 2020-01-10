@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Runtime.CompilerServices;
 using ClrHeapAllocationAnalyzer.Support;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -16,11 +17,17 @@ namespace ClrHeapAllocationAnalyzer.Helpers
             return attribute.AttributeClass.Name == nameof(RestrictedAllocation)
                 && attribute.AttributeClass.ContainingNamespace.ToDisplayString() == typeof(RestrictedAllocation).Namespace;
         }
-        
+
         public static bool IsIgnoreAllocationAttribute(AttributeData attribute)
         {
             return attribute.AttributeClass.Name == nameof(RestrictedAllocationIgnore)
                 && attribute.AttributeClass.ContainingNamespace.ToDisplayString() == typeof(RestrictedAllocationIgnore).Namespace;
+        }
+
+        public static bool IsCompilerGeneratedAttribute(AttributeData attribute)
+        {
+            return attribute.AttributeClass.Name == nameof(CompilerGeneratedAttribute)
+                   && attribute.AttributeClass.ContainingNamespace.ToDisplayString() == typeof(CompilerGeneratedAttribute).Namespace;
         }
 
         public static ClassDeclarationSyntax GetConfigurationClass(SyntaxNode syntaxNode, SemanticModel semanticModel)

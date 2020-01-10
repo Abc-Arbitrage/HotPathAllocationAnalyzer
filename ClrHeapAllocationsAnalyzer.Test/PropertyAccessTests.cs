@@ -160,7 +160,7 @@ namespace ClrHeapAllocationAnalyzer.Test
         }
         
         [TestMethod]
-        public void AnalyzeProgram_ConsiderAutoPropertyAsSafe()
+        public void AnalyzeProgram_ConsiderAutoPropertyAndFieldsAsSafe()
         {
             //language=cs
             const string sample =
@@ -169,6 +169,7 @@ namespace ClrHeapAllocationAnalyzer.Test
                 
                 public abstract class FooBase
                 {
+                    public string FullName;
                     public string Name { get; } = ""Hello"";
                     public int[] Data { get; } = new int[10];
                 }
@@ -181,7 +182,7 @@ namespace ClrHeapAllocationAnalyzer.Test
                 [ClrHeapAllocationAnalyzer.Support.RestrictedAllocation]
                 public int PerfCritical(Foo f) 
                 {
-                    return f.Name.Length + f.Data.Length;
+                    return f.Name.Length + + f.FullName.Length + f.Data.Length;
                 }";
 
             var analyser = new MethodCallAnalyzer();
