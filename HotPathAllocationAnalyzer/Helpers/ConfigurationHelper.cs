@@ -4,7 +4,7 @@ namespace HotPathAllocationAnalyzer.Helpers
 {
     internal static class ConfigurationHelper
     {
-        public static string FindConfigurationDirectory(string filePath)
+        public static string? FindConfigurationDirectory(string filePath)
         {
             var directoryName = Path.GetDirectoryName(filePath);
             while (!string.IsNullOrEmpty(directoryName))
