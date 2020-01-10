@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using HotPathAllocationAnalyzer.Support;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
