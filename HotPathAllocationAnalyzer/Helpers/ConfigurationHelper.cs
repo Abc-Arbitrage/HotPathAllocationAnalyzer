@@ -1,44 +1,22 @@
-using System;
 using System.IO;
-using System.Linq;
-using HotPathAllocationAnalyzer.Support;
 
 namespace HotPathAllocationAnalyzer.Helpers
 {
     internal static class ConfigurationHelper
     {
-        public static void ReadConfiguration(string filePath, Action<string> AddToWhiteList)
+        public static string FindConfigurationDirectory(string filePath)
         {
-			if (!string.IsNullOrEmpty(filePath))
-			{
-				var configDir = FindConfigurationDirectory(filePath);
-				if (!string.IsNullOrEmpty(configDir))
-                {
-                    var whitelist = File.ReadAllLines(Path.Combine(configDir, AllocationRules.WhitelistFileName));
-
-                    foreach (var item in whitelist)
-                    {
-                        AddToWhiteList(item);
-                    }
-                }
-            }
-        }
-    
-        private static string? FindConfigurationDirectory(string? filePath)
-        {
-            if (string.IsNullOrEmpty(filePath))
-                return null;
-            
-            var directory = Directory.Exists(filePath) ? filePath : Path.GetDirectoryName(filePath);
-
-            if (Directory.Exists(Path.Combine(directory, AllocationRules.ConfigurationDirectoryName)))
+            var directoryName = Path.GetDirectoryName(filePath);
+            while (!string.IsNullOrEmpty(directoryName))
             {
-                var referencesFile = Directory.EnumerateFiles(Path.Combine(directory, AllocationRules.ConfigurationDirectoryName)).FirstOrDefault(x => x.EndsWith(AllocationRules.WhitelistFileName));
-                if (referencesFile != null)
-                    return Path.Combine(directory, AllocationRules.ConfigurationDirectoryName);
+                var configurationDirectory = Path.Combine(directoryName, AllocationRules.ConfigurationDirectoryName);
+                if (Directory.Exists(configurationDirectory))
+                    return configurationDirectory;
+
+                directoryName = Directory.GetParent(directoryName)?.FullName;
             }
 
-            return FindConfigurationDirectory(Directory.GetParent(directory)?.FullName);
+            return null;
         }    
     }
 }

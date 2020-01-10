@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using HotPathAllocationAnalyzer.Helpers;
 using HotPathAllocationAnalyzer.Support;
@@ -14,6 +15,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class MethodCallAnalyzer : AllocationAnalyzer
     {
+        private string _whitelistFilePath;
         private readonly HashSet<string> _whitelistedMethods = new HashSet<string>();
         
         public static DiagnosticDescriptor ExternalMethodCallRule = new DiagnosticDescriptor("HAA0701", "Unsafe method call", "All method call from here should be marked as RestrictedAllocation or whitelisted", "Performance", DiagnosticSeverity.Error, true);
@@ -25,9 +27,36 @@ namespace HotPathAllocationAnalyzer.Analyzers
         
         private static readonly object[] EmptyMessageArgs = { };
 
-        public override void AddToWhiteList(string method)
+        public void AddToWhiteList(string method)
         {
             _whitelistedMethods.Add(method);
+        }
+
+        public override void Initialize(AnalysisContext context)
+        {
+            base.Initialize(context);
+
+            context.RegisterCompilationStartAction(analysisContext =>
+            {
+                if (_whitelistFilePath == null)
+                {
+                    var lineSpans = analysisContext.Compilation.Assembly.Locations
+                                                   .Select(l => l.GetLineSpan())
+                                                   .Where(lp => lp.IsValid);
+                    foreach (var lineSpan in lineSpans)
+                    {
+                        var configurationDirectory = ConfigurationHelper.FindConfigurationDirectory(lineSpan.Path);
+                        if (configurationDirectory != null)
+                        {
+                            _whitelistFilePath = Path.Combine(configurationDirectory, AllocationRules.WhitelistFileName);
+                            break;
+                        }
+                    }
+                }
+
+                if (_whitelistFilePath != null)
+                    _whitelistedMethods.UnionWith(File.ReadAllLines(_whitelistFilePath));
+            });
         }
 
         protected override void AnalyzeNode(SyntaxNodeAnalysisContext context)
