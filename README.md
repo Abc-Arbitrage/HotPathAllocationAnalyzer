@@ -1,20 +1,52 @@
 Roslyn Clr Heap Allocation Analyzer
 ===================================
 
-[![Join the chat at https://gitter.im/mjsabby/RoslynClrHeapAllocationAnalyzer](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/mjsabby/RoslynClrHeapAllocationAnalyzer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+Roslyn Analyzer detecting heap allocation in *hot path* (based on https://github.com/microsoft/RoslynClrHeapAllocationAnalyzer) 
 
-Quick Video: https://www.youtube.com/watch?v=Tw-wgT-cXYU&hd=1
+Detect in hot path:  
+ - explicit allocation 
+ - implicit allocations 
+    - boxing 
+    - display classes a.k.a closures 
+    - implicit delegate creations
+    - ...
 
-Download: **https://github.com/Microsoft/RoslynClrHeapAllocationAnalyzer/releases**
+## Hot path
 
-Roslyn based C# heap allocation diagnostic analyzer that can detect explicit and many implicit allocations like boxing, display classes a.k.a closures, implicit delegate creations, etc.
+Hot path should be flagged as so using the `RestrictedAllocation` attribute. This attribute indicate that the analyzer should run on a method.
 
-You can find also it on the Visual Studio Gallery, https://aka.ms/HeapAllocationAnalyzer
+It also forbid calling a method/property that is considered unsafe. 
 
-If you want it use it in your build: https://www.nuget.org/packages/ClrHeapAllocationAnalyzer/
+Methods/Properties are considered safe when flagged for analysis (`RestrictedAllocation`), flagged for ignore (`RestrictedAllocationIgnore`) or whitelisted.
+Properties are also considered safe when they are auto property. 
 
-![example](https://cloud.githubusercontent.com/assets/1930559/4606581/2a027d08-5225-11e4-8d4e-686c204a1267.png)
+## Setup
 
-## Microsoft Open Source Code of Conduct
+Install the nuget package on the project to analyze
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+## Whitelisting
+
+Whitelisting can be used to mark third party and system methods as safe.
+
+1. To create a whitelist, you need to create a folder called `ClrHeapAllocationAnalyzer` at the root of your solution. 
+2. This folder should contain a `csproj` (name does not matter) and reference the nuget `ClrHeapAllocationAnalyzer.Configuration`
+3. You can then add some `class` in the project that implement the `AllocationConfiguration` class and define some method listing whitelisted methods:
+
+```cs
+public class TestConfiguration : AllocationConfiguration
+{
+    public void WhitelistString(string str)
+    {
+        MakeSafe(() => str.Length);
+        MakeSafe(() => str.IsNormalized());
+        MakeSafe(() => str.Contains(default));
+    }
+
+    public void WhitelistNullable<T>(T? arg)
+        where T: struct
+    {
+        MakeSafe(() => arg.Value); 
+        MakeSafe(() => arg.HasValue); 
+    }
+}
+```  
