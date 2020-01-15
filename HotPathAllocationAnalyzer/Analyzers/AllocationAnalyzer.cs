@@ -31,8 +31,8 @@ namespace HotPathAllocationAnalyzer.Analyzers
         private void Analyze(SyntaxNodeAnalysisContext context)
         {
             var analyze = _forceEnableAnalysis
-                          || (RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(context.ContainingSymbol)
-                              && !RestrictedAllocationAttributeHelper.HasRestrictedAllocationIgnoreAttribute(context.ContainingSymbol));
+                          || (AttributeHelper.HasNoAllocationAttribute(context.ContainingSymbol)
+                              && !AttributeHelper.HasIgnoreAllocationAttribute(context.ContainingSymbol));
             if (analyze)
                 AnalyzeNode(context);
         }

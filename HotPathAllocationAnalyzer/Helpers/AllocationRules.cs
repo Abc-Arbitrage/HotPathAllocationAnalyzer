@@ -12,16 +12,16 @@ namespace HotPathAllocationAnalyzer.Helpers
         
         public const string WhitelistFileName = "whitelist.txt";
         
-        public static bool IsRestrictedAllocationAttribute(AttributeData attribute)
+        public static bool IsNoAllocationAttribute(AttributeData attribute)
         {
-            return attribute.AttributeClass.Name == nameof(RestrictedAllocation)
-                && attribute.AttributeClass.ContainingNamespace.ToDisplayString() == typeof(RestrictedAllocation).Namespace;
+            return attribute.AttributeClass.Name == nameof(NoAllocation)
+                && attribute.AttributeClass.ContainingNamespace.ToDisplayString() == typeof(NoAllocation).Namespace;
         }
 
         public static bool IsIgnoreAllocationAttribute(AttributeData attribute)
         {
-            return attribute.AttributeClass.Name == nameof(RestrictedAllocationIgnore)
-                && attribute.AttributeClass.ContainingNamespace.ToDisplayString() == typeof(RestrictedAllocationIgnore).Namespace;
+            return attribute.AttributeClass.Name == nameof(IgnoreAllocation)
+                && attribute.AttributeClass.ContainingNamespace.ToDisplayString() == typeof(IgnoreAllocation).Namespace;
         }
 
         public static bool IsCompilerGeneratedAttribute(AttributeData attribute)

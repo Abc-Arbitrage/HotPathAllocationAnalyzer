@@ -16,7 +16,7 @@ namespace HotPathAllocationAnalyzer.Test
                 @"using System;
                 using HotPathAllocationAnalyzer;
                 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public int PerfCritical(string str) {
                     return str.Length;
                 }";
@@ -38,10 +38,10 @@ namespace HotPathAllocationAnalyzer.Test
                 
                 public class Foo
                 {
-                    public List<int> Data { [HotPathAllocationAnalyzer.Support.RestrictedAllocation] get; } = new List<int>();
+                    public List<int> Data { [HotPathAllocationAnalyzer.Support.NoAllocation] get; } = new List<int>();
                 }
                 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public List<int> PerfCritical(Foo foo) {
                     return foo.Data;
                 }";
@@ -63,10 +63,10 @@ namespace HotPathAllocationAnalyzer.Test
                 
                 public class Foo
                 {
-                    public List<int> Data { [HotPathAllocationAnalyzer.Support.RestrictedAllocation] get { return new List<int>(); } }
+                    public List<int> Data { [HotPathAllocationAnalyzer.Support.NoAllocation] get { return new List<int>(); } }
                 }
                 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public List<int> PerfCritical(Foo foo) {
                     return foo.Data;
                 }";
@@ -87,7 +87,7 @@ namespace HotPathAllocationAnalyzer.Test
                 
                 public interface IFoo 
                 {                
-                    string Name { [HotPathAllocationAnalyzer.Support.RestrictedAllocation] get; }
+                    string Name { [HotPathAllocationAnalyzer.Support.NoAllocation] get; }
                 }            
                     
                 public class Foo : IFoo
@@ -95,7 +95,7 @@ namespace HotPathAllocationAnalyzer.Test
                     public string Name { get; }
                 }
                 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public string PerfCritical(Foo f) {
                     return f.Name;
                 }";
@@ -116,7 +116,7 @@ namespace HotPathAllocationAnalyzer.Test
                 
                 public class FooBase 
                 {                
-                    public virtual string Name { [HotPathAllocationAnalyzer.Support.RestrictedAllocation] get; }
+                    public virtual string Name { [HotPathAllocationAnalyzer.Support.NoAllocation] get; }
                 }            
                     
                 public class Foo : FooBase
@@ -124,7 +124,7 @@ namespace HotPathAllocationAnalyzer.Test
                     public override string Name { get; }
                 }
                 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public string PerfCritical(Foo f) {
                     return f.Name;
                 }";
@@ -145,10 +145,10 @@ namespace HotPathAllocationAnalyzer.Test
 
                 public class DateProvider
                 {
-                    public DateTime? Date { [HotPathAllocationAnalyzer.Support.RestrictedAllocation] get; }
+                    public DateTime? Date { [HotPathAllocationAnalyzer.Support.NoAllocation] get; }
                 }
 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public DateTime PerfCritical(DateProvider dp) {
                     return dp.Date.Value;
                 }";
@@ -179,7 +179,7 @@ namespace HotPathAllocationAnalyzer.Test
                     public int[] Data { get; } = new int[10];
                 }
                 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public int PerfCritical(Foo f) 
                 {
                     return f.Name.Length + + f.FullName.Length + f.Data.Length;

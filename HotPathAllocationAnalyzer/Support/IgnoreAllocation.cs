@@ -2,7 +2,7 @@ using System;
 
 namespace HotPathAllocationAnalyzer.Support
 {
-    public class RestrictedAllocationIgnore : Attribute
+    public class IgnoreAllocation : Attribute
     {
     }
 }

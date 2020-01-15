@@ -10,7 +10,7 @@
 
   <PropertyGroup>
     <PackageId>HotPathAllocationAnalyzer</PackageId>
-    <PackageVersion>1.0.0</PackageVersion>
+    <PackageVersion>1.0.1</PackageVersion>
     <Authors>Abc Arbitrage, Microsoft</Authors>
     <PackageLicenseUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>httpshttps://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</PackageProjectUrl>

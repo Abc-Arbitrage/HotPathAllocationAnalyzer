@@ -2,7 +2,7 @@
 
 namespace HotPathAllocationAnalyzer.Support
 {
-    public class RestrictedAllocation : Attribute
+    public class NoAllocation : Attribute
     {
     }
 }

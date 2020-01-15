@@ -1,17 +1,18 @@
 using System;
 using System.Linq;
+using HotPathAllocationAnalyzer.Support;
 using Microsoft.CodeAnalysis;
 
 namespace HotPathAllocationAnalyzer.Helpers
 {
-    internal static class RestrictedAllocationAttributeHelper
+    internal static class AttributeHelper
     {
-        public static bool HasRestrictedAllocationAttribute(ISymbol containingSymbol)
+        public static bool HasNoAllocationAttribute(ISymbol containingSymbol)
         {
-            return FindAttribute(containingSymbol, AllocationRules.IsRestrictedAllocationAttribute);
+            return FindAttribute(containingSymbol, AllocationRules.IsNoAllocationAttribute);
         }
         
-        public static bool HasRestrictedAllocationIgnoreAttribute(ISymbol containingSymbol)
+        public static bool HasIgnoreAllocationAttribute(ISymbol containingSymbol)
         {
             return FindAttribute(containingSymbol, AllocationRules.IsIgnoreAllocationAttribute);
         }
@@ -42,7 +43,7 @@ namespace HotPathAllocationAnalyzer.Helpers
             }
             catch (Exception e)
             {
-                throw new Exception("Error while looking for RestrictedAttribute", e);
+                throw new Exception($"Error while looking for {nameof(NoAllocation)}", e);
             }
         }
 

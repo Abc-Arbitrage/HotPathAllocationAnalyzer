@@ -18,8 +18,8 @@ namespace HotPathAllocationAnalyzer.Analyzers
         private string _whitelistFilePath;
         private readonly HashSet<string> _whitelistedMethods = new HashSet<string>();
         
-        public static DiagnosticDescriptor ExternalMethodCallRule = new DiagnosticDescriptor("HAA0701", "Unsafe method call", "All method call from here should be marked as RestrictedAllocation or whitelisted", "Performance", DiagnosticSeverity.Error, true);
-        public static DiagnosticDescriptor UnsafePropertyAccessRule = new DiagnosticDescriptor("HAA0702", "Unsafe property access", "All property access from here should be marked as RestrictedAllocation or whitelisted", "Performance", DiagnosticSeverity.Error, true);
+        public static DiagnosticDescriptor ExternalMethodCallRule = new DiagnosticDescriptor("HAA0701", "Unsafe method call", $"All method call from here should be marked as {nameof(NoAllocation)} or whitelisted", "Performance", DiagnosticSeverity.Error, true);
+        public static DiagnosticDescriptor UnsafePropertyAccessRule = new DiagnosticDescriptor("HAA0702", "Unsafe property access", $"All property access from here should be marked as {nameof(NoAllocation)} or whitelisted", "Performance", DiagnosticSeverity.Error, true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ExternalMethodCallRule, UnsafePropertyAccessRule);
         
@@ -42,7 +42,9 @@ namespace HotPathAllocationAnalyzer.Analyzers
                 {
                     var lineSpans = analysisContext.Compilation.Assembly.Locations
                                                    .Select(l => l.GetLineSpan())
-                                                   .Where(lp => lp.IsValid);
+                                                   .Where(lp => lp.IsValid)
+                                                   .Where(lp => !string.IsNullOrEmpty(lp.Path));
+                    
                     foreach (var lineSpan in lineSpans)
                     {
                         var configurationDirectory = ConfigurationHelper.FindConfigurationDirectory(lineSpan.Path);
@@ -54,7 +56,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
                     }
                 }
 
-                if (_whitelistFilePath != null)
+                if (_whitelistFilePath != null && File.Exists(_whitelistFilePath))
                     _whitelistedMethods.UnionWith(File.ReadAllLines(_whitelistFilePath));
             });
         }
@@ -66,8 +68,8 @@ namespace HotPathAllocationAnalyzer.Analyzers
 
             if (context.Node is InvocationExpressionSyntax invocationExpression && semanticModel.GetSymbolInfo(invocationExpression, cancellationToken).Symbol is IMethodSymbol methodInfo)
             {
-                if (!RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(methodInfo)
-                    && !RestrictedAllocationAttributeHelper.HasRestrictedAllocationIgnoreAttribute(methodInfo)
+                if (!AttributeHelper.HasNoAllocationAttribute(methodInfo)
+                    && !AttributeHelper.HasIgnoreAllocationAttribute(methodInfo)
                     && !IsWhitelisted(methodInfo)
                     && !IsInSafeScope(semanticModel, invocationExpression))
                 {
@@ -77,10 +79,10 @@ namespace HotPathAllocationAnalyzer.Analyzers
 
             if (context.Node is MemberAccessExpressionSyntax memberAccessExpression && semanticModel.GetSymbolInfo(memberAccessExpression, cancellationToken).Symbol is IPropertySymbol propertyInfo)
             {
-                if (!RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(propertyInfo)
-                    && !RestrictedAllocationAttributeHelper.HasRestrictedAllocationAttribute(propertyInfo.GetMethod)
-                    && !RestrictedAllocationAttributeHelper.HasRestrictedAllocationIgnoreAttribute(propertyInfo)
-                    && !RestrictedAllocationAttributeHelper.HasRestrictedAllocationIgnoreAttribute(propertyInfo.GetMethod)
+                if (!AttributeHelper.HasNoAllocationAttribute(propertyInfo)
+                    && !AttributeHelper.HasNoAllocationAttribute(propertyInfo.GetMethod)
+                    && !AttributeHelper.HasIgnoreAllocationAttribute(propertyInfo)
+                    && !AttributeHelper.HasIgnoreAllocationAttribute(propertyInfo.GetMethod)
                     && !IsAutoProperty(context, propertyInfo)
                     && !IsWhitelisted(propertyInfo)
                     && !IsInSafeScope(semanticModel, memberAccessExpression))

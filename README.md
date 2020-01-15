@@ -13,16 +13,16 @@ Detect in hot path:
 
 ## Hot path
 
-Hot path should be flagged as so using the `RestrictedAllocation` attribute. This attribute indicate that the analyzer should run on a method.
+Hot path should be flagged as so using the `NoAllocation` attribute. This attribute indicate that the analyzer should run on a method.
 
 It also forbid calling a method/property that is considered unsafe. 
 
-Methods/Properties are considered safe when flagged for analysis (`RestrictedAllocation`), flagged for ignore (`RestrictedAllocationIgnore`), whitelisted or in a safe scope.
+Methods/Properties are considered safe when flagged for analysis (`NoAllocation`), flagged for ignore (`IgnoreAllocation`), whitelisted or in a safe scope.
 Properties are also considered safe when they are auto property. 
 
 Safe scope are defined as:
 ```cs
-[RestrictedAttribute]
+[NoAllocation]
 public int Something(string str) 
 {
     using var safeScope = new AllocationFreeScope();

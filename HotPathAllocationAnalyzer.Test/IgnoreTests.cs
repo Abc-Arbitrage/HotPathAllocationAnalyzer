@@ -31,7 +31,7 @@ namespace HotPathAllocationAnalyzer.Test
                 @"using System;
                 using HotPathAllocationAnalyzer.Support;
 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public void CreateString() {
                     string str = new string('a', 5);
                 }";
@@ -52,7 +52,7 @@ namespace HotPathAllocationAnalyzer.Test
 
                 interface IFoo     
                 {
-                    [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                    [HotPathAllocationAnalyzer.Support.NoAllocation]
                     void CreateString();
                 }
 
@@ -79,7 +79,7 @@ namespace HotPathAllocationAnalyzer.Test
 
                 interface IFoo     
                 {
-                    [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                    [HotPathAllocationAnalyzer.Support.NoAllocation]
                     void CreateString();
                 }
 
@@ -106,7 +106,7 @@ namespace HotPathAllocationAnalyzer.Test
 
                 class BaseFoo     
                 {
-                    [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                    [HotPathAllocationAnalyzer.Support.NoAllocation]
                     public virtual void CreateString() {}
                 }
 
@@ -133,7 +133,7 @@ namespace HotPathAllocationAnalyzer.Test
 
                 class BaseFoo     
                 {
-                    [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                    [HotPathAllocationAnalyzer.Support.NoAllocation]
                     public virtual void CreateString() {}
                 }
 
@@ -165,7 +165,7 @@ namespace HotPathAllocationAnalyzer.Test
 
                 interface IFoo     
                 {
-                    [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                    [HotPathAllocationAnalyzer.Support.NoAllocation]
                     void CreateString();
                 }
 

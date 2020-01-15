@@ -20,7 +20,7 @@ namespace HotPathAllocationAnalyzer.Test
                 MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(System.CodeDom.Compiler.GeneratedCodeAttribute).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(IList<>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(RestrictedAllocation).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(NoAllocation).Assembly.Location),
                 MetadataReference.CreateFromFile(Assembly.Load("mscorlib").Location),
                 MetadataReference.CreateFromFile(Assembly.Load("netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51").Location)
             };

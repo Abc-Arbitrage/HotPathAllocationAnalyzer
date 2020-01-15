@@ -114,13 +114,13 @@ using HotPathAllocationAnalyzer.Support;
 
     class Foo
     {
-        [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+        [HotPathAllocationAnalyzer.Support.NoAllocation]
         private static void Bar()
         {
             var data = new DateTime();
         }
 
-        [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+        [HotPathAllocationAnalyzer.Support.NoAllocation]
         private static void Bis()
         {
             var data = new List<int>();

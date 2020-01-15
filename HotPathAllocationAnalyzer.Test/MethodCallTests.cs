@@ -20,7 +20,7 @@ namespace HotPathAllocationAnalyzer.Test
                     return new string('a', 5);
                 }
 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public void PerfCritical() {
                     string str = CreateString();
                 }";
@@ -39,12 +39,12 @@ namespace HotPathAllocationAnalyzer.Test
                 @"using System;
                 using HotPathAllocationAnalyzer.Support;
                 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public int StringLength(string str) {
                     return 0;
                 }
 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public void PerfCritical(string str) {
                     int l = StringLength(str);
                 }";
@@ -65,7 +65,7 @@ namespace HotPathAllocationAnalyzer.Test
 
                 interface IFoo
                 {
-                    [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                    [HotPathAllocationAnalyzer.Support.NoAllocation]
                     int StringLength(string str);
                 }
 
@@ -77,7 +77,7 @@ namespace HotPathAllocationAnalyzer.Test
                      }
                 }
                 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public void PerfCritical(Foo foo, string str)
                 {
                     int l = foo.StringLength(str);
@@ -97,7 +97,7 @@ namespace HotPathAllocationAnalyzer.Test
                 @"using System;
                 using HotPathAllocationAnalyzer.Support;
                 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public string PerfCritical(string str) {
                     return string.Copy(str);
                 }";
@@ -116,7 +116,7 @@ namespace HotPathAllocationAnalyzer.Test
                 @"using System;
                 using HotPathAllocationAnalyzer.Support;
                 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public bool PerfCritical(string str)
                  {
                     using (new AllocationFreeScope())
@@ -139,7 +139,7 @@ namespace HotPathAllocationAnalyzer.Test
                 @"using System;
                 using HotPathAllocationAnalyzer.Support;
                 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public bool PerfCritical(string str)
                 {                                     
                     using var safeScope = new AllocationFreeScope();
@@ -161,7 +161,7 @@ namespace HotPathAllocationAnalyzer.Test
                 @"using System;
                 using HotPathAllocationAnalyzer.Support;
                 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public bool PerfCritical(string str)
                 {                 
                     var result = str.IsNormalized();                    
@@ -183,7 +183,7 @@ namespace HotPathAllocationAnalyzer.Test
                 @"using System;
                 using HotPathAllocationAnalyzer.Support;
                 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public bool PerfCritical(string str) {
                     return str.Contains(""zig"");
                 }";
@@ -205,7 +205,7 @@ namespace HotPathAllocationAnalyzer.Test
                 @"using System;
                 using HotPathAllocationAnalyzer.Support;                
                 
-                [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
                 public bool PerfCritical(string str) {
                     return str.IsNormalized();
                 }";
@@ -227,7 +227,7 @@ namespace HotPathAllocationAnalyzer.Test
                     using System.Collections.Generic;
                     using HotPathAllocationAnalyzer.Support;                
                 
-                    [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                    [HotPathAllocationAnalyzer.Support.NoAllocation]
                     public int PerfCritical(List<int> l) {
                         return l.IndexOf(10);
                     }
@@ -250,7 +250,7 @@ namespace HotPathAllocationAnalyzer.Test
                     using System.Collections.Generic;
                     using HotPathAllocationAnalyzer.Support;                
                 
-                    [HotPathAllocationAnalyzer.Support.RestrictedAllocation]
+                    [HotPathAllocationAnalyzer.Support.NoAllocation]
                     public int PerfCritical<T>(List<T> l, T val) {
                         return l.IndexOf(val);
                     }
