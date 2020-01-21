@@ -18,8 +18,8 @@ namespace HotPathAllocationAnalyzer.Analyzers
         private string _whitelistFilePath;
         private readonly HashSet<string> _whitelistedMethods = new HashSet<string>();
         
-        public static DiagnosticDescriptor ExternalMethodCallRule = new DiagnosticDescriptor("HAA0701", "Unsafe method call", $"All method call from here should be marked as {nameof(NoAllocation)} or whitelisted", "Performance", DiagnosticSeverity.Error, true);
-        public static DiagnosticDescriptor UnsafePropertyAccessRule = new DiagnosticDescriptor("HAA0702", "Unsafe property access", $"All property access from here should be marked as {nameof(NoAllocation)} or whitelisted", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor ExternalMethodCallRule = new DiagnosticDescriptor("HAA0701", "Unsafe method call", $"All method call from here should be marked as {nameof(NoAllocation)} or whitelisted {{0}}", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor UnsafePropertyAccessRule = new DiagnosticDescriptor("HAA0702", "Unsafe property access", $"All property access from here should be marked as {nameof(NoAllocation)} or whitelisted {{0}}", "Performance", DiagnosticSeverity.Error, true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ExternalMethodCallRule, UnsafePropertyAccessRule);
         
@@ -128,7 +128,6 @@ namespace HotPathAllocationAnalyzer.Analyzers
                 var usingStatements = blockSyntax.Statements
                                                  .TakeWhile(x => !x.Equals(symbol))
                                                  .OfType<LocalDeclarationStatementSyntax>()
-                                                 .Where(x => x.UsingKeyword != null)
                                                  .Select(x => semanticModel.GetTypeInfo(x.Declaration.Type).Type)
                                                  .ToArray();
                 
@@ -146,9 +145,15 @@ namespace HotPathAllocationAnalyzer.Analyzers
                    && type.ContainingNamespace.ToDisplayString() == typeof(AllocationFreeScope).Namespace;
         }
 
-        private static void ReportError(SyntaxNodeAnalysisContext context, SyntaxNode node, DiagnosticDescriptor externalMethodCallRule)
+        private void ReportError(SyntaxNodeAnalysisContext context, SyntaxNode node, DiagnosticDescriptor externalMethodCallRule)
         {
-            context.ReportDiagnostic(Diagnostic.Create(externalMethodCallRule, node.GetLocation(), EmptyMessageArgs));
+            var details = "";
+            if (string.IsNullOrWhiteSpace(_whitelistFilePath))
+                details = " (no whitelist found)";
+            else if (_whitelistedMethods.Count == 0)
+                details = " (whitelist is empty)";
+            
+            context.ReportDiagnostic(Diagnostic.Create(externalMethodCallRule, node.GetLocation(), details));
             HeapAllocationAnalyzerEventSource.Logger.PossiblyAllocatingMethodCall(node.SyntaxTree.FilePath);
         }
     }
