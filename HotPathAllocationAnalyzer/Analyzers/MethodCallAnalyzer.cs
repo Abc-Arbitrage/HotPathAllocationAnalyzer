@@ -38,27 +38,33 @@ namespace HotPathAllocationAnalyzer.Analyzers
 
             context.RegisterCompilationStartAction(analysisContext =>
             {
-                if (_whitelistFilePath == null)
-                {
-                    var lineSpans = analysisContext.Compilation.Assembly.Locations
-                                                   .Select(l => l.GetLineSpan())
-                                                   .Where(lp => lp.IsValid)
-                                                   .Where(lp => !string.IsNullOrEmpty(lp.Path));
-                    
-                    foreach (var lineSpan in lineSpans)
-                    {
-                        var configurationDirectory = ConfigurationHelper.FindConfigurationDirectory(lineSpan.Path);
-                        if (configurationDirectory != null)
-                        {
-                            _whitelistFilePath = Path.Combine(configurationDirectory, AllocationRules.WhitelistFileName);
-                            break;
-                        }
-                    }
-                }
+                FindWhiteListPath(analysisContext);
 
                 if (_whitelistFilePath != null && File.Exists(_whitelistFilePath))
                     _whitelistedMethods.UnionWith(File.ReadAllLines(_whitelistFilePath));
             });
+        }
+
+        private void FindWhiteListPath(CompilationStartAnalysisContext analysisContext)
+        {
+            if (_whitelistFilePath != null)
+                return;
+            
+            var lineSpans = analysisContext.Compilation.Assembly.Locations
+                                           .Select(l => l.GetLineSpan())
+                                           .Where(lp => lp.IsValid)
+                                           .Where(lp => !string.IsNullOrEmpty(lp.Path));
+
+            foreach (var lineSpan in lineSpans)
+            {
+                var configurationDirectory = ConfigurationHelper.FindConfigurationDirectory(lineSpan.Path);
+                if (configurationDirectory == null)
+                    continue;
+
+                _whitelistFilePath = Path.Combine(configurationDirectory, AllocationRules.WhitelistFileName);
+                if (File.Exists(_whitelistFilePath))
+                    break;
+            }
         }
 
         protected override void AnalyzeNode(SyntaxNodeAnalysisContext context)
@@ -147,11 +153,15 @@ namespace HotPathAllocationAnalyzer.Analyzers
 
         private void ReportError(SyntaxNodeAnalysisContext context, SyntaxNode node, DiagnosticDescriptor externalMethodCallRule)
         {
-            var details = "";
+            string details;
             if (string.IsNullOrWhiteSpace(_whitelistFilePath))
-                details = " (no whitelist found)";
+                details = "(no whitelist found)";
+            else if (!File.Exists(_whitelistFilePath))
+                details = $"(whitelist path is invalid: '{_whitelistFilePath}')";
             else if (_whitelistedMethods.Count == 0)
-                details = " (whitelist is empty)";
+                details = $"(whitelist is empty at path: '{_whitelistFilePath}')";
+            else 
+                details = $"({node})";
             
             context.ReportDiagnostic(Diagnostic.Create(externalMethodCallRule, node.GetLocation(), details));
             HeapAllocationAnalyzerEventSource.Logger.PossiblyAllocatingMethodCall(node.SyntaxTree.FilePath);
