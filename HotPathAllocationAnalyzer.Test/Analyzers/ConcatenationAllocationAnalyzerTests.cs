@@ -4,7 +4,7 @@ using HotPathAllocationAnalyzer.Analyzers;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace HotPathAllocationAnalyzer.Test
+namespace HotPathAllocationAnalyzer.Test.Analyzers
 {
     [TestClass]
     public class ConcatenationAllocationAnalyzerTests : AllocationAnalyzerTests {

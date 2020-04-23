@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace HotPathAllocationAnalyzer.Test
+namespace HotPathAllocationAnalyzer.Test.Analyzers
 {
     public abstract class AllocationAnalyzerTests
     {

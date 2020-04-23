@@ -35,8 +35,8 @@ namespace HotPathAllocationAnalyzer.Helpers
                         return true;
                     if (method.IsOverride && method.OverriddenMethod != null && method.OverriddenMethod.GetAttributes().Any(attribute))
                         return true;
-                    if (method.IsOverride && method.OverriddenMethod != null)
-                        return FindAttribute(method.OverriddenMethod, attribute);
+                    if (method.IsOverride && method.OverriddenMethod != null && FindAttribute(method.OverriddenMethod, attribute))
+                        return true;
                 }
 
                 return false;

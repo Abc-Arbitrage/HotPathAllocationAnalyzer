@@ -1,9 +1,10 @@
 ﻿using System.Collections.Immutable;
 using HotPathAllocationAnalyzer.Analyzers;
+using HotPathAllocationAnalyzer.Test.Analyzers;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace HotPathAllocationAnalyzer.Test
+namespace HotPathAllocationAnalyzer.Test.HotPathScope
 {
     [TestClass]
     public class IgnoreTests : AllocationAnalyzerTests

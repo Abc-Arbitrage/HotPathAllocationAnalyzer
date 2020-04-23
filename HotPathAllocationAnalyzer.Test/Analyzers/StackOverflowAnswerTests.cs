@@ -3,7 +3,7 @@ using HotPathAllocationAnalyzer.Analyzers;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace HotPathAllocationAnalyzer.Test
+namespace HotPathAllocationAnalyzer.Test.Analyzers
 {
     /// <summary>
     /// Taken from http://stackoverflow.com/questions/7995606/boxing-occurrence-in-c-sharp

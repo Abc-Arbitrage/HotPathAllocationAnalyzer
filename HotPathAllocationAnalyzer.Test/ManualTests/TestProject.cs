@@ -4,6 +4,7 @@ using System.Linq;
 using Buildalyzer;
 using Buildalyzer.Workspaces;
 using HotPathAllocationAnalyzer.Analyzers;
+using HotPathAllocationAnalyzer.Test.Analyzers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
