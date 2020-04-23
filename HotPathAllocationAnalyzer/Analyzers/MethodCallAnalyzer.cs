@@ -79,7 +79,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
                     && !IsWhitelisted(methodInfo)
                     && !IsInSafeScope(semanticModel, invocationExpression))
                 {
-                    ReportError(context, invocationExpression, ExternalMethodCallRule);
+                    ReportError(context, invocationExpression, MethodSymbolSerializer.Serialize(methodInfo), ExternalMethodCallRule);
                 }
             }
 
@@ -93,7 +93,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
                     && !IsWhitelisted(propertyInfo)
                     && !IsInSafeScope(semanticModel, memberAccessExpression))
                 {
-                    ReportError(context, memberAccessExpression, UnsafePropertyAccessRule);
+                    ReportError(context, memberAccessExpression, MethodSymbolSerializer.Serialize(propertyInfo), UnsafePropertyAccessRule);
                 }
             }
         }
@@ -151,7 +151,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
                    && type.ContainingNamespace.ToDisplayString() == typeof(AllocationFreeScope).Namespace;
         }
 
-        private void ReportError(SyntaxNodeAnalysisContext context, SyntaxNode node, DiagnosticDescriptor externalMethodCallRule)
+        private void ReportError(SyntaxNodeAnalysisContext context, SyntaxNode node, string name, DiagnosticDescriptor externalMethodCallRule)
         {
             string details;
             if (string.IsNullOrWhiteSpace(_whitelistFilePath))
@@ -161,7 +161,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
             else if (_whitelistedMethods.Count == 0)
                 details = $"(whitelist is empty at path: '{_whitelistFilePath}')";
             else 
-                details = $"({node})";
+                details = $"({node} / {name})";
             
             context.ReportDiagnostic(Diagnostic.Create(externalMethodCallRule, node.GetLocation(), details));
             HeapAllocationAnalyzerEventSource.Logger.PossiblyAllocatingMethodCall(node.SyntaxTree.FilePath);
