@@ -33,6 +33,64 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         }      
         
         [TestMethod]
+        public void AnalyzeProgram_FlagMethodWhenClassIsFlagged()
+        {
+            //language=cs
+            const string sample =
+                @"using System;
+                using HotPathAllocationAnalyzer.Support;
+                
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
+                public class CriticalClass {
+                    public string CreateString() {
+                        return null;
+                    }
+                }
+
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
+                public void PerfCritical(CriticalClass c) {
+                    string str = c.CreateString();
+                }";
+
+            var analyser = new MethodCallAnalyzer();
+            
+            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            Assert.AreEqual(0, info.Allocations.Count);
+        }      
+        
+        [TestMethod]
+        public void AnalyzeProgram_FlagMethodWhenBaseClassIsFlagged()
+        {
+            //language=cs
+            const string sample =
+                @"using System;
+                using HotPathAllocationAnalyzer.Support;
+                
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
+                public class CriticalBaseClass {
+                }
+                
+                public class CriticalBaseClassEx : CriticalBaseClass {
+                }
+                
+                public class CriticalClass : CriticalBaseClassEx {
+                    public string CreateString() {
+                        return null;
+                    }
+                }
+
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
+                public void PerfCritical(CriticalClass c) {
+                    string str = c.CreateString();
+                }";
+
+            var analyser = new MethodCallAnalyzer();
+            
+            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            Assert.AreEqual(0, info.Allocations.Count);
+        }      
+        
+        [TestMethod]
         public void AnalyzeProgram_MethodShouldOnlyBeAllowedToCallNonAllocatingMethods()
         {
             //language=cs

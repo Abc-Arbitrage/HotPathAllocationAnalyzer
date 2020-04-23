@@ -68,6 +68,61 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
             
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
             Assert.AreEqual(1, info.Allocations.Count);
+        }      
+        
+        [TestMethod]
+        public void AnalyzeProgram_AnalyzeImplementationWhenBaseClassHasRestrictedAttributes()
+        {
+            //language=cs
+            const string sample =
+                @"using System;
+                using HotPathAllocationAnalyzer.Support;
+
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
+                public class FooBase     
+                {
+                    public virtual void CreateString() {}
+                }
+
+                public class Foo : FooBase 
+                {
+                    public override void CreateString() {
+                        string str = new string('a', 5);
+                    }
+                }";
+
+            var analyser = new ExplicitAllocationAnalyzer();
+            
+            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
+            Assert.AreEqual(1, info.Allocations.Count);
+        }     
+        
+        [TestMethod]
+        public void AnalyzeProgram_NotAnalyzeImplementationIfIgnoredEvenWhenBaseClassHasRestrictedAttributes()
+        {
+            //language=cs
+            const string sample =
+                @"using System;
+                using HotPathAllocationAnalyzer.Support;
+
+                [HotPathAllocationAnalyzer.Support.NoAllocation]
+                public class FooBase     
+                {
+                    public virtual void CreateString() {}
+                }
+
+                public class Foo : FooBase 
+                {
+                    [HotPathAllocationAnalyzer.Support.IgnoreAllocation]
+                    public override void CreateString() {
+                        string str = new string('a', 5);
+                    }
+                }";
+
+            var analyser = new ExplicitAllocationAnalyzer();
+            
+            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
+            Assert.AreEqual(0, info.Allocations.Count);
         }    
         
         [TestMethod]

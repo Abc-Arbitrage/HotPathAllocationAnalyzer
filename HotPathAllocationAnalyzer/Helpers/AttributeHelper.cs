@@ -37,6 +37,8 @@ namespace HotPathAllocationAnalyzer.Helpers
                         return true;
                     if (method.IsOverride && method.OverriddenMethod != null && FindAttribute(method.OverriddenMethod, attribute))
                         return true;
+                    if (ContainingTypeHasAttribute(method, attribute))
+                        return true;
                 }
 
                 return false;
@@ -57,6 +59,22 @@ namespace HotPathAllocationAnalyzer.Helpers
                 var interfaceMethod = interfaceMethods.SingleOrDefault(x => type.FindImplementationForInterfaceMember(x)?.Equals(method) ?? false);
                 if (interfaceMethod?.GetAttributes().Any(attribute)?? false)
                     return true;
+            }
+
+            return false;
+        }
+
+        private static bool ContainingTypeHasAttribute(ISymbol method, Func<AttributeData, bool> attribute)
+        {
+            var type = method.ContainingType;
+            if (type.GetAttributes().Any(attribute))
+                return true;
+            while (type != null)
+            {
+                if (type.BaseType?.GetAttributes().Any(attribute) == true)
+                    return true;
+
+                type = type.BaseType;
             }
 
             return false;
