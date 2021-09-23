@@ -4,7 +4,7 @@ Hot Path Allocation Analyzer
 Roslyn Analyzer detecting heap allocation in *hot path* (based on https://github.com/microsoft/RoslynClrHeapAllocationAnalyzer) 
 
 Detect in hot path:  
- - explicit allocation 
+ - explicit allocations 
  - implicit allocations 
     - boxing 
     - display classes a.k.a closures 
@@ -13,14 +13,14 @@ Detect in hot path:
 
 ## Hot path
 
-Hot path should be flagged as so using the `NoAllocation` attribute. This attribute indicate that the analyzer should run on a method.
+Hot path should be flagged as so using the `NoAllocation` attribute. This attribute indicates that the analyzer should run on the method.
 
-It also forbid calling a method/property that is considered unsafe. 
+It also forbids calling a method/property that is considered may allocate.
 
-Methods/Properties are considered safe when flagged for analysis (`NoAllocation`), flagged for ignore (`IgnoreAllocation`), whitelisted or in a safe scope.
-Properties are also considered safe when they are auto property. 
+Methods/Properties are considered safe (i.e. they don't allocate) when flagged for analysis (`NoAllocation`), flagged to be ignored (`IgnoreAllocation`), whitelisted or in a safe scope.
+Properties are also considered safe when they are auto properties.
 
-Safe scope are defined as:
+Safe scopes are defined as:
 ```cs
 [NoAllocation]
 public int Something(string str) 
@@ -42,7 +42,7 @@ Whitelisting can be used to mark third party and system methods as safe.
 
 1. To create a whitelist, you need to create a folder called `HotPathAllocationAnalyzer` at the root of your solution. 
 2. This folder should contain a `csproj` (name does not matter) and reference the nuget `HotPathAllocationAnalyzer.Configuration`
-3. You can then add some `class` in the project that implement the `AllocationConfiguration` class and define some method listing whitelisted methods:
+3. You can then add some `class` in the project that implements the `AllocationConfiguration` class and define a method listing the whitelisted methods:
 
 ```cs
 public class TestConfiguration : AllocationConfiguration
