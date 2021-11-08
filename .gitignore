@@ -193,5 +193,6 @@ ModelManifest.xml
 *.ide-shm
 *.dtbcache
 
-# Rider
+# IDE
 .idea
+.vs/
