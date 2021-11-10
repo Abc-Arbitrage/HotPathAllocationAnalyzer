@@ -25,6 +25,8 @@ namespace HotPathAllocationAnalyzer.Analyzers
 
         public override void Initialize(AnalysisContext context)
         {
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
             context.RegisterSyntaxNodeAction(Analyze, Expressions);
         }
 
