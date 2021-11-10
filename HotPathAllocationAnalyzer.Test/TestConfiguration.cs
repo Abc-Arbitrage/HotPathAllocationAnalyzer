@@ -8,7 +8,7 @@ namespace HotPathAllocationAnalyzer.Test
         {
             MakeSafe(() => str.Length);
             MakeSafe(() => str.IsNormalized());
-            MakeSafe(() => str.Contains(default));
+            MakeSafe(() => str.Contains(default(string)));
         }
 
         public void WhitelistNullable<T>(T? arg)
