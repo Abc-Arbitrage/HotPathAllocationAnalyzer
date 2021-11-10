@@ -60,5 +60,11 @@ public class TestConfiguration : AllocationConfiguration
         MakeSafe(() => arg.Value); 
         MakeSafe(() => arg.HasValue); 
     }
+    
+    [MakeSafe]
+    public void WhitelistSomeCalls()
+    {
+        Console.WriteLine("Hello");
+    }
 }
 ```  

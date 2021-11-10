@@ -15,7 +15,7 @@ namespace HotPathAllocationAnalyzer.Test.ManualTests
     [TestClass]
     public class TestProject : AllocationAnalyzerTests
     {
-        [TestMethod]
+        [TestMethod, Ignore]
         public void AnalyzeProgram()
         {
             if (!System.Diagnostics.Debugger.IsAttached) 

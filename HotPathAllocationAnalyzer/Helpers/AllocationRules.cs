@@ -30,6 +30,12 @@ namespace HotPathAllocationAnalyzer.Helpers
                    && attribute.AttributeClass.ContainingNamespace.ToDisplayString() == typeof(CompilerGeneratedAttribute).Namespace;
         }
 
+        public static bool IsMakeSafeAttribute(AttributeData attribute)
+        {
+            return attribute.AttributeClass.Name == nameof(MakeSafe)
+                   && attribute.AttributeClass.ContainingNamespace.ToDisplayString() == typeof(MakeSafe).Namespace;
+        }
+
         public static ClassDeclarationSyntax GetConfigurationClass(SyntaxNode syntaxNode, SemanticModel semanticModel)
         {
             bool IsConfigurationBaseType(ITypeSymbol typeSymbol)

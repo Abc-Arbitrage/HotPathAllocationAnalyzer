@@ -57,14 +57,28 @@ namespace HotPathAllocationAnalyzer.Configuration
         private static IEnumerable<string> GenerateWhitelistSymbols(ClassDeclarationSyntax classDecl, SemanticModel semanticModel, CancellationToken token)
             => classDecl.Members.OfType<MethodDeclarationSyntax>().SelectMany(m => GenerateWhitelistSymbol(m, semanticModel, token));
 
-        private static IEnumerable<string> GenerateWhitelistSymbol(BaseMethodDeclarationSyntax methodDecl, SemanticModel semanticModel, CancellationToken token)
+        private static IEnumerable<string> GenerateWhitelistSymbol(MethodDeclarationSyntax methodDecl, SemanticModel semanticModel, CancellationToken token)
         {
             var body = methodDecl.Body;
             var statements = body.Statements;
 
+            foreach (var p in GenerateWhitelistSymbolsFromExpressions(semanticModel, token, statements))
+                yield return p;
+
+            var attributes = semanticModel.GetDeclaredSymbol(methodDecl)?.GetAttributes();
+            var hasMakeSafeAttribute = attributes?.Any(AllocationRules.IsMakeSafeAttribute) ?? false;
+            if (!hasMakeSafeAttribute)
+                yield break;
+            
+            foreach (var p in GenerateWhitelistSymbolsFromInvokations(semanticModel, token, statements))
+                yield return p;
+        }
+
+        private static IEnumerable<string> GenerateWhitelistSymbolsFromExpressions(SemanticModel semanticModel, CancellationToken token, SyntaxList<StatementSyntax> statements)
+        {
             var invocationsExpr = statements.OfType<ExpressionStatementSyntax>()
-                                           .Select(x => x.Expression)
-                                           .OfType<InvocationExpressionSyntax>();
+                                            .Select(x => x.Expression)
+                                            .OfType<InvocationExpressionSyntax>();
 
             foreach (var invocationExpr in invocationsExpr)
             {
@@ -73,7 +87,7 @@ namespace HotPathAllocationAnalyzer.Configuration
                     continue;
 
                 var arguments = invocationExpr.ArgumentList.Arguments;
-                
+
                 if (arguments.Count != 1)
                     continue;
 
@@ -82,22 +96,42 @@ namespace HotPathAllocationAnalyzer.Configuration
                     continue;
 
                 var childSymbol = semanticModel.GetSymbolInfo(lambdaExpr.Body, token).Symbol;
-                switch (childSymbol)
-                {
-                    case IMethodSymbol methodExpr:
-                    {
-                        yield return MethodSymbolSerializer.Serialize(methodExpr);
-                        break;
-                    }
-                    case IPropertySymbol memberExpr:
-                    {
-                        yield return MethodSymbolSerializer.Serialize(memberExpr);
-                        break;
-                    }
-                }
+                foreach (var p in SerializeSymbol(childSymbol))
+                    yield return p;
             }
         }
 
+        private static IEnumerable<string> GenerateWhitelistSymbolsFromInvokations(SemanticModel semanticModel, CancellationToken token, SyntaxList<StatementSyntax> statements)
+        {
+            var invocationsExpr = statements.OfType<ExpressionStatementSyntax>()
+                                            .Select(x => x.Expression)
+                                            .OfType<InvocationExpressionSyntax>();
+
+            foreach (var invocationExpr in invocationsExpr)
+            {
+                var childSymbol = semanticModel.GetSymbolInfo(invocationExpr, token).Symbol;
+                foreach (var p in SerializeSymbol(childSymbol))
+                    yield return p;
+            }
+        }
+        
+        private static IEnumerable<string> SerializeSymbol(ISymbol? childSymbol)
+        {
+            switch (childSymbol)
+            {
+                case IMethodSymbol methodExpr:
+                {
+                    yield return MethodSymbolSerializer.Serialize(methodExpr);
+                    break;
+                }
+                case IPropertySymbol memberExpr:
+                {
+                    yield return MethodSymbolSerializer.Serialize(memberExpr);
+                    break;
+                }
+            }
+        }
+        
         private static IEnumerable<ClassDeclarationSyntax> GetConfigurationClasses(SyntaxNode syntaxNode, SemanticModel model)
         {
             var configurationClasses = new List<ClassDeclarationSyntax>();
