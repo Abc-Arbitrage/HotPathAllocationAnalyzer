@@ -34,13 +34,13 @@ public int Something(string str)
 
 ## Setup
 
-Install the nuget package `Analyzers\HotPathAllocationAnalyzer` on the project to analyze
+Install the nuget package `HotPathAllocationAnalyzer` on the project to analyze
 
 ## Whitelisting
 
 Whitelisting can be used to mark third party and system methods as safe.
 
-1. To create a whitelist, you need to create a folder called `HotPathAllocationAnalyzer` at the root of your solution. 
+1. To create a whitelist, you need to create a folder called `Analyzers\HotPathAllocationAnalyzer` at the root of your solution. 
 2. This folder should contain a `csproj` (name does not matter) and reference the nuget `HotPathAllocationAnalyzer.Configuration`
 3. You can then add some `class` in the project that implements the `AllocationConfiguration` class and define a method listing the whitelisted methods:
 
