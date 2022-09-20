@@ -8,6 +8,7 @@ namespace HotPathAllocationAnalyzer.Helpers
 {
     public static class AllocationRules
     {
+        public const string ConfigurationRootDirectoryName = "Analyzers";
         public const string ConfigurationDirectoryName = "HotPathAllocationAnalyzer";
         
         public const string WhitelistFileName = "whitelist.txt";

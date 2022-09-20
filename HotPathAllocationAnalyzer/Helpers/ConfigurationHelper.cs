@@ -9,7 +9,7 @@ namespace HotPathAllocationAnalyzer.Helpers
             var directoryName = Path.GetDirectoryName(filePath);
             while (!string.IsNullOrEmpty(directoryName))
             {
-                var configurationDirectory = Path.Combine(directoryName, AllocationRules.ConfigurationDirectoryName);
+                var configurationDirectory = Path.Combine(directoryName, AllocationRules.ConfigurationRootDirectoryName, AllocationRules.ConfigurationDirectoryName);
                 if (Directory.Exists(configurationDirectory))
                     return configurationDirectory;
 

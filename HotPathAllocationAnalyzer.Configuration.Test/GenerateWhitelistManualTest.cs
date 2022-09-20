@@ -10,7 +10,7 @@ namespace HotPathAllocationAnalyzer.Configuration.Test
         [TestMethod]
         public void GenerateWhitelist()
         {
-            var sourceProject = @"C:\Dev\dotnet\src\HotPathAllocationAnalyzer\";
+            var sourceProject = @"C:\Dev\dotnet\src\Analyzers\HotPathAllocationAnalyzer\";
             var reader = new ConfigurationReader(sourceProject);
 
             var result = reader.GenerateWhitelistAsync(CancellationToken.None).Result;
