@@ -34,7 +34,7 @@ public int Something(string str)
 
 ## Setup
 
-Install the nuget package `HotPathAllocationAnalyzer` on the project to analyze
+Install the nuget package `Analyzers\HotPathAllocationAnalyzer` on the project to analyze
 
 ## Whitelisting
 
