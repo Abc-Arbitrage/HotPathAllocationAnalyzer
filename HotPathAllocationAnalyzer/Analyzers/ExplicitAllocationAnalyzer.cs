@@ -31,18 +31,18 @@ namespace HotPathAllocationAnalyzer.Analyzers
 
         protected override SyntaxKind[] Expressions => new[]
         {
-            SyntaxKind.ObjectCreationExpression, // Used
-            SyntaxKind.AnonymousObjectCreationExpression, // Used
-            SyntaxKind.ArrayInitializerExpression, // Used (this is inside an ImplicitArrayCreationExpression)
-            SyntaxKind.CollectionInitializerExpression, // Is this used anywhere?
+            SyntaxKind.ObjectCreationExpression,            // Used
+            SyntaxKind.AnonymousObjectCreationExpression,   // Used
+            SyntaxKind.ArrayInitializerExpression,          // Used (this is inside an ImplicitArrayCreationExpression)
+            SyntaxKind.CollectionInitializerExpression,     // Is this used anywhere?
             SyntaxKind.ComplexElementInitializerExpression, // Is this used anywhere? For what this is see http://source.roslyn.codeplex.com/#Microsoft.CodeAnalysis.CSharp/Compilation/CSharpSemanticModel.cs,80
-            SyntaxKind.ObjectInitializerExpression, // Used linked to InitializerExpressionSyntax
-            SyntaxKind.ArrayCreationExpression, // Used
-            SyntaxKind.ImplicitArrayCreationExpression, // Used (this then contains an ArrayInitializerExpression)
-            SyntaxKind.LetClause, // Used
-            SyntaxKind.ImplicitObjectCreationExpression,
-            SyntaxKind.InvocationExpression,
-            SyntaxKind.VariableDeclaration,
+            SyntaxKind.ObjectInitializerExpression,         // Used linked to InitializerExpressionSyntax
+            SyntaxKind.ArrayCreationExpression,             // Used
+            SyntaxKind.ImplicitArrayCreationExpression,     // Used (this then contains an ArrayInitializerExpression)
+            SyntaxKind.LetClause,                           // Used
+            SyntaxKind.ImplicitObjectCreationExpression,    // Used for target type new
+            SyntaxKind.InvocationExpression,                // Used for target type new
+            SyntaxKind.VariableDeclaration,                 // Used for target type new
         };
 
         private static readonly object[] EmptyMessageArgs = { };
@@ -55,13 +55,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
             : base(forceAnalysis)
         {
         }
-
-        private bool HasObjectCreationDescendant(SyntaxNode node)
-        {
-            var creationSyntax = new List<SyntaxKind>() {SyntaxKind.ObjectCreationExpression, SyntaxKind.ImplicitObjectCreationExpression, SyntaxKind.AnonymousObjectCreationExpression};
-            return node.DescendantNodes().Any(x => creationSyntax.Contains(x.Kind()));
-        }
-
+        
         protected override void AnalyzeNode(SyntaxNodeAnalysisContext context)
         {
             var node = context.Node;
