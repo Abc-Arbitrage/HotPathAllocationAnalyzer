@@ -241,6 +241,13 @@ public class PropertyTests
     public HashSet<int> B {get; set;}
     public DateTime Date {get; set;}
 }
+
+public struct PropertyStructTests
+{
+    public List<int> A {get; set;}
+    public HashSet<int> B {get; set;}
+    public DateTime Date {get; set;}
+}
 List<int> collection = new(); //allocate
 DateTime date = new(); //no allocation
 
@@ -258,6 +265,12 @@ var toto = new PropertyTests()
     B = new() {1, 3, 5} ,
     Date = new()
 };
+var structTest = new PropertyStructTests() 
+{ 
+    A = new(), // allocate
+    B = new() {1, 3, 5} , // allocate
+    Date = new() // does not allocate
+};
 ";
             //TODO : the ObjectInitializer should not tag parameter if they are object creation otherwise they are counted twice ...
             var analyser = new ExplicitAllocationAnalyzer(true);
@@ -266,18 +279,17 @@ var toto = new PropertyTests()
             var expected = analyser.GetType().GetProperty("Expressions", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(analyser) as SyntaxKind[];
             var info = ProcessCode(analyser, sampleProgram, expected.ToImmutableArray());
 
-            Assert.AreEqual(8, info.Allocations.Count);
-            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 18, character: 1);
-            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 21, character: 1);
-            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 22, character: 1);
+            Assert.AreEqual(10, info.Allocations.Count);
             AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 25, character: 1);
-            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewObjectRule.Id, line: 29, character: 1);
-            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.InitializerCreationRule.Id, line: 30, character: 1);
-            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 31, character: 5);
-            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 32, character: 5);
-
-            
-
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 28, character: 1);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 29, character: 1);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 32, character: 1);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewObjectRule.Id, line: 36, character: 1);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.InitializerCreationRule.Id, line: 37, character: 1);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 38, character: 5);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 39, character: 5); 
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 44, character: 5); 
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 45, character: 5); 
         }
     }
 }
