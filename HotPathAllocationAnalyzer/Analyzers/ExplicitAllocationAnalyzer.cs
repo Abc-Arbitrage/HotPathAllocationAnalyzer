@@ -13,18 +13,12 @@ namespace HotPathAllocationAnalyzer.Analyzers
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class ExplicitAllocationAnalyzer : AllocationAnalyzer
     {
-        public static DiagnosticDescriptor NewArrayRule = new DiagnosticDescriptor("HAA0501", "Explicit new array type allocation", "Explicit new array type allocation", "Performance", DiagnosticSeverity.Error, true);
-
-        public static DiagnosticDescriptor NewObjectRule = new DiagnosticDescriptor("HAA0502", "Explicit new reference type allocation", "Explicit new reference type allocation", "Performance", DiagnosticSeverity.Error, true);
-
-        public static DiagnosticDescriptor AnonymousNewObjectRule = new DiagnosticDescriptor("HAA0503", "Explicit new anonymous object allocation", "Explicit new anonymous object allocation", "Performance", DiagnosticSeverity.Error, true, string.Empty, "https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/anonymous-types");
-
-        public static DiagnosticDescriptor ImplicitArrayCreationRule = new DiagnosticDescriptor("HAA0504", "Implicit new array creation allocation", "Implicit new array creation allocation", "Performance", DiagnosticSeverity.Error, true);
-
-        public static DiagnosticDescriptor InitializerCreationRule = new DiagnosticDescriptor("HAA0505", "Initializer reference type allocation", "Initializer reference type allocation", "Performance", DiagnosticSeverity.Error, true);
-
-        public static DiagnosticDescriptor LetCauseRule = new DiagnosticDescriptor("HAA0506", "Let clause induced allocation", "Let clause induced allocation", "Performance", DiagnosticSeverity.Error, true);
-
+        public static DiagnosticDescriptor NewArrayRule = new DiagnosticDescriptor("HAA0501", "Explicit new array type allocation", "Explicit new array type allocation", "Performance", DiagnosticSeverity.Error, true); 
+        public static DiagnosticDescriptor NewObjectRule = new DiagnosticDescriptor("HAA0502", "Explicit new reference type allocation", "Explicit new reference type allocation", "Performance", DiagnosticSeverity.Error, true); 
+        public static DiagnosticDescriptor AnonymousNewObjectRule = new DiagnosticDescriptor("HAA0503", "Explicit new anonymous object allocation", "Explicit new anonymous object allocation", "Performance", DiagnosticSeverity.Error, true, string.Empty, "https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/anonymous-types"); 
+        public static DiagnosticDescriptor ImplicitArrayCreationRule = new DiagnosticDescriptor("HAA0504", "Implicit new array creation allocation", "Implicit new array creation allocation", "Performance", DiagnosticSeverity.Error, true); 
+        public static DiagnosticDescriptor InitializerCreationRule = new DiagnosticDescriptor("HAA0505", "Initializer reference type allocation", "Initializer reference type allocation", "Performance", DiagnosticSeverity.Error, true); 
+        public static DiagnosticDescriptor LetCauseRule = new DiagnosticDescriptor("HAA0506", "Let clause induced allocation", "Let clause induced allocation", "Performance", DiagnosticSeverity.Error, true); 
         public static DiagnosticDescriptor TargetTypeNewRule = new DiagnosticDescriptor("HAA0506", "Target type new allocation", "Target type new allocation", "Performance", DiagnosticSeverity.Error, true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(LetCauseRule, InitializerCreationRule, ImplicitArrayCreationRule, AnonymousNewObjectRule, NewObjectRule, NewArrayRule);
@@ -55,47 +49,52 @@ namespace HotPathAllocationAnalyzer.Analyzers
             : base(forceAnalysis)
         {
         }
-        
+
         protected override void AnalyzeNode(SyntaxNodeAnalysisContext context)
         {
             var node = context.Node;
             var semanticModel = context.SemanticModel;
-            Action<Diagnostic> reportDiagnostic = context.ReportDiagnostic;
+            var reportDiagnostic = context.ReportDiagnostic;
             var cancellationToken = context.CancellationToken;
-            string filePath = node.SyntaxTree.FilePath;
-            
+            var filePath = node.SyntaxTree.FilePath;
+
             if (node is ObjectCreationExpressionSyntax newObj)
             {
                 var typeInfo = semanticModel.GetTypeInfo(newObj, cancellationToken);
                 if (typeInfo.ConvertedType != null && typeInfo.ConvertedType.TypeKind != TypeKind.Error && typeInfo.ConvertedType.IsReferenceType)
                 {
-                    var (ancestorType, ancestor) = newObj.FindAncestor(
-                        SyntaxKind.SimpleAssignmentExpression, SyntaxKind.ComplexElementInitializerExpression, SyntaxKind.SimpleAssignmentExpression, SyntaxKind.VariableDeclaration, SyntaxKind.InvocationExpression);
+                    var (ancestorType, ancestor) = newObj.FindAncestor(SyntaxKind.SimpleAssignmentExpression,
+                                                                       SyntaxKind.ComplexElementInitializerExpression,
+                                                                       SyntaxKind.SimpleAssignmentExpression,
+                                                                       SyntaxKind.VariableDeclaration,
+                                                                       SyntaxKind.InvocationExpression);
                     reportDiagnostic(ancestor == null
                                          ? Diagnostic.Create(NewObjectRule, newObj.GetLocation(), EmptyMessageArgs)
                                          : Diagnostic.Create(NewObjectRule, ancestor.GetLocation(), EmptyMessageArgs));
-                    
+
                     HeapAllocationAnalyzerEventSource.Logger.NewObjectCreationExpression(filePath);
                 }
+
                 return;
             }
-            
+
             if (node is InitializerExpressionSyntax objectInitializerSyntax)
             {
                 if (node.Kind() != SyntaxKind.ObjectInitializerExpression)
                     return;
-                
-                var (ancestorType, ancestor) = objectInitializerSyntax.FindAncestor(
-                    SyntaxKind.ObjectCreationExpression, SyntaxKind.AnonymousObjectCreationExpression, SyntaxKind.ImplicitObjectCreationExpression);
+
+                var (ancestorType, ancestor) = objectInitializerSyntax.FindAncestor(SyntaxKind.ObjectCreationExpression,
+                                                                                    SyntaxKind.AnonymousObjectCreationExpression,
+                                                                                    SyntaxKind.ImplicitObjectCreationExpression);
                 if (ancestor == null)
                     return;
 
                 var typeInfo = semanticModel.GetTypeInfo(ancestor, cancellationToken);
-                if (typeInfo.ConvertedType != null &&  typeInfo.ConvertedType.TypeKind != TypeKind.Error && typeInfo.ConvertedType.IsReferenceType)
+                if (typeInfo.ConvertedType != null && typeInfo.ConvertedType.TypeKind != TypeKind.Error && typeInfo.ConvertedType.IsReferenceType)
                 {
                     reportDiagnostic(Diagnostic.Create(InitializerCreationRule, objectInitializerSyntax.GetLocation(), EmptyMessageArgs));
                     HeapAllocationAnalyzerEventSource.Logger.NewInitializerExpression(filePath);
-                    return;   
+                    return;
                 }
             }
 
@@ -126,14 +125,17 @@ namespace HotPathAllocationAnalyzer.Analyzers
                 HeapAllocationAnalyzerEventSource.Logger.LetClauseExpression(filePath);
                 return;
             }
-            
+
             if (node is ImplicitObjectCreationExpressionSyntax implicitObjectCreation)
             {
                 var typeInfo = semanticModel.GetTypeInfo(implicitObjectCreation, cancellationToken);
                 if (typeInfo.ConvertedType?.IsReferenceType == true)
                 {
-                    var (ancestorType, ancestor) = implicitObjectCreation.FindAncestor(
-                        SyntaxKind.SimpleAssignmentExpression, SyntaxKind.ComplexElementInitializerExpression, SyntaxKind.SimpleAssignmentExpression, SyntaxKind.VariableDeclaration, SyntaxKind.InvocationExpression);
+                    var (ancestorType, ancestor) = implicitObjectCreation.FindAncestor(SyntaxKind.SimpleAssignmentExpression,
+                                                                                       SyntaxKind.ComplexElementInitializerExpression,
+                                                                                       SyntaxKind.SimpleAssignmentExpression,
+                                                                                       SyntaxKind.VariableDeclaration,
+                                                                                       SyntaxKind.InvocationExpression);
                     reportDiagnostic(ancestor == null
                                          ? Diagnostic.Create(TargetTypeNewRule, implicitObjectCreation.GetLocation(), EmptyMessageArgs)
                                          : Diagnostic.Create(TargetTypeNewRule, ancestor.GetLocation(), EmptyMessageArgs));
