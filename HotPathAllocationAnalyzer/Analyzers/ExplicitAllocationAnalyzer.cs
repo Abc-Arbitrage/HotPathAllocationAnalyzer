@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using ClrHeapAllocationAnalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace HotPathAllocationAnalyzer.Analyzers
 {
@@ -60,22 +62,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
 
             if (node is ObjectCreationExpressionSyntax newObj)
             {
-                var typeInfo = semanticModel.GetTypeInfo(newObj, cancellationToken);
-                if (typeInfo.ConvertedType != null && typeInfo.ConvertedType.TypeKind != TypeKind.Error && typeInfo.ConvertedType.IsReferenceType)
-                {
-                    var (ancestorType, ancestor) = newObj.FindAncestor(SyntaxKind.SimpleAssignmentExpression,
-                                                                       SyntaxKind.ComplexElementInitializerExpression,
-                                                                       SyntaxKind.SimpleAssignmentExpression,
-                                                                       SyntaxKind.VariableDeclaration,
-                                                                       SyntaxKind.InvocationExpression);
-                    reportDiagnostic(ancestor == null
-                                         ? Diagnostic.Create(NewObjectRule, newObj.GetLocation(), EmptyMessageArgs)
-                                         : Diagnostic.Create(NewObjectRule, ancestor.GetLocation(), EmptyMessageArgs));
-
-                    HeapAllocationAnalyzerEventSource.Logger.NewObjectCreationExpression(filePath);
-                }
-
-                return;
+                AnalyzeObjectCreationSyntax(context, node, NewObjectRule);
             }
 
             if (node is InitializerExpressionSyntax objectInitializerSyntax)
@@ -128,19 +115,59 @@ namespace HotPathAllocationAnalyzer.Analyzers
 
             if (node is ImplicitObjectCreationExpressionSyntax implicitObjectCreation)
             {
-                var typeInfo = semanticModel.GetTypeInfo(implicitObjectCreation, cancellationToken);
-                if (typeInfo.ConvertedType?.IsReferenceType == true)
+                AnalyzeObjectCreationSyntax(context, implicitObjectCreation, TargetTypeNewRule);
+            }
+        }
+
+        private void AnalyzeObjectCreationSyntax(SyntaxNodeAnalysisContext context, SyntaxNode node, DiagnosticDescriptor diagnosticDescriptor)
+        {
+            if (node is not ObjectCreationExpressionSyntax && node is not ImplicitObjectCreationExpressionSyntax)
+                return;
+
+            if (!IsReferenceType(context, node))
+                return;
+
+            var exceptions = new List<List<SyntaxKind>>
+            {
+                new() {SyntaxKind.EqualsValueClause, SyntaxKind.PropertyDeclaration}
+            };
+
+            foreach (var path in exceptions)
+            {
+                if (node.SearchPath(path.ToArray()) != null)
+                    return;
+            }
+            
+            //These paths are multiple scenarios to have nicer error messages
+            //If we don't match any we juste display the location of the node
+            var paths = new List<List<SyntaxKind>>
+            {
+                new() {SyntaxKind.EqualsValueClause, SyntaxKind.VariableDeclarator, SyntaxKind.VariableDeclaration}, //variableDeclarator,
+                new() {SyntaxKind.Argument, SyntaxKind.ArgumentList, SyntaxKind.InvocationExpression}, // method call,
+                new() {SyntaxKind.Argument, SyntaxKind.TupleExpression}, //tuple creation
+                new() {SyntaxKind.ArrowExpressionClause, SyntaxKind.PropertyDeclaration}, // property declaration
+                new() {SyntaxKind.ArrowExpressionClause},
+                new() {SyntaxKind.ReturnStatement}
+            };
+            
+            foreach (var path in paths)
+            {
+                var ancestor = node.SearchPath(path.ToArray());
+                if (ancestor != null)
                 {
-                    var (ancestorType, ancestor) = implicitObjectCreation.FindAncestor(SyntaxKind.SimpleAssignmentExpression,
-                                                                                       SyntaxKind.ComplexElementInitializerExpression,
-                                                                                       SyntaxKind.SimpleAssignmentExpression,
-                                                                                       SyntaxKind.VariableDeclaration,
-                                                                                       SyntaxKind.InvocationExpression);
-                    reportDiagnostic(ancestor == null
-                                         ? Diagnostic.Create(TargetTypeNewRule, implicitObjectCreation.GetLocation(), EmptyMessageArgs)
-                                         : Diagnostic.Create(TargetTypeNewRule, ancestor.GetLocation(), EmptyMessageArgs));
+                    Diagnostic.Create(diagnosticDescriptor, ancestor.GetLocation(), EmptyMessageArgs);
+                    context.ReportDiagnostic(Diagnostic.Create(diagnosticDescriptor, ancestor.GetLocation(), EmptyMessageArgs));
+                    return;
                 }
             }
+            context.ReportDiagnostic(Diagnostic.Create(diagnosticDescriptor, node.GetLocation(), EmptyMessageArgs));
+
+        }
+
+        private bool IsReferenceType(SyntaxNodeAnalysisContext context, SyntaxNode node)
+        {
+            var typeInfo = context.SemanticModel.GetTypeInfo(node, context.CancellationToken);
+            return typeInfo.ConvertedType != null && typeInfo.ConvertedType.TypeKind != TypeKind.Error && typeInfo.ConvertedType.IsReferenceType;
         }
     }
 }
