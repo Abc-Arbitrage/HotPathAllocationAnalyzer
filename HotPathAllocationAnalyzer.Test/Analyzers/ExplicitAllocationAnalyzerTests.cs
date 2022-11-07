@@ -265,6 +265,7 @@ var toto = new PropertyTests()
     B = new() {1, 3, 5} ,
     Date = new()
 };
+
 var structTest = new PropertyStructTests() 
 { 
     A = new(), // allocate
@@ -272,10 +273,8 @@ var structTest = new PropertyStructTests()
     Date = new() // does not allocate
 };
 ";
-            //TODO : the ObjectInitializer should not tag parameter if they are object creation otherwise they are counted twice ...
             var analyser = new ExplicitAllocationAnalyzer(true);
 
-            //I think the target new is considered as ImplicitObjectCreationExpression
             var expected = analyser.GetType().GetProperty("Expressions", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(analyser) as SyntaxKind[];
             var info = ProcessCode(analyser, sampleProgram, expected.ToImmutableArray());
 
@@ -287,9 +286,29 @@ var structTest = new PropertyStructTests()
             AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewObjectRule.Id, line: 36, character: 1);
             AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.InitializerCreationRule.Id, line: 37, character: 1);
             AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 38, character: 5);
-            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 39, character: 5); 
-            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 44, character: 5); 
-            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 45, character: 5); 
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 39, character: 5);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 45, character: 5);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 46, character: 5);
+        }
+
+        [TestMethod]
+        public void ExplicitAllocation_ShouldNotTriggerOnStaticAllocation()
+        {
+            var sampleProgram = @"
+using System.Collections.Generic;
+
+public class Foo
+{
+    public List<int> A {get; set;} = new(); //should not trigger
+    public List<int> B {get; set;} = new List<int>() {1, 3, 5}; //should not trigger
+}
+
+var foo = new Foo();
+";
+            var analyser = new ExplicitAllocationAnalyzer(true);
+            var expected = analyser.GetType().GetProperty("Expressions", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(analyser) as SyntaxKind[];
+            var info = ProcessCode(analyser, sampleProgram, expected.ToImmutableArray());
+            Assert.AreEqual(1, info.Allocations.Count);
         }
     }
 }

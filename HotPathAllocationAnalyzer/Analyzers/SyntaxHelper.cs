@@ -33,5 +33,21 @@ namespace ClrHeapAllocationAnalyzer
             }
             return new(typeof(object), null);
         }
+
+        public static SyntaxNode? SearchPath(this SyntaxNode node, params SyntaxKind[] path)
+        {
+            var current = node;
+            int index = 0;
+            while (index < path.Length)
+            {
+                current = current.Parent;
+                if (current == null)
+                    return null;
+                if (current.Kind() != path[index])
+                    return null;
+                index++;
+            }
+            return current;
+        }
     }
 }

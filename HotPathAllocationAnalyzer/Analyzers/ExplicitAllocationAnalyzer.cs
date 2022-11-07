@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using ClrHeapAllocationAnalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -61,21 +62,27 @@ namespace HotPathAllocationAnalyzer.Analyzers
             if (node is ObjectCreationExpressionSyntax newObj)
             {
                 var typeInfo = semanticModel.GetTypeInfo(newObj, cancellationToken);
-                if (typeInfo.ConvertedType != null && typeInfo.ConvertedType.TypeKind != TypeKind.Error && typeInfo.ConvertedType.IsReferenceType)
+                if (typeInfo.ConvertedType?.IsReferenceType != true)
+                    return;
+
+                var paths = new List<List<SyntaxKind>>
                 {
-                    var (ancestorType, ancestor) = newObj.FindAncestor(SyntaxKind.SimpleAssignmentExpression,
-                                                                       SyntaxKind.ComplexElementInitializerExpression,
-                                                                       SyntaxKind.SimpleAssignmentExpression,
-                                                                       SyntaxKind.VariableDeclaration,
-                                                                       SyntaxKind.InvocationExpression);
-                    reportDiagnostic(ancestor == null
-                                         ? Diagnostic.Create(NewObjectRule, newObj.GetLocation(), EmptyMessageArgs)
-                                         : Diagnostic.Create(NewObjectRule, ancestor.GetLocation(), EmptyMessageArgs));
+                    new() {SyntaxKind.EqualsValueClause, SyntaxKind.VariableDeclarator, SyntaxKind.VariableDeclaration}, //variableDeclarator,
+                    new() {SyntaxKind.Argument, SyntaxKind.ArgumentList, SyntaxKind.InvocationExpression}, // method call,
+                    new() {SyntaxKind.SimpleAssignmentExpression}, //object initializer
+                    new() {SyntaxKind.ComplexElementInitializerExpression} // collection init (for example dictionary)
+                };
 
-                    HeapAllocationAnalyzerEventSource.Logger.NewObjectCreationExpression(filePath);
+                foreach (var path in paths)
+                {
+                    var ancestor = newObj.SearchPath(path.ToArray());
+                    if (ancestor != null)
+                    {
+                        Diagnostic.Create(NewObjectRule, ancestor.GetLocation(), EmptyMessageArgs);
+                        reportDiagnostic(Diagnostic.Create(NewObjectRule, ancestor.GetLocation(), EmptyMessageArgs));
+                        return;
+                    }
                 }
-
-                return;
             }
 
             if (node is InitializerExpressionSyntax objectInitializerSyntax)
@@ -129,16 +136,26 @@ namespace HotPathAllocationAnalyzer.Analyzers
             if (node is ImplicitObjectCreationExpressionSyntax implicitObjectCreation)
             {
                 var typeInfo = semanticModel.GetTypeInfo(implicitObjectCreation, cancellationToken);
-                if (typeInfo.ConvertedType?.IsReferenceType == true)
+                if (typeInfo.ConvertedType?.IsReferenceType != true)
+                    return;
+
+                var paths = new List<List<SyntaxKind>>
                 {
-                    var (ancestorType, ancestor) = implicitObjectCreation.FindAncestor(SyntaxKind.SimpleAssignmentExpression,
-                                                                                       SyntaxKind.ComplexElementInitializerExpression,
-                                                                                       SyntaxKind.SimpleAssignmentExpression,
-                                                                                       SyntaxKind.VariableDeclaration,
-                                                                                       SyntaxKind.InvocationExpression);
-                    reportDiagnostic(ancestor == null
-                                         ? Diagnostic.Create(TargetTypeNewRule, implicitObjectCreation.GetLocation(), EmptyMessageArgs)
-                                         : Diagnostic.Create(TargetTypeNewRule, ancestor.GetLocation(), EmptyMessageArgs));
+                    new() {SyntaxKind.EqualsValueClause, SyntaxKind.VariableDeclarator, SyntaxKind.VariableDeclaration}, //variableDeclarator,
+                    new() {SyntaxKind.Argument, SyntaxKind.ArgumentList, SyntaxKind.InvocationExpression}, // method call,
+                    new() {SyntaxKind.SimpleAssignmentExpression}, //object initializer
+                    new() {SyntaxKind.ComplexElementInitializerExpression} // collection init (for example dictionary)
+                };
+
+                foreach (var path in paths)
+                {
+                    var ancestor = implicitObjectCreation.SearchPath(path.ToArray());
+                    if (ancestor != null)
+                    {
+                        Diagnostic.Create(TargetTypeNewRule, ancestor.GetLocation(), EmptyMessageArgs);
+                        reportDiagnostic(Diagnostic.Create(TargetTypeNewRule, ancestor.GetLocation(), EmptyMessageArgs));
+                        return;
+                    }
                 }
             }
         }
