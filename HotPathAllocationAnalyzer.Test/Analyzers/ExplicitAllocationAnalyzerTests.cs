@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Reflection;
 using HotPathAllocationAnalyzer.Analyzers;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,10 +13,10 @@ namespace HotPathAllocationAnalyzer.Test.Analyzers
         public void ExplicitAllocation_InitializerExpressionSyntax()
         {
             var sampleProgram =
-@"using System;
+                @"using System;
 
-var @struct = new TestStruct { Name = ""Bob"" };
-var @class = new TestClass { Name = ""Bob"" };
+var @struct = new TestStruct { Name = ""Bob""};
+var @class = new TestClass { Name = ""Bob"", Age=42 };
 
 public struct TestStruct
 {
@@ -25,6 +26,7 @@ public struct TestStruct
 public class TestClass
 {
     public string Name { get; set; }
+    public int Age {get; set;}
 }";
 
             var analyser = new ExplicitAllocationAnalyzer(true);
@@ -33,17 +35,17 @@ public class TestClass
 
             Assert.AreEqual(2, info.Allocations.Count);
             // Diagnostic: (4,14): info HeapAnalyzerExplicitNewObjectRule: Explicit new reference type allocation
-            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewObjectRule.Id, line: 4, character: 14);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewObjectRule.Id, line: 4, character: 1);
 
             // Diagnostic: (4,5): info HeapAnalyzerInitializerCreationRule: Initializer reference type allocation ***
-            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.InitializerCreationRule.Id, line: 4, character: 5);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.InitializerCreationRule.Id, line: 4, character: 28);
         }
 
         [TestMethod]
         public void ExplicitAllocation_ImplicitArrayCreationExpressionSyntax()
         {
             var sampleProgram =
-@"using System.Collections.Generic;
+                @"using System.Collections.Generic;
 
 int[] intData = new[] { 123, 32, 4 };";
 
@@ -59,7 +61,7 @@ int[] intData = new[] { 123, 32, 4 };";
         public void ExplicitAllocation_AnonymousObjectCreationExpressionSyntax()
         {
             var sampleProgram =
-@"using System;
+                @"using System;
 
 var temp = new { A = 123, Name = ""Test"", };";
 
@@ -75,7 +77,7 @@ var temp = new { A = 123, Name = ""Test"", };";
         public void ExplicitAllocation_ArrayCreationExpressionSyntax()
         {
             var sampleProgram =
-@"using System.Collections.Generic;
+                @"using System.Collections.Generic;
 
 int[] intData = new int[] { 123, 32, 4 };";
 
@@ -91,7 +93,7 @@ int[] intData = new int[] { 123, 32, 4 };";
         public void ExplicitAllocation_ObjectCreationExpressionSyntax()
         {
             var sampleProgram =
-@"using System;
+                @"using System;
 
 var allocation = new String('a', 10);
 var noAllocation = new DateTime();";
@@ -101,14 +103,14 @@ var noAllocation = new DateTime();";
 
             Assert.AreEqual(1, info.Allocations.Count);
             // Diagnostic: (3,18): info HeapAnalyzerExplicitNewObjectRule: Explicit new reference type allocation
-            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewObjectRule.Id, line: 3, character: 18);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewObjectRule.Id, line: 3, character: 1);
         }
-        
+
         [TestMethod]
         public void ExplicitAllocation_ObjectCreationExpressionSyntax2()
         {
             var sampleProgram =
-@"using System;
+                @"using System;
 using System.Collections.Generic;
 using HotPathAllocationAnalyzer.Support;
 
@@ -133,14 +135,14 @@ using HotPathAllocationAnalyzer.Support;
 
             Assert.AreEqual(1, info.Allocations.Count);
             // Diagnostic: (3,18): info HeapAnalyzerExplicitNewObjectRule: Explicit new reference type allocation
-            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewObjectRule.Id, line: 16, character: 24);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewObjectRule.Id, line: 16, character: 13);
         }
 
         [TestMethod]
         public void ExplicitAllocation_LetClauseSyntax()
         {
             var sampleProgram =
-@"using System.Collections.Generic;
+                @"using System.Collections.Generic;
 using System.Linq;
 
 int[] intData = new[] { 123, 32, 4 };
@@ -164,7 +166,7 @@ var result = (from a in intData
         public void ExplicitAllocation_AllSyntax()
         {
             var sampleProgram =
-@"using System;
+                @"using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -197,13 +199,13 @@ public class TestClass
 
             // This test is here so that we use SyntaxKindsOfInterest explicitly, to make sure it works
             var analyser = new ExplicitAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ObjectCreationExpression, SyntaxKind.AnonymousObjectCreationExpression, SyntaxKind.ArrayInitializerExpression, SyntaxKind.CollectionInitializerExpression,SyntaxKind.ComplexElementInitializerExpression, SyntaxKind.ObjectInitializerExpression, SyntaxKind.ArrayCreationExpression, SyntaxKind.ImplicitArrayCreationExpression, SyntaxKind.LetClause));
+            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ObjectCreationExpression, SyntaxKind.AnonymousObjectCreationExpression, SyntaxKind.ArrayInitializerExpression, SyntaxKind.CollectionInitializerExpression, SyntaxKind.ComplexElementInitializerExpression, SyntaxKind.ObjectInitializerExpression, SyntaxKind.ArrayCreationExpression, SyntaxKind.ImplicitArrayCreationExpression, SyntaxKind.LetClause));
 
             Assert.AreEqual(8, info.Allocations.Count);
             // Diagnostic: (6,14): info HeapAnalyzerExplicitNewObjectRule: Explicit new reference type allocation
-            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewObjectRule.Id, line: 6, character: 14);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewObjectRule.Id, line: 6, character: 1);
             // Diagnostic: (6,5): info HeapAnalyzerInitializerCreationRule: Initializer reference type allocation
-            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.InitializerCreationRule.Id, line: 6, character: 5);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.InitializerCreationRule.Id, line: 6, character: 28);
             // Diagnostic: (8,25): info HeapAnalyzerImplicitNewArrayCreationRule: Implicit new array creation allocation
             AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.ImplicitArrayCreationRule.Id, line: 8, character: 25);
             // Diagnostic: (10,12): info HeapAnalyzerExplicitNewAnonymousObjectRule: Explicit new anonymous object allocation
@@ -211,11 +213,163 @@ public class TestClass
             // Diagnostic: (12,25): info HeapAnalyzerExplicitNewArrayRule: Explicit new array type allocation
             AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewArrayRule.Id, line: 12, character: 25);
             // Diagnostic: (14,18): info HeapAnalyzerExplicitNewObjectRule: Explicit new reference type allocation
-            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewObjectRule.Id, line: 14, character: 18);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewObjectRule.Id, line: 14, character: 1);
             // Diagnostic: (17,21): info HeapAnalyzerExplicitNewArrayRule: Explicit new array type allocation
             AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewArrayRule.Id, line: 17, character: 21);
             // Diagnostic: (19,15): info HeapAnalyzerLetClauseRule: Let clause induced allocation
             AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.LetCauseRule.Id, line: 19, character: 15);
+        }
+
+        [TestMethod]
+        public void ExplicitAllocation_TargetTypeNew()
+        {
+            var sampleProgram =
+                @"using System;
+using System.Collections.Generic;
+
+public static class Foo
+{
+    public static int Bar(List<int> collection)
+    {
+        return 42;
+    }
+}
+
+public class PropertyTests
+{
+    public List<int> A {get; set;}
+    public HashSet<int> B {get; set;}
+    public DateTime Date {get; set;}
+}
+
+public struct PropertyStructTests
+{
+    public List<int> A {get; set;}
+    public HashSet<int> B {get; set;}
+    public DateTime Date {get; set;}
+}
+List<int> collection = new(); //allocate
+DateTime date = new(); //no allocation
+
+Dictionary<int, List<int>> field = new() {
+{1, new() { 1, 2, 3 } }
+}; //allocate 2 time
+
+Foo.Bar(new()); //allocate
+
+(int a, int b) t = new(); //does not allocate
+
+var toto = new PropertyTests() 
+{ //The initialization expression raise one allocation no matter the number of property
+    A = new(),
+    B = new() {1, 3, 5} ,
+    Date = new()
+};
+
+var structTest = new PropertyStructTests() 
+{ 
+    A = new(), // allocate
+    B = new() {1, 3, 5} , // allocate
+    Date = new() // does not allocate
+};
+";
+            var analyser = new ExplicitAllocationAnalyzer(true);
+
+            var expected = analyser.GetType().GetProperty("Expressions", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(analyser) as SyntaxKind[];
+            var info = ProcessCode(analyser, sampleProgram, expected.ToImmutableArray());
+
+            
+            
+            Assert.AreEqual(10, info.Allocations.Count);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 25, character: 1);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 28, character: 1);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 29, character: 5);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 32, character: 1);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.NewObjectRule.Id, line: 36, character: 1);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.InitializerCreationRule.Id, line: 37, character: 1);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 38, character: 9);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 39, character: 9);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 45, character: 9);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 46, character: 9);
+        }
+
+        [TestMethod]
+        public void ExplicitAllocation_ShouldNotTriggerOnPropertyConstructor()
+        {
+            var sampleProgram = @"
+using System;
+using System.Collections.Generic;
+
+public class Foo
+{
+    public List<int> A {get; set;} = new(); //should not trigger
+    public List<int> B {get; set;} = new List<int>() {1, 3, 5}; //should not trigger
+    public List<int> C => new () {1, 4, 6}; // allocate
+
+    public List<int> D
+    {
+        get
+        {
+            return new() { 1, 2, 3 }; // allocate
+        }
+        set
+        {
+            value = new() { 1, 2 }; // allocate
+        }
+    }
+
+    public DateTime E => new(); //no allocation
+
+    public DateTime F
+    {
+        get
+        {
+            return new(); // no allocation
+        }
+        set
+        {
+            value = new(); //no allocation
+        }
+    }
+
+
+}
+
+var foo = new Foo();
+";
+            var analyser = new ExplicitAllocationAnalyzer(true);
+            var expected = analyser.GetType().GetProperty("Expressions", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(analyser) as SyntaxKind[];
+            var info = ProcessCode(analyser, sampleProgram, expected.ToImmutableArray());
+            Assert.AreEqual(4, info.Allocations.Count);
+        }
+
+        [TestMethod]
+        public void ExplicitAllocation_MethodReturns()
+        {
+            var sampleProgram = @"
+using System;
+using System.Collections.Generic;
+public class Foo
+{
+    public List<int> Data {get; set;} = new() {1,2}; //does not allocate;
+
+    public List<int> A(){
+        return new() {1,5,6}; //allocate
+    }
+
+    public List<int> B(){
+        return Data; //does not allocate
+    }
+
+    public (List<int> Data, int Size) C(){
+        return (new(32), 56); //allocate;
+    }
+}
+";
+            var analyser = new ExplicitAllocationAnalyzer(true);
+            var expected = analyser.GetType().GetProperty("Expressions", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(analyser) as SyntaxKind[];
+            var info = ProcessCode(analyser, sampleProgram, expected.ToImmutableArray());
+            Assert.AreEqual(2, info.Allocations.Count);
         }
     }
 }

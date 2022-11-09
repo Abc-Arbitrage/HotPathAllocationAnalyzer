@@ -54,7 +54,7 @@ namespace HotPathAllocationAnalyzer.Test.Analyzers
         protected Info ProcessCode(DiagnosticAnalyzer analyzer, string sampleProgram,
             ImmutableArray<SyntaxKind> expected, bool allowBuildErrors = false, string filePath = "")
         {
-            var options = new CSharpParseOptions(kind: SourceCodeKind.Script, languageVersion: LanguageVersion.CSharp8);
+            var options = new CSharpParseOptions(kind: SourceCodeKind.Script, languageVersion: LanguageVersion.CSharp9);
             var tree = CSharpSyntaxTree.ParseText(sampleProgram, options, filePath);
             var compilation = CSharpCompilation.Create("Test", new[] { tree }, references);
 
