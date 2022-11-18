@@ -278,8 +278,6 @@ var structTest = new PropertyStructTests()
             var expected = analyser.GetType().GetProperty("Expressions", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(analyser) as SyntaxKind[];
             var info = ProcessCode(analyser, sampleProgram, expected.ToImmutableArray());
 
-            
-            
             Assert.AreEqual(10, info.Allocations.Count);
             AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 25, character: 1);
             AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 28, character: 1);
@@ -370,6 +368,22 @@ public class Foo
             var expected = analyser.GetType().GetProperty("Expressions", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(analyser) as SyntaxKind[];
             var info = ProcessCode(analyser, sampleProgram, expected.ToImmutableArray());
             Assert.AreEqual(2, info.Allocations.Count);
+        }
+
+        [TestMethod]
+        public void ExplicitAllocation_IgnoreExceptions()
+        {
+            var sampleProgram = @"
+using System;
+
+throw new Exception(""Agrou"");
+throw new(""Grou"");
+throw new ArgumentException(""Foo"");
+";
+            var analyser = new ExplicitAllocationAnalyzer(true);
+            var expected = analyser.GetType().GetProperty("Expressions", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(analyser) as SyntaxKind[];
+            var info = ProcessCode(analyser, sampleProgram, expected.ToImmutableArray());
+            Assert.AreEqual(0, info.Allocations.Count);
         }
     }
 }
