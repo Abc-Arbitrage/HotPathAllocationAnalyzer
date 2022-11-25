@@ -7,6 +7,20 @@ namespace HotPathAllocationAnalyzer.Helpers
 {
     internal static class AttributeHelper
     {
+        public static bool ShouldAnalyzeNode(ISymbol containingSymbol)
+        {
+            if (containingSymbol.Kind == SymbolKind.Property)
+                return false;
+            if (containingSymbol is not IMethodSymbol methodSymbol)
+                return HasNoAllocationAttribute(containingSymbol);
+            if (methodSymbol.MethodKind is MethodKind.PropertyGet or MethodKind.PropertySet)
+            {
+                return HasNoAllocationAttribute(methodSymbol) || (methodSymbol.AssociatedSymbol != null && HasNoAllocationAttribute(methodSymbol.AssociatedSymbol));
+            }
+
+            return HasNoAllocationAttribute(containingSymbol);
+        }
+        
         public static bool HasNoAllocationAttribute(ISymbol containingSymbol)
         {
             return FindAttribute(containingSymbol, AllocationRules.IsNoAllocationAttribute);

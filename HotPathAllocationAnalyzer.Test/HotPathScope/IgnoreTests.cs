@@ -1,4 +1,6 @@
 ﻿using System.Collections.Immutable;
+using System.Linq;
+using System.Reflection;
 using HotPathAllocationAnalyzer.Analyzers;
 using HotPathAllocationAnalyzer.Test.Analyzers;
 using Microsoft.CodeAnalysis.CSharp;
@@ -18,13 +20,13 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 public void CreateString() {
                     string str = new string('a', 5);
                 }";
-            
+
             var analyser = new ExplicitAllocationAnalyzer();
-           
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
             Assert.AreEqual(0, info.Allocations.Count);
         }
-        
+
         [TestMethod]
         public void AnalyzeProgram_AnalyzeWhenThereIsARestrictedAttributes()
         {
@@ -38,11 +40,11 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 }";
 
             var analyser = new ExplicitAllocationAnalyzer();
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
             Assert.AreEqual(1, info.Allocations.Count);
-        }        
-        
+        }
+
         [TestMethod]
         public void AnalyzeProgram_AnalyzeImplementationWhenInterfaceHasRestrictedAttributes()
         {
@@ -65,11 +67,11 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 }";
 
             var analyser = new ExplicitAllocationAnalyzer();
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
             Assert.AreEqual(1, info.Allocations.Count);
-        }      
-        
+        }
+
         [TestMethod]
         public void AnalyzeProgram_AnalyzeImplementationWhenBaseClassHasRestrictedAttributes()
         {
@@ -92,11 +94,11 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 }";
 
             var analyser = new ExplicitAllocationAnalyzer();
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
             Assert.AreEqual(1, info.Allocations.Count);
-        }     
-        
+        }
+
         [TestMethod]
         public void AnalyzeProgram_NotAnalyzeImplementationIfIgnoredEvenWhenBaseClassHasRestrictedAttributes()
         {
@@ -120,11 +122,11 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 }";
 
             var analyser = new ExplicitAllocationAnalyzer();
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
             Assert.AreEqual(0, info.Allocations.Count);
-        }    
-        
+        }
+
         [TestMethod]
         public void AnalyzeProgram_AnalyzeExplicitImplementationWhenInterfaceHasRestrictedAttributes()
         {
@@ -147,11 +149,11 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 }";
 
             var analyser = new ExplicitAllocationAnalyzer();
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
             Assert.AreEqual(1, info.Allocations.Count);
         }
-        
+
         [TestMethod]
         public void AnalyzeProgram_AnalyzeImplementationWhenBaseHasRestrictedAttributes()
         {
@@ -174,11 +176,11 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 }";
 
             var analyser = new ExplicitAllocationAnalyzer();
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
             Assert.AreEqual(1, info.Allocations.Count);
-        }        
-        
+        }
+
         [TestMethod]
         public void AnalyzeProgram_AnalyzeImplementationWhenRootHasRestrictedAttributes()
         {
@@ -206,11 +208,11 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 }";
 
             var analyser = new ExplicitAllocationAnalyzer();
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
             Assert.AreEqual(1, info.Allocations.Count);
         }
-        
+
         [TestMethod]
         public void AnalyzeProgram_AnalyzeImplementationWhenRootInterfaceHasRestrictedAttributes()
         {
@@ -238,9 +240,44 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 }";
 
             var analyser = new ExplicitAllocationAnalyzer();
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
             Assert.AreEqual(1, info.Allocations.Count);
+        }
+
+        [TestMethod]
+        public void AnalyzeProgram_AnalyzePropertyButNotStaticInstantiation()
+        {
+            //language=cs
+            const string sample =
+                @"using System.Collections.Generic;
+                using HotPathAllocationAnalyzer.Support;
+                                                               
+                public class Foo {
+                
+                [NoAllocation]
+                public List<int> A {get; set;} = new List<int>(); // should not allocate
+                                
+                [NoAllocation]
+                public List<int> B
+                {
+                    get { return new List<int>();} //should allocate
+                    set
+                    {
+                        value = new List<int>(); //should allocate
+                    }
+                }
+                
+                [NoAllocation]
+                public List<int> C => new List<int>(); //should allocate
+         }
+";
+            
+            var analyser = new ExplicitAllocationAnalyzer();
+            var expectedSyntax = analyser.GetType().GetProperty("Expressions", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(analyser) as SyntaxKind[];
+
+            var info = ProcessCode(analyser, sample, expectedSyntax.ToImmutableArray());
+            Assert.AreEqual(3, info.Allocations.Count);
         }
     }
 }
