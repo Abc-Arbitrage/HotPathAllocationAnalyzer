@@ -22,7 +22,6 @@ namespace HotPathAllocationAnalyzer.Analyzers
         public static DiagnosticDescriptor InitializerCreationRule = new DiagnosticDescriptor("HAA0505", "Initializer reference type allocation", "Initializer reference type allocation", "Performance", DiagnosticSeverity.Error, true); 
         public static DiagnosticDescriptor LetCauseRule = new DiagnosticDescriptor("HAA0506", "Let clause induced allocation", "Let clause induced allocation", "Performance", DiagnosticSeverity.Error, true); 
         public static DiagnosticDescriptor TargetTypeNewRule = new DiagnosticDescriptor("HAA0506", "Target type new allocation", "Target type new allocation", "Performance", DiagnosticSeverity.Error, true);
-
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(LetCauseRule, InitializerCreationRule, ImplicitArrayCreationRule, AnonymousNewObjectRule, NewObjectRule, NewArrayRule);
 
         protected override SyntaxKind[] Expressions => new[]
@@ -119,11 +118,30 @@ namespace HotPathAllocationAnalyzer.Analyzers
             }
         }
 
+        private bool IsException(ITypeSymbol? symbol)
+        {
+            var current = symbol;
+            while (current != null)
+            {
+                //use ToString to get the full name with the namespace
+                if (current.ToString() == typeof(Exception).FullName)
+                    return true;
+                current = current.BaseType;
+            }
+
+            return false;
+        }
+
         private void AnalyzeObjectCreationSyntax(SyntaxNodeAnalysisContext context, SyntaxNode node, DiagnosticDescriptor diagnosticDescriptor)
         {
             if (node is not ObjectCreationExpressionSyntax && node is not ImplicitObjectCreationExpressionSyntax)
                 return;
 
+            //ignore exceptions allocations
+            var typeInfo = context.SemanticModel.GetTypeInfo(node, context.CancellationToken);
+            if (IsException(typeInfo.Type))
+                return;
+            
             if (!IsReferenceType(context, node))
                 return;
 
