@@ -127,17 +127,6 @@ namespace HotPathAllocationAnalyzer.Analyzers
             if (!IsReferenceType(context, node))
                 return;
 
-            var exceptions = new List<List<SyntaxKind>>
-            {
-                new() {SyntaxKind.EqualsValueClause, SyntaxKind.PropertyDeclaration}
-            };
-
-            foreach (var path in exceptions)
-            {
-                if (node.SearchPath(path.ToArray()) != null)
-                    return;
-            }
-            
             //These paths are multiple scenarios to have nicer error messages
             //If we don't match any we juste display the location of the node
             var paths = new List<List<SyntaxKind>>
