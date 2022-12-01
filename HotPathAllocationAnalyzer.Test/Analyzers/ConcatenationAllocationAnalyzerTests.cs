@@ -8,20 +8,22 @@ namespace HotPathAllocationAnalyzer.Test.Analyzers
 {
     [TestClass]
     public class ConcatenationAllocationAnalyzerTests : AllocationAnalyzerTests {
+        
+        
         [TestMethod]
         public void ConcatenationAllocation_Basic() {
-            var snippet0 = @"string s0 = ""hello"" + 0.ToString() + ""world"" + 1.ToString();";
-            var snippet1 = @"string s2 = ""ohell"" + 2.ToString() + ""world"" + 3.ToString() + 4.ToString();";
+            var snippet0 = @"var s0 = ""hello"" + 0.ToString() + ""world"" + 1.ToString();";
+            var snippet1 = @"var s2 = ""ohell"" + 2.ToString() + ""world"" + 3.ToString() + 4.ToString();";
 
             var analyser = new ConcatenationAllocationAnalyzer(true);
             var info0 = ProcessCode(analyser, snippet0, ImmutableArray.Create(SyntaxKind.AddExpression, SyntaxKind.AddAssignmentExpression));
             var info1 = ProcessCode(analyser, snippet1, ImmutableArray.Create(SyntaxKind.AddExpression, SyntaxKind.AddAssignmentExpression));
 
-            Assert.AreEqual(0, info0.Allocations.Count(d => d.Id == ConcatenationAllocationAnalyzer.StringConcatenationAllocationRule.Id));
-            Assert.AreEqual(1, info1.Allocations.Count(d => d.Id == ConcatenationAllocationAnalyzer.StringConcatenationAllocationRule.Id));
-            AssertEx.ContainsDiagnostic(info1.Allocations, id: ConcatenationAllocationAnalyzer.StringConcatenationAllocationRule.Id, line: 1, character: 13);
+            //should raise once for every binary expression
+            Assert.AreEqual(3, info0.Allocations.Count(d => d.Id == ConcatenationAllocationAnalyzer.StringConcatenationAllocationRule.Id));
+            Assert.AreEqual(4, info1.Allocations.Count(d => d.Id == ConcatenationAllocationAnalyzer.StringConcatenationAllocationRule.Id));
         }
-
+        
         [TestMethod]
         public void ConcatenationAllocation_DoNotWarnForOptimizedValueTypes() {
             var snippets = new[]

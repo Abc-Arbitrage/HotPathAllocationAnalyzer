@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Reflection.PortableExecutable;
 using HotPathAllocationAnalyzer.Analyzers;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -79,12 +80,14 @@ namespace HotPathAllocationAnalyzer.Test.Analyzers
         {
             var @script =
                 @"System.DateTime c = System.DateTime.Now;;
-                string s1 = ""char value will box"" + c;";
+                string s1 = ""dateTime value will box"" + c;";
             var analyser = new ConcatenationAllocationAnalyzer(true);
             var info = ProcessCode(analyser, @script, ImmutableArray.Create(SyntaxKind.AddExpression, SyntaxKind.AddAssignmentExpression));
-            Assert.AreEqual(1, info.Allocations.Count);
+            //one allocation for boxing and one allocation for concatenation.
+            Assert.AreEqual(2, info.Allocations.Count);
             //Diagnostic: (2,53): warning HeapAnalyzerBoxingRule: Value type (char) is being boxed to a reference type for a string concatenation.
-            AssertEx.ContainsDiagnostic(info.Allocations, ConcatenationAllocationAnalyzer.ValueTypeToReferenceTypeInAStringConcatenationRule.Id, line: 2, character: 53);
+            AssertEx.ContainsDiagnostic(info.Allocations, ConcatenationAllocationAnalyzer.ValueTypeToReferenceTypeInAStringConcatenationRule.Id, line: 2, character: 57);
+            AssertEx.ContainsDiagnostic(info.Allocations, ConcatenationAllocationAnalyzer.StringConcatenationAllocationRule.Id, line: 2, character: 29);
         }
 
         [TestMethod]
