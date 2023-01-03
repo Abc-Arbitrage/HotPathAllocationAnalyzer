@@ -13,17 +13,10 @@ namespace HotPathAllocationAnalyzer.Test.Analyzers
 {
     public abstract class AllocationAnalyzerTests
     {
-        protected static readonly List<MetadataReference> references = new List<MetadataReference>
-            {
-                MetadataReference.CreateFromFile(typeof(int).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(System.CodeDom.Compiler.GeneratedCodeAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(IList<>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(NoAllocation).Assembly.Location),
-                MetadataReference.CreateFromFile(Assembly.Load("mscorlib").Location),
-                MetadataReference.CreateFromFile(Assembly.Load("netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51").Location)
-            };
+        private static readonly List<MetadataReference> references = (from item in AppDomain.CurrentDomain.GetAssemblies() 
+                                                                      where !item.IsDynamic && item.Location != null && item.Location != string.Empty 
+                                                                      select MetadataReference.CreateFromFile(item.Location))
+                                                                     .Cast<MetadataReference>().ToList();
 
         protected IList<SyntaxNode> GetExpectedDescendants(IEnumerable<SyntaxNode> nodes, ImmutableArray<SyntaxKind> expected)
         {

@@ -20,10 +20,10 @@
 
 
     <ItemGroup>
-        <PackageReference Include="Buildalyzer" Version="3.2.3" />
-        <PackageReference Include="Buildalyzer.Workspaces" Version="3.2.3" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.11.0" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
+        <PackageReference Include="Buildalyzer" Version="5.0.0" />
+        <PackageReference Include="Buildalyzer.Workspaces" Version="5.0.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.4.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
     </ItemGroup>
 
     <ItemGroup>
