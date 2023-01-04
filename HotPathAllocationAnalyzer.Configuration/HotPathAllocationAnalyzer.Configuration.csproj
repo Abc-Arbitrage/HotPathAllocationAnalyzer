@@ -28,7 +28,9 @@
 
     <ItemGroup>
         <None Update="build\**" Pack="true" PackagePath="" />
-        <None Include="$(OutputPath)\publish\**" Pack="true" PackagePath="bin" />
+        <None Include="$(OutputPath)\publish\**" Pack="true" PackagePath="bin"/>
+        <!-- Used if the build is called by dotnet pack instead of a dotnet release-->
+        <None Include="$(OutputPath)\**" Pack="true" PackagePath="bin" Condition="!Exists('bin')"/> 
     </ItemGroup>
 
     <ItemGroup>
