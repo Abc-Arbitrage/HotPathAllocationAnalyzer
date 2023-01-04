@@ -15,11 +15,10 @@ namespace HotPathAllocationAnalyzer.Analyzers
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class MethodCallAnalyzer : AllocationAnalyzer
     {
-        private string _whitelistFilePath;
-        private readonly HashSet<string> _whitelistedMethods = new HashSet<string>();
+        private readonly HashSet<string> _whitelistedMethods = new();
         
-        public static readonly DiagnosticDescriptor ExternalMethodCallRule = new DiagnosticDescriptor("HAA0701", "Unsafe method call", $"All method call from here should be marked as {nameof(NoAllocation)} or whitelisted {{0}}", "Performance", DiagnosticSeverity.Error, true);
-        public static readonly DiagnosticDescriptor UnsafePropertyAccessRule = new DiagnosticDescriptor("HAA0702", "Unsafe property access", $"All property access from here should be marked as {nameof(NoAllocation)} or whitelisted {{0}}", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor ExternalMethodCallRule = new("HAA0701", "Unsafe method call", $"All method call from here should be marked as {nameof(NoAllocation)} or whitelisted {{0}}", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor UnsafePropertyAccessRule = new("HAA0702", "Unsafe property access", $"All property access from here should be marked as {nameof(NoAllocation)} or whitelisted {{0}}", "Performance", DiagnosticSeverity.Error, true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ExternalMethodCallRule, UnsafePropertyAccessRule);
         
@@ -38,33 +37,8 @@ namespace HotPathAllocationAnalyzer.Analyzers
 
             context.RegisterCompilationStartAction(analysisContext =>
             {
-                FindWhiteListPath(analysisContext);
-
-                if (_whitelistFilePath != null && File.Exists(_whitelistFilePath))
-                    _whitelistedMethods.UnionWith(File.ReadAllLines(_whitelistFilePath));
+                _whitelistedMethods.UnionWith(GetWhiteListedSymbols(analysisContext));
             });
-        }
-
-        private void FindWhiteListPath(CompilationStartAnalysisContext analysisContext)
-        {
-            if (_whitelistFilePath != null)
-                return;
-            
-            var lineSpans = analysisContext.Compilation.Assembly.Locations
-                                           .Select(l => l.GetLineSpan())
-                                           .Where(lp => lp.IsValid)
-                                           .Where(lp => !string.IsNullOrEmpty(lp.Path));
-
-            foreach (var lineSpan in lineSpans)
-            {
-                var configurationDirectory = ConfigurationHelper.FindConfigurationDirectory(lineSpan.Path);
-                if (configurationDirectory == null)
-                    continue;
-
-                _whitelistFilePath = Path.Combine(configurationDirectory, AllocationRules.WhitelistFileName);
-                if (File.Exists(_whitelistFilePath))
-                    break;
-            }
         }
 
         protected override void AnalyzeNode(SyntaxNodeAnalysisContext context)
@@ -153,15 +127,11 @@ namespace HotPathAllocationAnalyzer.Analyzers
 
         private void ReportError(SyntaxNodeAnalysisContext context, SyntaxNode node, string name, DiagnosticDescriptor externalMethodCallRule)
         {
-            string details;
-            if (string.IsNullOrWhiteSpace(_whitelistFilePath))
-                details = "(no whitelist found)";
-            else if (!File.Exists(_whitelistFilePath))
-                details = $"(whitelist path is invalid: '{_whitelistFilePath}')";
+            var details = $"[{node} / {name}]";
+            if (!_whitelistFound)
+                details += " (no whitelist found)";
             else if (_whitelistedMethods.Count == 0)
-                details = $"(whitelist is empty at path: '{_whitelistFilePath}')";
-            else 
-                details = $"({node} / {name})";
+                details += $" (empty whitelist')";
             
             context.ReportDiagnostic(Diagnostic.Create(externalMethodCallRule, node.GetLocation(), details));
             HeapAllocationAnalyzerEventSource.Logger.PossiblyAllocatingMethodCall(node.SyntaxTree.FilePath);

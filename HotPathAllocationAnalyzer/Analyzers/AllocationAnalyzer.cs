@@ -1,6 +1,7 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using HotPathAllocationAnalyzer.Helpers;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -9,6 +10,8 @@ namespace HotPathAllocationAnalyzer.Analyzers
     public abstract class AllocationAnalyzer : DiagnosticAnalyzer
     {
         private readonly bool _forceEnableAnalysis;
+        protected bool _whitelistFound = false;
+
 
         protected abstract SyntaxKind[] Expressions { get; }
 
@@ -28,6 +31,19 @@ namespace HotPathAllocationAnalyzer.Analyzers
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
             context.RegisterSyntaxNodeAction(Analyze, Expressions);
+        }
+
+        protected string[] GetWhiteListedSymbols(CompilationStartAnalysisContext context)
+        {
+            var additionalFiles = context.Options.AdditionalFiles;
+            var whitelistFile = additionalFiles.FirstOrDefault(x => string.Equals(Path.GetFileName(x.Path), "whitelist.txt", StringComparison.OrdinalIgnoreCase));
+            if (whitelistFile == null)
+                return Array.Empty<string>();
+            _whitelistFound = true;
+            return whitelistFile.GetText(context.CancellationToken)
+                                ?.Lines.Select(x => x.ToString())
+                                .ToArray()
+                   ?? Array.Empty<string>();
         }
 
         private void Analyze(SyntaxNodeAnalysisContext context)

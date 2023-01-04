@@ -27,11 +27,11 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 }";
 
             var analyser = new MethodCallAnalyzer();
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(1, info.Allocations.Count);
-        }      
-        
+        }
+
         [TestMethod]
         public void AnalyzeProgram_FlagMethodWhenClassIsFlagged()
         {
@@ -53,11 +53,11 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 }";
 
             var analyser = new MethodCallAnalyzer();
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(0, info.Allocations.Count);
-        }      
-        
+        }
+
         [TestMethod]
         public void AnalyzeProgram_FlagMethodWhenBaseClassIsFlagged()
         {
@@ -85,11 +85,11 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 }";
 
             var analyser = new MethodCallAnalyzer();
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(0, info.Allocations.Count);
-        }      
-        
+        }
+
         [TestMethod]
         public void AnalyzeProgram_MethodShouldOnlyBeAllowedToCallNonAllocatingMethods()
         {
@@ -109,11 +109,11 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 }";
 
             var analyser = new MethodCallAnalyzer();
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(0, info.Allocations.Count);
         }
-        
+
         [TestMethod]
         public void AnalyzeProgram_MethodShouldOnlyBeAllowedToCallNonAllocatingMethodsOnNonAllocatingInterface()
         {
@@ -143,11 +143,11 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 }";
 
             var analyser = new MethodCallAnalyzer();
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(0, info.Allocations.Count);
         }
-        
+
         [TestMethod]
         public void AnalyzeProgram_NotAllowCallingExternalMethod()
         {
@@ -162,11 +162,11 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 }";
 
             var analyser = new MethodCallAnalyzer();
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(1, info.Allocations.Count);
         }
-        
+
         [TestMethod]
         public void AnalyzeProgram_NotAllowCallingExternalMethod_UnlessItIsInSafeScope()
         {
@@ -185,7 +185,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 }";
 
             var analyser = new MethodCallAnalyzer();
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(0, info.Allocations.Count);
         }
@@ -207,7 +207,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 }";
 
             var analyser = new MethodCallAnalyzer();
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(0, info.Allocations.Count);
         }
@@ -229,7 +229,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 }";
 
             var analyser = new MethodCallAnalyzer();
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(1, info.Allocations.Count);
         }
@@ -246,12 +246,12 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 public bool PerfCritical(string str) {
                     return str.Contains(""zig"");
                 }";
-            
+
             var analyser = new MethodCallAnalyzer();
-            
+
             analyser.AddToWhiteList("string.IsNormalized()");
             analyser.AddToWhiteList("string.Contains(string)");
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression, SyntaxKind.ClassDeclaration));
             Assert.AreEqual(0, info.Allocations.Count);
         }
@@ -268,11 +268,15 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 public bool PerfCritical(string str) {
                     return str.IsNormalized();
                 }";
-            
+
             var analyser = new MethodCallAnalyzer();
-            var currentFilePath = new System.Diagnostics.StackTrace(true).GetFrame(0).GetFileName();
-            
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression), filePath: currentFilePath);
+            var whitelist = @"
+string.Length
+string.IsNormalized()
+string.Equals(string)";
+            var additionalFile = new TestAdditionalFile("whitelist.txt", whitelist);
+            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression),
+                                   additionalFiles: new []{additionalFile});
             Assert.AreEqual(0, info.Allocations.Count);
         }
 
@@ -291,14 +295,14 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                         return l.IndexOf(10);
                     }
                 ";
-            
+
             var analyser = new MethodCallAnalyzer();
             analyser.AddToWhiteList("System.Collections.Generic.List<T>.IndexOf(T)");
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(0, info.Allocations.Count);
         }
-        
+
         [TestMethod]
         public void AnalyzeProgram_NotAllowCallingNonGenericWhitelistedMethods()
         {
@@ -314,13 +318,12 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                         return l.IndexOf(val);
                     }
                 ";
-            
+
             var analyser = new MethodCallAnalyzer();
             analyser.AddToWhiteList("System.Collections.Generic.List<double>.IndexOf(double)");
-            
+
             var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
             Assert.AreEqual(1, info.Allocations.Count);
         }
-        
     }
 }
