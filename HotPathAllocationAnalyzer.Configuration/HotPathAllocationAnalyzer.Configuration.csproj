@@ -20,15 +20,17 @@
 
 
     <ItemGroup>
-        <PackageReference Include="Buildalyzer" Version="3.2.3" />
-        <PackageReference Include="Buildalyzer.Workspaces" Version="3.2.3" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.11.0" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
+        <PackageReference Include="Buildalyzer" Version="5.0.0" />
+        <PackageReference Include="Buildalyzer.Workspaces" Version="5.0.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.4.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
     </ItemGroup>
 
     <ItemGroup>
         <None Update="build\**" Pack="true" PackagePath="" />
-        <None Include="$(OutputPath)\publish\**" Pack="true" PackagePath="bin" />
+        <None Include="$(OutputPath)\publish\**" Pack="true" PackagePath="bin"/>
+        <!-- Used if the build is called by dotnet pack instead of a dotnet release-->
+        <None Include="$(OutputPath)\**" Pack="true" PackagePath="bin" Condition="!Exists('bin')"/> 
     </ItemGroup>
 
     <ItemGroup>
