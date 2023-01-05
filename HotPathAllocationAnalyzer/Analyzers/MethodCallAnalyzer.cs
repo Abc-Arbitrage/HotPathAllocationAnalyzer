@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -13,10 +14,8 @@ namespace HotPathAllocationAnalyzer.Analyzers
 {
     
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class MethodCallAnalyzer : AllocationAnalyzer
+    public class MethodCallAnalyzer : WhitelistedAnalyzer
     {
-        private readonly HashSet<string> _whitelistedMethods = new();
-        
         public static readonly DiagnosticDescriptor ExternalMethodCallRule = new("HAA0701", "Unsafe method call", $"All method call from here should be marked as {nameof(NoAllocation)} or whitelisted {{0}}", "Performance", DiagnosticSeverity.Error, true);
         public static readonly DiagnosticDescriptor UnsafePropertyAccessRule = new("HAA0702", "Unsafe property access", $"All property access from here should be marked as {nameof(NoAllocation)} or whitelisted {{0}}", "Performance", DiagnosticSeverity.Error, true);
 
@@ -25,21 +24,6 @@ namespace HotPathAllocationAnalyzer.Analyzers
         protected override SyntaxKind[] Expressions => new[] { SyntaxKind.InvocationExpression, SyntaxKind.SimpleMemberAccessExpression };
         
         private static readonly object[] EmptyMessageArgs = { };
-
-        public void AddToWhiteList(string method)
-        {
-            _whitelistedMethods.Add(method);
-        }
-
-        public override void Initialize(AnalysisContext context)
-        {
-            base.Initialize(context);
-
-            context.RegisterCompilationStartAction(analysisContext =>
-            {
-                _whitelistedMethods.UnionWith(GetWhiteListedSymbols(analysisContext));
-            });
-        }
 
         protected override void AnalyzeNode(SyntaxNodeAnalysisContext context)
         {
@@ -53,7 +37,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
                     && !IsWhitelisted(methodInfo)
                     && !IsInSafeScope(semanticModel, invocationExpression))
                 {
-                    ReportError(context, invocationExpression, MethodSymbolSerializer.Serialize(methodInfo), ExternalMethodCallRule);
+                    ReportError(context, invocationExpression, MethodSymbolSerializer.Serialize(methodInfo), ExternalMethodCallRule, HeapAllocationAnalyzerEventSource.Logger.PossiblyAllocatingMethodCall);
                 }
             }
 
@@ -67,19 +51,19 @@ namespace HotPathAllocationAnalyzer.Analyzers
                     && !IsWhitelisted(propertyInfo)
                     && !IsInSafeScope(semanticModel, memberAccessExpression))
                 {
-                    ReportError(context, memberAccessExpression, MethodSymbolSerializer.Serialize(propertyInfo), UnsafePropertyAccessRule);
+                    ReportError(context, memberAccessExpression, MethodSymbolSerializer.Serialize(propertyInfo), UnsafePropertyAccessRule, HeapAllocationAnalyzerEventSource.Logger.PossiblyAllocatingMethodCall);
                 }
             }
         }
 
         private bool IsWhitelisted(IMethodSymbol methodInfo)
         {
-            return _whitelistedMethods.Contains(MethodSymbolSerializer.Serialize(methodInfo));
+            return _whitelistedSymbols.Contains(MethodSymbolSerializer.Serialize(methodInfo));
         }
 
         private bool IsWhitelisted(IPropertySymbol methodInfo)
         {
-            return _whitelistedMethods.Contains(MethodSymbolSerializer.Serialize(methodInfo));
+            return _whitelistedSymbols.Contains(MethodSymbolSerializer.Serialize(methodInfo));
         }
 
         private static bool IsAutoProperty(SyntaxNodeAnalysisContext context, IPropertySymbol propertyInfo)
@@ -123,18 +107,6 @@ namespace HotPathAllocationAnalyzer.Analyzers
             return type != null
                    && type.Name == nameof(AllocationFreeScope)
                    && type.ContainingNamespace.ToDisplayString() == typeof(AllocationFreeScope).Namespace;
-        }
-
-        private void ReportError(SyntaxNodeAnalysisContext context, SyntaxNode node, string name, DiagnosticDescriptor externalMethodCallRule)
-        {
-            var details = $"[{node} / {name}]";
-            if (!_whitelistFound)
-                details += " (no whitelist found)";
-            else if (_whitelistedMethods.Count == 0)
-                details += $" (empty whitelist')";
-            
-            context.ReportDiagnostic(Diagnostic.Create(externalMethodCallRule, node.GetLocation(), details));
-            HeapAllocationAnalyzerEventSource.Logger.PossiblyAllocatingMethodCall(node.SyntaxTree.FilePath);
         }
     }
 }
