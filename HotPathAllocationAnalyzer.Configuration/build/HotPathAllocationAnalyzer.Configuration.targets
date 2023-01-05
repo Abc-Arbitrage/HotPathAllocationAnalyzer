@@ -4,7 +4,7 @@
     <HotPathAllocationAnalyzerConfigurationOutputPath>$(MSBuildProjectDirectory)</HotPathAllocationAnalyzerConfigurationOutputPath>
     <HotPathAllocationAnalyzerConfigurationBinary>$(NuGetPackageRoot)HotPathAllocationAnalyzer.configuration/$(HotPathAllocationAnalyzerConfigurationVersion)/bin/HotPathAllocationAnalyzer.Configuration.exe</HotPathAllocationAnalyzerConfigurationBinary>
   </PropertyGroup>
-  <Target Name="GenerateAnalyzerConfiguration" BeforeTargets="CoreCompile" Condition="'$(IsRunningHotPathAllocationAnalyzerConfiguration)' == ''" Inputs="@(Compile)" Outputs="$(HotPathAllocationAnalyzerConfigurationOutputPath)/whitelist.txt">
+  <Target Name="GenerateAnalyzerConfiguration" BeforeTargets="CoreCompile" Condition="'$(IsRunningHotPathAllocationAnalyzerConfiguration)' == '' and '$(DesignTimeBuild)' != 'true'" Inputs="@(Compile)" Outputs="$(HotPathAllocationAnalyzerConfigurationOutputPath)/whitelist.txt">
     <Exec Command="$(HotPathAllocationAnalyzerConfigurationBinary) $(HotPathAllocationAnalyzerConfigurationOutputPath)" />
   </Target>
 </Project>

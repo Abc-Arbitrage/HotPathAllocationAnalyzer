@@ -3,14 +3,32 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using HotPathAllocationAnalyzer.Support;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace HotPathAllocationAnalyzer.Test.Analyzers
 {
+    public class TestAdditionalFile : AdditionalText
+    {
+        public TestAdditionalFile(string path, string content)
+        {
+            Path = path;
+            Content = content;
+        }
+
+        public string Content { get; set; }
+
+        public override SourceText GetText(CancellationToken cancellationToken = new CancellationToken())
+        => SourceText.From(Content);
+
+        public override string Path { get; }
+    }
+
     public abstract class AllocationAnalyzerTests
     {
         private static readonly List<MetadataReference> references = (from item in AppDomain.CurrentDomain.GetAssemblies() 
@@ -45,10 +63,10 @@ namespace HotPathAllocationAnalyzer.Test.Analyzers
         }
 
         protected Info ProcessCode(DiagnosticAnalyzer analyzer, string sampleProgram,
-            ImmutableArray<SyntaxKind> expected, bool allowBuildErrors = false, string filePath = "")
+            ImmutableArray<SyntaxKind> expected, bool allowBuildErrors = false, TestAdditionalFile[] additionalFiles = null)
         {
             var options = new CSharpParseOptions(kind: SourceCodeKind.Script, languageVersion: LanguageVersion.CSharp9);
-            var tree = CSharpSyntaxTree.ParseText(sampleProgram, options, filePath);
+            var tree = CSharpSyntaxTree.ParseText(sampleProgram, options);
             var compilation = CSharpCompilation.Create("Test", new[] { tree }, references);
 
             var diagnostics = compilation.GetDiagnostics();
@@ -65,7 +83,9 @@ namespace HotPathAllocationAnalyzer.Test.Analyzers
             var matches = GetExpectedDescendants(tree.GetRoot().ChildNodes(), expected);
 
             // Run the code tree through the analyzer and record the allocations it reports
-            var compilationWithAnalyzers = compilation.WithAnalyzers(ImmutableArray.Create(analyzer));
+            var analyzerAdditionalFiles = (additionalFiles ?? Array.Empty<TestAdditionalFile>()).Cast<AdditionalText>().ToImmutableArray();
+            var analyzerOptions = new AnalyzerOptions(analyzerAdditionalFiles);
+            var compilationWithAnalyzers = compilation.WithAnalyzers(ImmutableArray.Create(analyzer), analyzerOptions);
             var allocations = compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync().GetAwaiter().GetResult().Distinct(DiagnosticEqualityComparer.Instance).ToList();
 
             return new Info
