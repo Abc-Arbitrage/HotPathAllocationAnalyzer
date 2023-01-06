@@ -38,7 +38,7 @@ public abstract class WhitelistedAnalyzer : AllocationAnalyzer
         _whitelistFound = true;
         _whitelistedSymbols.UnionWith(whitelistFile.GetText(context.CancellationToken)
                                                    ?.Lines.Select(x => x.ToString())
-                                                   .ToArray()
+                                                   .Where(x => !x.StartsWith("#"))
                                       ?? Array.Empty<string>());
     }
         

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using HotPathAllocationAnalyzer.Helpers;
 
@@ -18,7 +19,7 @@ namespace HotPathAllocationAnalyzer.Configuration
             var configurationReader = new ConfigurationReader(args[0]);
             
             var cancellationTokenSource = new CancellationTokenSource();
-            var whiteList = configurationReader.GenerateWhitelistAsync(cancellationTokenSource.Token).Result;
+            var whiteList = ConfigurationReader.GenerateDisclaimer().Concat(configurationReader.GenerateWhitelistAsync(cancellationTokenSource.Token).Result);
 
             var outputFile = GetOutputFile(args);
             File.WriteAllLines(outputFile, whiteList);
