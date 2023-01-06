@@ -91,13 +91,20 @@ namespace HotPathAllocationAnalyzer.Configuration
                 if (arguments.Count != 1)
                     continue;
 
-                var lambdaExpr = arguments[0].Expression as ParenthesizedLambdaExpressionSyntax;
-                if (lambdaExpr == null)
-                    continue;
+                if (arguments[0].Expression is ParenthesizedLambdaExpressionSyntax lambdaExpr)
+                {
+                    var childSymbol = semanticModel.GetSymbolInfo(lambdaExpr.Body, token).Symbol;
+                    foreach (var p in SerializeSymbol(childSymbol))
+                        yield return p;   
+                }
 
-                var childSymbol = semanticModel.GetSymbolInfo(lambdaExpr.Body, token).Symbol;
-                foreach (var p in SerializeSymbol(childSymbol))
-                    yield return p;
+                if (arguments[0].Expression is TypeOfExpressionSyntax typeOfExpressionSyntax)
+                {
+                    var childSymbol = semanticModel.GetSymbolInfo(typeOfExpressionSyntax.Type, token).Symbol;
+                    if (childSymbol != null)
+                        yield return childSymbol.ToString();
+                }
+                
             }
         }
 
@@ -115,6 +122,7 @@ namespace HotPathAllocationAnalyzer.Configuration
             }
         }
         
+
         private static IEnumerable<string> SerializeSymbol(ISymbol? childSymbol)
         {
             switch (childSymbol)

@@ -12,5 +12,10 @@ namespace HotPathAllocationAnalyzer.Support
         public void MakeSafe(Expression<Action> expression)
         {
         }
+
+        public void MakeSafe(Type type)
+        {
+            
+        }
     }
 }
