@@ -16,9 +16,9 @@
         <PackageReleaseNotes>Upgrade to net 6.</PackageReleaseNotes>
         <PackageTags>hotpath performance clr allocations boxing closure displayclass delegate enumerator newobj roslyn analyzer diagnostic</PackageTags>
         <NoPackageAnalysis>true</NoPackageAnalysis>
+        
     </PropertyGroup>
-
-
+    
     <ItemGroup>
         <PackageReference Include="Buildalyzer" Version="5.0.0" />
         <PackageReference Include="Buildalyzer.Workspaces" Version="5.0.0" />
@@ -29,14 +29,12 @@
     <ItemGroup>
         <None Update="build\**" Pack="true" PackagePath="" />
         <None Include="$(OutputPath)\publish\**" Pack="true" PackagePath="bin"/>
-        <!-- Used if the build is called by dotnet pack instead of a dotnet release-->
-        <None Include="$(OutputPath)\**" Pack="true" PackagePath="bin" Condition="!Exists('bin')"/> 
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\HotPathAllocationAnalyzer\HotPathAllocationAnalyzer.csproj" />
     </ItemGroup>
-
+    
     <Target Name="ReplaceVersion" BeforeTargets="CoreCompile">
         <XmlPoke XmlInputPath="build\HotPathAllocationAnalyzer.Configuration.targets" Value="$(PackageVersion)" Query="Project/PropertyGroup/HotPathAllocationAnalyzerConfigurationVersion" />
     </Target>
