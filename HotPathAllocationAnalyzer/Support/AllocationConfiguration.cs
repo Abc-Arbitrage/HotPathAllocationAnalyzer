@@ -13,7 +13,7 @@ namespace HotPathAllocationAnalyzer.Support
         {
         }
 
-        public void MakeSafe(Type type)
+        public void MakeStringInterpolationSafe(Type type)
         {
             
         }

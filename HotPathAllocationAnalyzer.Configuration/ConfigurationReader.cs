@@ -83,7 +83,7 @@ namespace HotPathAllocationAnalyzer.Configuration
             foreach (var invocationExpr in invocationsExpr)
             {
                 var symbol = semanticModel.GetSymbolInfo(invocationExpr, token).Symbol;
-                if (symbol?.Name != nameof(AllocationConfiguration.MakeSafe))
+                if (symbol?.Name != nameof(AllocationConfiguration.MakeStringInterpolationSafe))
                     continue;
 
                 var arguments = invocationExpr.ArgumentList.Arguments;
