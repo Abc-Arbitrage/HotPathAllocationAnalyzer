@@ -34,7 +34,6 @@ namespace HotPathAllocationAnalyzer.Analyzers
             SyntaxKind.EqualsValueClause,
             SyntaxKind.Argument,
             SyntaxKind.ArrowExpressionClause,
-            SyntaxKind.Interpolation
         };
 
         private static readonly object[] EmptyMessageArgs = { };
@@ -98,12 +97,6 @@ namespace HotPathAllocationAnalyzer.Analyzers
             if (node is ConditionalExpressionSyntax conditionalExpressionSyntax)
             {
                 ConditionalExpressionCheck(conditionalExpressionSyntax, semanticModel, reportDiagnostic, filePath, cancellationToken);
-                return;
-            }
-
-            // string a = $"{1}";
-            if (node is InterpolationSyntax interpolationSyntax) {
-                InterpolationCheck(interpolationSyntax, semanticModel, reportDiagnostic, filePath, cancellationToken);
                 return;
             }
 

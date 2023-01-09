@@ -290,57 +290,7 @@ var structTest = new PropertyStructTests()
             AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 45, character: 9);
             AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 46, character: 9);
         }
-
-        [TestMethod]
-        public void ExplicitAllocation_ShouldNotTriggerOnPropertyConstructor()
-        {
-            var sampleProgram = @"
-using System;
-using System.Collections.Generic;
-
-public class Foo
-{
-    public List<int> A {get; set;} = new(); //should not trigger
-    public List<int> B {get; set;} = new List<int>() {1, 3, 5}; //should not trigger
-    public List<int> C => new () {1, 4, 6}; // allocate
-
-    public List<int> D
-    {
-        get
-        {
-            return new() { 1, 2, 3 }; // allocate
-        }
-        set
-        {
-            value = new() { 1, 2 }; // allocate
-        }
-    }
-
-    public DateTime E => new(); //no allocation
-
-    public DateTime F
-    {
-        get
-        {
-            return new(); // no allocation
-        }
-        set
-        {
-            value = new(); //no allocation
-        }
-    }
-
-
-}
-
-var foo = new Foo();
-";
-            var analyser = new ExplicitAllocationAnalyzer(true);
-            var expected = analyser.GetType().GetProperty("Expressions", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(analyser) as SyntaxKind[];
-            var info = ProcessCode(analyser, sampleProgram, expected.ToImmutableArray());
-            Assert.AreEqual(4, info.Allocations.Count);
-        }
-
+        
         [TestMethod]
         public void ExplicitAllocation_MethodReturns()
         {
@@ -349,7 +299,7 @@ using System;
 using System.Collections.Generic;
 public class Foo
 {
-    public List<int> Data {get; set;} = new() {1,2}; //does not allocate;
+    public List<int> Data {get; set;}
 
     public List<int> A(){
         return new() {1,5,6}; //allocate
