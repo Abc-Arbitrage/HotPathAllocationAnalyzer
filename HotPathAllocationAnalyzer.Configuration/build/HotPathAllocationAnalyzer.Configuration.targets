@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <HotPathAllocationAnalyzerConfigurationVersion>1.0.8</HotPathAllocationAnalyzerConfigurationVersion>
+    <HotPathAllocationAnalyzerConfigurationVersion>1.0.9</HotPathAllocationAnalyzerConfigurationVersion>
     <HotPathAllocationAnalyzerConfigurationOutputPath>$(MSBuildProjectDirectory)</HotPathAllocationAnalyzerConfigurationOutputPath>
     <HotPathAllocationAnalyzerConfigurationBinary>$(NuGetPackageRoot)/HotPathAllocationAnalyzer.configuration/$(HotPathAllocationAnalyzerConfigurationVersion)/bin/HotPathAllocationAnalyzer.Configuration.exe</HotPathAllocationAnalyzerConfigurationBinary>
   </PropertyGroup>
