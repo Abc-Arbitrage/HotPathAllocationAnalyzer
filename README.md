@@ -66,6 +66,11 @@ public class TestConfiguration : AllocationConfiguration
     {
         Console.WriteLine("Hello");
     }
+    
+    public void WhiteListCustomStrinHandler()
+    {
+        MakeStringInterpolationSafe(typeof(MyCustomStringHandler))    
+    }
 }
 ```
 4. Compile this project to generate the whitelist.txt file
@@ -75,17 +80,3 @@ with the syntax :
 ``
 <AdditionalFiles Include="path_to_whitelist.txt" Visible="false" />
 ``
-
-# Publishing
-
-For the analyzer the package is automatically generated after each build thus : 
-```bash
-dotnet build
-```
-
-Since the configuration is an exe, we need to include the bin folder in the nuget.
-But the copy of the files is made before the compilation thus it must be done in 2 steps : 
-```bash
-dotnet publish 
-dotnet pack --no-build --no-restore
-```
