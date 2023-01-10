@@ -92,28 +92,29 @@ namespace HotPathAllocationAnalyzer.Configuration
             foreach (var invocationExpr in invocationsExpr)
             {
                 var symbol = semanticModel.GetSymbolInfo(invocationExpr, token).Symbol;
-                if (symbol?.Name != nameof(AllocationConfiguration.MakeStringInterpolationSafe))
-                    continue;
 
                 var arguments = invocationExpr.ArgumentList.Arguments;
 
                 if (arguments.Count != 1)
                     continue;
 
-                if (arguments[0].Expression is ParenthesizedLambdaExpressionSyntax lambdaExpr)
+                switch (symbol?.Name)
                 {
-                    var childSymbol = semanticModel.GetSymbolInfo(lambdaExpr.Body, token).Symbol;
-                    foreach (var p in SerializeSymbol(childSymbol))
-                        yield return p;   
+                    case nameof(AllocationConfiguration.MakeSafe) when arguments[0].Expression is ParenthesizedLambdaExpressionSyntax lambdaExpr:
+                    {
+                        var childSymbol = semanticModel.GetSymbolInfo(lambdaExpr.Body, token).Symbol;
+                        foreach (var p in SerializeSymbol(childSymbol))
+                            yield return p;
+                        break;
+                    }
+                    case nameof(AllocationConfiguration.MakeStringInterpolationSafe) when arguments[0].Expression is TypeOfExpressionSyntax typeOfExpressionSyntax:
+                    {
+                        var childSymbol = semanticModel.GetSymbolInfo(typeOfExpressionSyntax.Type, token).Symbol;
+                        if (childSymbol != null)
+                            yield return childSymbol.ToString();
+                        break;
+                    }
                 }
-
-                if (arguments[0].Expression is TypeOfExpressionSyntax typeOfExpressionSyntax)
-                {
-                    var childSymbol = semanticModel.GetSymbolInfo(typeOfExpressionSyntax.Type, token).Symbol;
-                    if (childSymbol != null)
-                        yield return childSymbol.ToString();
-                }
-                
             }
         }
 
