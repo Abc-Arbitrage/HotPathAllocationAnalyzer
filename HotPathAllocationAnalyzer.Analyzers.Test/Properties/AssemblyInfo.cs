@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("HotPathAllocationAnalyzer.Test")]
+[assembly: AssemblyTitle("HotPathAllocationAnalyzer.Analyzers.Test")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("CA, Inc.")]
-[assembly: AssemblyProduct("HotPathAllocationAnalyzer.Test")]
+[assembly: AssemblyProduct("HotPathAllocationAnalyzer.Analyzers.Test")]
 [assembly: AssemblyCopyright("Copyright © CA, Inc. 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

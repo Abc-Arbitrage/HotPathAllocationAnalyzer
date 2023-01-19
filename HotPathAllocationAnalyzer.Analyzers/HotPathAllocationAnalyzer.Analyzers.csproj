@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>HotPathAllocationAnalyzer</RootNamespace>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Include="../HotPathAllocationAnalyzer/Support/**/*.cs" Link="Library/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+  
+</Project>

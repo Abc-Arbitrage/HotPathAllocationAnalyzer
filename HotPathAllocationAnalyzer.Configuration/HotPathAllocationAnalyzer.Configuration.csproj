@@ -28,11 +28,11 @@
 
     <ItemGroup>
         <None Update="build\**" Pack="true" PackagePath="" />
-        <None Include="$(OutputPath)\publish\**" Pack="true" PackagePath="bin"/>
+        <None Include="$(OutputPath)\publish\**" Pack="true" PackagePath="bin" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\HotPathAllocationAnalyzer\HotPathAllocationAnalyzer.csproj" />
+      <ProjectReference Include="..\HotPathAllocationAnalyzer.Analyzers\HotPathAllocationAnalyzer.Analyzers.csproj" />
     </ItemGroup>
     
     <Target Name="ReplaceVersion" BeforeTargets="CoreCompile">

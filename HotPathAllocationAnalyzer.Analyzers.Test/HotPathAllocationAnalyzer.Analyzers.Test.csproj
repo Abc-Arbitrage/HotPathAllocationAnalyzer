@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HotPathAllocationAnalyzer\HotPathAllocationAnalyzer.csproj" />
+    <ProjectReference Include="..\HotPathAllocationAnalyzer.Analyzers\HotPathAllocationAnalyzer.Analyzers.csproj" />
   </ItemGroup>
 
 </Project>

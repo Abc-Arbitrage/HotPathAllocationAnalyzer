@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Reflection.PortableExecutable;
 using HotPathAllocationAnalyzer.Analyzers;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
