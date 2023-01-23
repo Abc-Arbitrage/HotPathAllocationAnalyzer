@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Immutable;
 using HotPathAllocationAnalyzer.Analyzers;
 using Microsoft.CodeAnalysis.CSharp;

@@ -1,42 +1,37 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <IncludeBuildOutput>true</IncludeBuildOutput>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <PackageId>HotPathAllocationAnalyzer</PackageId>
-    <PackageVersion>1.0.10</PackageVersion>
-    <Authors>Abc Arbitrage, Microsoft</Authors>
-    <PackageLicenseUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>httpshttps://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</RepositoryUrl>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Description>
-      Roslyn Analyzer detecting heap allocation in *hot path*
+    <PropertyGroup>
+        <PackageId>HotPathAllocationAnalyzer</PackageId>
+        <PackageVersion>1.0.10</PackageVersion>
+        <Authors>Abc Arbitrage;Microsoft</Authors>
+        <PackageLicenseUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer/blob/master/LICENSE</PackageLicenseUrl>
+        <PackageProjectUrl>httpshttps://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</RepositoryUrl>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <Description>
+            Roslyn Analyzer detecting heap allocation in *hot path*
 
-      Detect in hot path:
-      - explicit allocation
-      - implicit allocations (boxing, display classes a.k.a closures, implicit delegate creations, ...)
-    </Description>
-    <PackageReleaseNotes>Update roslyn, support string interpolation custom handler</PackageReleaseNotes>
-    <Copyright>Copyright</Copyright>
-    <PackageTags>hotpath performance clr allocations boxing closure displayclass delegate enumerator newobj roslyn analyzer diagnostic</PackageTags>
-    <NoPackageAnalysis>true</NoPackageAnalysis>
-  </PropertyGroup>
+            Detect in hot path:
+            - explicit allocation
+            - implicit allocations (boxing, display classes a.k.a closures, implicit delegate creations, ...)
+        </Description>
+        <PackageReleaseNotes>Update roslyn, support string interpolation custom handler</PackageReleaseNotes>
+        <Copyright>Copyright</Copyright>
+        <PackageTags>hotpath;performance;clr;allocations;boxing;closure;displayclass;delegate;enumerator;newobj;roslyn;analyzer;diagnostic</PackageTags>
+        <NoPackageAnalysis>true</NoPackageAnalysis>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.4.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="" />
-    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\HotPathAllocationAnalyzer.Analyzers\HotPathAllocationAnalyzer.Analyzers.csproj" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <None Include="..\HotPathAllocationAnalyzer.Analyzers\bin\$(Configuration)\netstandard2.0\HotPathAllocationAnalyzer.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    </ItemGroup>
 
 </Project>

@@ -1,7 +1,7 @@
-﻿namespace HotPathAllocationAnalyzer
-{
-    using System.Diagnostics.Tracing;
+﻿using System.Diagnostics.Tracing;
 
+namespace HotPathAllocationAnalyzer
+{
     internal sealed class HeapAllocationAnalyzerEventSource : EventSource
     {
         public static readonly HeapAllocationAnalyzerEventSource Logger = new HeapAllocationAnalyzerEventSource();

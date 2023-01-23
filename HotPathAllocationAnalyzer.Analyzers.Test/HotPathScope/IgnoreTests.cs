@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Linq;
 using System.Reflection;
 using HotPathAllocationAnalyzer.Analyzers;
 using HotPathAllocationAnalyzer.Test.Analyzers;
@@ -34,7 +33,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 @"using System;
                 using HotPathAllocationAnalyzer.Support;
 
-                [HotPathAllocationAnalyzer.Support.NoAllocation]
+                [NoAllocation]
                 public void CreateString() {
                     string str = new string('a', 5);
                 }";
@@ -55,7 +54,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
 
                 interface IFoo     
                 {
-                    [HotPathAllocationAnalyzer.Support.NoAllocation]
+                    [NoAllocation]
                     void CreateString();
                 }
 
@@ -80,7 +79,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 @"using System;
                 using HotPathAllocationAnalyzer.Support;
 
-                [HotPathAllocationAnalyzer.Support.NoAllocation]
+                [NoAllocation]
                 public class FooBase     
                 {
                     public virtual void CreateString() {}
@@ -107,7 +106,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 @"using System;
                 using HotPathAllocationAnalyzer.Support;
 
-                [HotPathAllocationAnalyzer.Support.NoAllocation]
+                [NoAllocation]
                 public class FooBase     
                 {
                     public virtual void CreateString() {}
@@ -115,7 +114,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
 
                 public class Foo : FooBase 
                 {
-                    [HotPathAllocationAnalyzer.Support.IgnoreAllocation]
+                   [IgnoreAllocation]
                     public override void CreateString() {
                         string str = new string('a', 5);
                     }
@@ -137,7 +136,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
 
                 interface IFoo     
                 {
-                    [HotPathAllocationAnalyzer.Support.NoAllocation]
+                    [NoAllocation]
                     void CreateString();
                 }
 
@@ -164,7 +163,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
 
                 class BaseFoo     
                 {
-                    [HotPathAllocationAnalyzer.Support.NoAllocation]
+                    [NoAllocation]
                     public virtual void CreateString() {}
                 }
 
@@ -191,7 +190,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
 
                 class BaseFoo     
                 {
-                    [HotPathAllocationAnalyzer.Support.NoAllocation]
+                    [NoAllocation]
                     public virtual void CreateString() {}
                 }
 
@@ -223,7 +222,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
 
                 interface IFoo     
                 {
-                    [HotPathAllocationAnalyzer.Support.NoAllocation]
+                    [NoAllocation]
                     void CreateString();
                 }
 

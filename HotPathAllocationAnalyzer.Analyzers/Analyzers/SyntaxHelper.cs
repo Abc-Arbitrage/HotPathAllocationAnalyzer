@@ -1,11 +1,9 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace ClrHeapAllocationAnalyzer
+namespace HotPathAllocationAnalyzer.Analyzers
 {
     internal static class SyntaxHelper
     {

@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28711.60
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotPathAllocationAnalyzer.Test", "HotPathAllocationAnalyzer.Test\HotPathAllocationAnalyzer.Test.csproj", "{9F29A769-B1F0-41E0-8944-B81EDF8C96E8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotPathAllocationAnalyzer.Analyzers.Test", "HotPathAllocationAnalyzer.Analyzers.Test\HotPathAllocationAnalyzer.Analyzers.Test.csproj", "{9F29A769-B1F0-41E0-8944-B81EDF8C96E8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HotPathAllocationAnalyzer", "HotPathAllocationAnalyzer\HotPathAllocationAnalyzer.csproj", "{EAF46154-6613-4CD6-BE70-9015FF94F9CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HotPathAllocationAnalyzer.Analyzers", "HotPathAllocationAnalyzer.Analyzers\HotPathAllocationAnalyzer.Analyzers.csproj", "{EAF46154-6613-4CD6-BE70-9015FF94F9CF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotPathAllocationAnalyzer.Configuration", "HotPathAllocationAnalyzer.Configuration\HotPathAllocationAnalyzer.Configuration.csproj", "{F91314DA-FD70-4170-B7B8-765A66331751}"
 EndProject
@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{D87B3B1E-B
 		README.md = README.md
 		Deployment.md = Deployment.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotPathAllocationAnalyzer", "HotPathAllocationAnalyzer\HotPathAllocationAnalyzer.csproj", "{A61DB741-4063-465A-A776-328473EFD044}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{73B015EE-69BC-427E-B5E4-938B3513272A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73B015EE-69BC-427E-B5E4-938B3513272A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{73B015EE-69BC-427E-B5E4-938B3513272A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A61DB741-4063-465A-A776-328473EFD044}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A61DB741-4063-465A-A776-328473EFD044}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A61DB741-4063-465A-A776-328473EFD044}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A61DB741-4063-465A-A776-328473EFD044}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
