@@ -5,7 +5,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <RootNamespace>HotPathAllocationAnalyzer.Configuration</RootNamespace>
         <PackageId>HotPathAllocationAnalyzer.Configuration</PackageId>
-        <PackageVersion>1.0.9</PackageVersion>
+        <PackageVersion>1.0.10</PackageVersion>
         <PackageLicenseUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer/blob/master/LICENSE</PackageLicenseUrl>
         <PackageProjectUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</PackageProjectUrl>
         <RepositoryUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</RepositoryUrl>
@@ -13,7 +13,7 @@
         <Description>
             This package should be installed only on the project used to define the HotPathAlloacationAnalyzer whitelist
         </Description>
-        <PackageReleaseNotes>Update roslyn and add string interpolation handler whitelist</PackageReleaseNotes>
+        <PackageReleaseNotes>Remove roslyn dependencies for attributes dll</PackageReleaseNotes>
         <PackageTags>hotpath performance clr allocations boxing closure displayclass delegate enumerator newobj roslyn analyzer diagnostic</PackageTags>
         <NoPackageAnalysis>true</NoPackageAnalysis>
         
