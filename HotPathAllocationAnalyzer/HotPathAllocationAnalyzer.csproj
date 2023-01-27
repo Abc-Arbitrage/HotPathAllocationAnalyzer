@@ -7,10 +7,10 @@
 
     <PropertyGroup>
         <PackageId>HotPathAllocationAnalyzer</PackageId>
-        <PackageVersion>1.0.10</PackageVersion>
+        <PackageVersion>1.0.11</PackageVersion>
         <Authors>Abc Arbitrage;Microsoft</Authors>
         <PackageLicenseUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer/blob/master/LICENSE</PackageLicenseUrl>
-        <PackageProjectUrl>httpshttps://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</PackageProjectUrl>
         <RepositoryUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</RepositoryUrl>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <Description>
@@ -20,7 +20,7 @@
             - explicit allocation
             - implicit allocations (boxing, display classes a.k.a closures, implicit delegate creations, ...)
         </Description>
-        <PackageReleaseNotes>Update roslyn, support string interpolation custom handler</PackageReleaseNotes>
+        <PackageReleaseNotes>Remove roslyn dependencies for attributes dll</PackageReleaseNotes>
         <Copyright>Copyright</Copyright>
         <PackageTags>hotpath;performance;clr;allocations;boxing;closure;displayclass;delegate;enumerator;newobj;roslyn;analyzer;diagnostic</PackageTags>
         <NoPackageAnalysis>true</NoPackageAnalysis>
