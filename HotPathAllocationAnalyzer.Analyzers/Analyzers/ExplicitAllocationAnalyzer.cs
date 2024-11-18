@@ -9,19 +9,19 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace HotPathAllocationAnalyzer.Analyzers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public sealed class ExplicitAllocationAnalyzer : AllocationAnalyzer
+    public sealed class ExplicitAllocationAnalyzer : SyntaxNodeAllocationAnalyzer
     {
-        public static DiagnosticDescriptor NewArrayRule = new DiagnosticDescriptor("HAA0501", "Explicit new array type allocation", "Explicit new array type allocation", "Performance", DiagnosticSeverity.Error, true); 
-        public static DiagnosticDescriptor NewObjectRule = new DiagnosticDescriptor("HAA0502", "Explicit new reference type allocation", "Explicit new reference type allocation", "Performance", DiagnosticSeverity.Error, true); 
-        public static DiagnosticDescriptor AnonymousNewObjectRule = new DiagnosticDescriptor("HAA0503", "Explicit new anonymous object allocation", "Explicit new anonymous object allocation", "Performance", DiagnosticSeverity.Error, true, string.Empty, "https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/anonymous-types"); 
-        public static DiagnosticDescriptor ImplicitArrayCreationRule = new DiagnosticDescriptor("HAA0504", "Implicit new array creation allocation", "Implicit new array creation allocation", "Performance", DiagnosticSeverity.Error, true); 
-        public static DiagnosticDescriptor InitializerCreationRule = new DiagnosticDescriptor("HAA0505", "Initializer reference type allocation", "Initializer reference type allocation", "Performance", DiagnosticSeverity.Error, true); 
-        public static DiagnosticDescriptor LetCauseRule = new DiagnosticDescriptor("HAA0506", "Let clause induced allocation", "Let clause induced allocation", "Performance", DiagnosticSeverity.Error, true); 
-        public static DiagnosticDescriptor TargetTypeNewRule = new DiagnosticDescriptor("HAA0506", "Target type new allocation", "Target type new allocation", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor NewArrayRule = new("HAA0501", "Explicit new array type allocation", "Explicit new array type allocation", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor NewObjectRule = new("HAA0502", "Explicit new reference type allocation", "Explicit new reference type allocation", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor AnonymousNewObjectRule = new("HAA0503", "Explicit new anonymous object allocation", "Explicit new anonymous object allocation", "Performance", DiagnosticSeverity.Error, true, string.Empty, "https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/anonymous-types");
+        public static readonly DiagnosticDescriptor ImplicitArrayCreationRule = new("HAA0504", "Implicit new array creation allocation", "Implicit new array creation allocation", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor InitializerCreationRule = new("HAA0505", "Initializer reference type allocation", "Initializer reference type allocation", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor LetCauseRule = new("HAA0506", "Let clause induced allocation", "Let clause induced allocation", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor TargetTypeNewRule = new("HAA0506", "Target type new allocation", "Target type new allocation", "Performance", DiagnosticSeverity.Error, true);
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(LetCauseRule, InitializerCreationRule, ImplicitArrayCreationRule, AnonymousNewObjectRule, NewObjectRule, NewArrayRule);
 
-        protected override SyntaxKind[] Expressions => new[]
-        {
+        protected override SyntaxKind[] Expressions =>
+        [
             SyntaxKind.ObjectCreationExpression,            // Used
             SyntaxKind.AnonymousObjectCreationExpression,   // Used
             SyntaxKind.ArrayInitializerExpression,          // Used (this is inside an ImplicitArrayCreationExpression)
@@ -33,10 +33,8 @@ namespace HotPathAllocationAnalyzer.Analyzers
             SyntaxKind.LetClause,                           // Used
             SyntaxKind.ImplicitObjectCreationExpression,    // Used for target type new
             SyntaxKind.InvocationExpression,                // Used for target type new
-            SyntaxKind.VariableDeclaration,                 // Used for target type new
-        };
-
-        private static readonly object[] EmptyMessageArgs = { };
+            SyntaxKind.VariableDeclaration // Used for target type new
+        ];
 
         public ExplicitAllocationAnalyzer()
         {
@@ -60,6 +58,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
                 AnalyzeObjectCreationSyntax(context, node, NewObjectRule);
             }
 
+            object[] emptyMessageArgs = [];
             if (node is InitializerExpressionSyntax objectInitializerSyntax)
             {
                 if (!node.IsKind(SyntaxKind.ObjectInitializerExpression))
@@ -74,7 +73,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
                 var typeInfo = semanticModel.GetTypeInfo(ancestor, cancellationToken);
                 if (typeInfo.ConvertedType != null && typeInfo.ConvertedType.TypeKind != TypeKind.Error && typeInfo.ConvertedType.IsReferenceType)
                 {
-                    reportDiagnostic(Diagnostic.Create(InitializerCreationRule, objectInitializerSyntax.GetLocation(), EmptyMessageArgs));
+                    reportDiagnostic(Diagnostic.Create(InitializerCreationRule, objectInitializerSyntax.GetLocation(), emptyMessageArgs));
                     HeapAllocationAnalyzerEventSource.Logger.NewInitializerExpression(filePath);
                     return;
                 }
@@ -82,28 +81,28 @@ namespace HotPathAllocationAnalyzer.Analyzers
 
             if (node is ImplicitArrayCreationExpressionSyntax implicitArrayExpression)
             {
-                reportDiagnostic(Diagnostic.Create(ImplicitArrayCreationRule, implicitArrayExpression.NewKeyword.GetLocation(), EmptyMessageArgs));
+                reportDiagnostic(Diagnostic.Create(ImplicitArrayCreationRule, implicitArrayExpression.NewKeyword.GetLocation(), emptyMessageArgs));
                 HeapAllocationAnalyzerEventSource.Logger.NewImplicitArrayCreationExpression(filePath);
                 return;
             }
 
             if (node is AnonymousObjectCreationExpressionSyntax newAnon)
             {
-                reportDiagnostic(Diagnostic.Create(AnonymousNewObjectRule, newAnon.NewKeyword.GetLocation(), EmptyMessageArgs));
+                reportDiagnostic(Diagnostic.Create(AnonymousNewObjectRule, newAnon.NewKeyword.GetLocation(), emptyMessageArgs));
                 HeapAllocationAnalyzerEventSource.Logger.NewAnonymousObjectCreationExpression(filePath);
                 return;
             }
 
             if (node is ArrayCreationExpressionSyntax newArr)
             {
-                reportDiagnostic(Diagnostic.Create(NewArrayRule, newArr.NewKeyword.GetLocation(), EmptyMessageArgs));
+                reportDiagnostic(Diagnostic.Create(NewArrayRule, newArr.NewKeyword.GetLocation(), emptyMessageArgs));
                 HeapAllocationAnalyzerEventSource.Logger.NewArrayExpression(filePath);
                 return;
             }
 
             if (node is LetClauseSyntax letKind)
             {
-                reportDiagnostic(Diagnostic.Create(LetCauseRule, letKind.LetKeyword.GetLocation(), EmptyMessageArgs));
+                reportDiagnostic(Diagnostic.Create(LetCauseRule, letKind.LetKeyword.GetLocation(), emptyMessageArgs));
                 HeapAllocationAnalyzerEventSource.Logger.LetClauseExpression(filePath);
                 return;
             }
@@ -152,18 +151,19 @@ namespace HotPathAllocationAnalyzer.Analyzers
                 new() {SyntaxKind.ArrowExpressionClause},
                 new() {SyntaxKind.ReturnStatement}
             };
-            
+
+            object[] emptyMessageArgs = [];
             foreach (var path in paths)
             {
                 var ancestor = node.SearchPath(path.ToArray());
                 if (ancestor != null)
                 {
-                    Diagnostic.Create(diagnosticDescriptor, ancestor.GetLocation(), EmptyMessageArgs);
-                    context.ReportDiagnostic(Diagnostic.Create(diagnosticDescriptor, ancestor.GetLocation(), EmptyMessageArgs));
+                    Diagnostic.Create(diagnosticDescriptor, ancestor.GetLocation(), emptyMessageArgs);
+                    context.ReportDiagnostic(Diagnostic.Create(diagnosticDescriptor, ancestor.GetLocation(), emptyMessageArgs));
                     return;
                 }
             }
-            context.ReportDiagnostic(Diagnostic.Create(diagnosticDescriptor, node.GetLocation(), EmptyMessageArgs));
+            context.ReportDiagnostic(Diagnostic.Create(diagnosticDescriptor, node.GetLocation(), emptyMessageArgs));
 
         }
 

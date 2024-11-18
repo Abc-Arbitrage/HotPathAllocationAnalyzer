@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace HotPathAllocationAnalyzer.Analyzers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public sealed class ConcatenationAllocationAnalyzer : AllocationAnalyzer
+    public sealed class ConcatenationAllocationAnalyzer : SyntaxNodeAllocationAnalyzer
     {
         public static readonly DiagnosticDescriptor StringConcatenationAllocationRule = new("HAA0201", "Implicit string concatenation allocation", "Implicit string concatenation allocation", "Performance", DiagnosticSeverity.Error, true, string.Empty, "https://docs.microsoft.com/en-us/dotnet/standard/base-types/stringbuilder");
 
@@ -17,8 +17,6 @@ namespace HotPathAllocationAnalyzer.Analyzers
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(StringConcatenationAllocationRule, ValueTypeToReferenceTypeInAStringConcatenationRule);
 
         protected override SyntaxKind[] Expressions => [SyntaxKind.AddExpression, SyntaxKind.AddAssignmentExpression];
-
-        private static readonly object[] _emptyMessageArgs = [];
 
         public ConcatenationAllocationAnalyzer()
         {
@@ -56,7 +54,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
 
                 if (left.Type?.SpecialType == SpecialType.System_String || right.Type?.SpecialType == SpecialType.System_String)
                 {
-                    reportDiagnostic(Diagnostic.Create(StringConcatenationAllocationRule, node.GetLocation(), _emptyMessageArgs));
+                    reportDiagnostic(Diagnostic.Create(StringConcatenationAllocationRule, node.GetLocation(), (object[])[]));
                     HeapAllocationAnalyzerEventSource.Logger.StringConcatenationAllocation(filePath);
                 }
             }

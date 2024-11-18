@@ -9,15 +9,13 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace HotPathAllocationAnalyzer.Analyzers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public sealed class EnumeratorAllocationAnalyzer : AllocationAnalyzer
+    public sealed class EnumeratorAllocationAnalyzer : SyntaxNodeAllocationAnalyzer
     {
-        public static DiagnosticDescriptor ReferenceTypeEnumeratorRule = new DiagnosticDescriptor("HAA0401", "Possible allocation of reference type enumerator", "Non-ValueType enumerator may result in a heap allocation", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor ReferenceTypeEnumeratorRule = new("HAA0401", "Possible allocation of reference type enumerator", "Non-ValueType enumerator may result in a heap allocation", "Performance", DiagnosticSeverity.Error, true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ReferenceTypeEnumeratorRule);
 
-        protected override SyntaxKind[] Expressions => new[] { SyntaxKind.ForEachStatement, SyntaxKind.InvocationExpression };
-
-        private static readonly object[] EmptyMessageArgs = { };
+        protected override SyntaxKind[] Expressions => [SyntaxKind.ForEachStatement, SyntaxKind.InvocationExpression];
 
         public EnumeratorAllocationAnalyzer()
         {
@@ -35,6 +33,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
             var cancellationToken = context.CancellationToken;
             string filePath = node.SyntaxTree.FilePath;
             var foreachExpression = node as ForEachStatementSyntax;
+            object[] emptyMessageArgs = [];
             if (foreachExpression != null)
             {
                 var typeInfo = semanticModel.GetTypeInfo(foreachExpression.Expression, cancellationToken);
@@ -72,7 +71,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
                     {
                         if (methodSymbol.ReturnType.IsReferenceType && methodSymbol.ReturnType.SpecialType != SpecialType.System_Collections_IEnumerator)
                         {
-                            reportDiagnostic(Diagnostic.Create(ReferenceTypeEnumeratorRule, foreachExpression.InKeyword.GetLocation(), EmptyMessageArgs));
+                            reportDiagnostic(Diagnostic.Create(ReferenceTypeEnumeratorRule, foreachExpression.InKeyword.GetLocation(), emptyMessageArgs));
                             HeapAllocationAnalyzerEventSource.Logger.EnumeratorAllocation(filePath);
                         }
                     }
@@ -93,7 +92,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
 			            {
 				            if (@interface.SpecialType == SpecialType.System_Collections_Generic_IEnumerator_T || @interface.SpecialType == SpecialType.System_Collections_IEnumerator)
 				            {
-					            reportDiagnostic(Diagnostic.Create(ReferenceTypeEnumeratorRule, invocationExpression.GetLocation(), EmptyMessageArgs));
+					            reportDiagnostic(Diagnostic.Create(ReferenceTypeEnumeratorRule, invocationExpression.GetLocation(), emptyMessageArgs));
 					            HeapAllocationAnalyzerEventSource.Logger.EnumeratorAllocation(filePath);
 				            }
 			            }

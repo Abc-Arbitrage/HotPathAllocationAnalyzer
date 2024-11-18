@@ -10,19 +10,17 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace HotPathAllocationAnalyzer.Analyzers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public sealed class DisplayClassAllocationAnalyzer : AllocationAnalyzer
+    public sealed class DisplayClassAllocationAnalyzer : SyntaxNodeAllocationAnalyzer
     {
-        public static DiagnosticDescriptor ClosureDriverRule = new DiagnosticDescriptor("HAA0301", "Closure Allocation Source", "Heap allocation of closure Captures: {0}", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor ClosureDriverRule = new("HAA0301", "Closure Allocation Source", "Heap allocation of closure Captures: {0}", "Performance", DiagnosticSeverity.Error, true);
 
-        public static DiagnosticDescriptor ClosureCaptureRule = new DiagnosticDescriptor("HAA0302", "Display class allocation to capture closure", "The compiler will emit a class that will hold this as a field to allow capturing of this closure", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor ClosureCaptureRule = new("HAA0302", "Display class allocation to capture closure", "The compiler will emit a class that will hold this as a field to allow capturing of this closure", "Performance", DiagnosticSeverity.Error, true);
 
-        public static DiagnosticDescriptor LambaOrAnonymousMethodInGenericMethodRule = new DiagnosticDescriptor("HAA0303", "Lambda or anonymous method in a generic method allocates a delegate instance", "Considering moving this out of the generic method", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor LambdaOrAnonymousMethodInGenericMethodRule = new("HAA0303", "Lambda or anonymous method in a generic method allocates a delegate instance", "Considering moving this out of the generic method", "Performance", DiagnosticSeverity.Error, true);
         
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ClosureCaptureRule, ClosureDriverRule, LambaOrAnonymousMethodInGenericMethodRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ClosureCaptureRule, ClosureDriverRule, LambdaOrAnonymousMethodInGenericMethodRule);
 
-        protected override SyntaxKind[] Expressions => new[] { SyntaxKind.ParenthesizedLambdaExpression, SyntaxKind.SimpleLambdaExpression, SyntaxKind.AnonymousMethodExpression };
-
-        private static readonly object[] EmptyMessageArgs = { };
+        protected override SyntaxKind[] Expressions => [SyntaxKind.ParenthesizedLambdaExpression, SyntaxKind.SimpleLambdaExpression, SyntaxKind.AnonymousMethodExpression];
 
         public DisplayClassAllocationAnalyzer()
         {
@@ -76,7 +74,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
                 {
                     foreach (var l in capture.Locations)
                     {
-                        reportDiagnostic(Diagnostic.Create(ClosureCaptureRule, l, EmptyMessageArgs));
+                        reportDiagnostic(Diagnostic.Create(ClosureCaptureRule, l, (object[])[]));
                     }
                 }
             }
@@ -91,7 +89,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
                 var containingSymbol = semanticModel.GetSymbolInfo(node, cancellationToken).Symbol?.ContainingSymbol as IMethodSymbol;
                 if (containingSymbol != null && containingSymbol.Arity > 0)
                 {
-                    reportDiagnostic(Diagnostic.Create(LambaOrAnonymousMethodInGenericMethodRule, location, EmptyMessageArgs));
+                    reportDiagnostic(Diagnostic.Create(LambdaOrAnonymousMethodInGenericMethodRule, location, (object[])[]));
                 }
             }
         }

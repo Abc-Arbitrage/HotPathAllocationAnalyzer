@@ -2,38 +2,55 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace HotPathAllocationAnalyzer.Analyzers
+namespace HotPathAllocationAnalyzer.Analyzers;
+
+public abstract class AllocationAnalyzer : DiagnosticAnalyzer
 {
-    public abstract class AllocationAnalyzer : DiagnosticAnalyzer
+    private readonly bool _forceEnableAnalysis;
+
+    protected abstract SyntaxKind[] Expressions { get; }
+
+    protected AllocationAnalyzer()
     {
-        private readonly bool _forceEnableAnalysis;
-        protected abstract SyntaxKind[] Expressions { get; }
+    }
 
-        protected abstract void AnalyzeNode(SyntaxNodeAnalysisContext context);
+    protected AllocationAnalyzer(bool forceEnableAnalysis)
+    {
+        _forceEnableAnalysis = forceEnableAnalysis;
+    }
 
-        public AllocationAnalyzer()
-        {
-        }
+    protected bool ShouldAnalyzeNode(SyntaxNodeAnalysisContext context)
+        => _forceEnableAnalysis
+           || (context.ContainingSymbol is not null
+               && AttributeHelper.ShouldAnalyzeNode(context.ContainingSymbol)
+               && !AttributeHelper.HasIgnoreAllocationAttribute(context.ContainingSymbol));
+}
 
-        public AllocationAnalyzer(bool forceEnableAnalysis)
-        {
-            _forceEnableAnalysis = forceEnableAnalysis;
-        }
+public abstract class SyntaxNodeAllocationAnalyzer : AllocationAnalyzer
+{
+    protected SyntaxNodeAllocationAnalyzer()
+    {
+    }
 
-        public override void Initialize(AnalysisContext context)
-        {
-            context.EnableConcurrentExecution();
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
-            context.RegisterSyntaxNodeAction(Analyze, Expressions);
-        }
+    protected SyntaxNodeAllocationAnalyzer(bool forceEnableAnalysis)
+        : base(forceEnableAnalysis)
+    {
+    }
 
-        private void Analyze(SyntaxNodeAnalysisContext context)
-        {
-            var analyze = _forceEnableAnalysis
-                          ||  (context.ContainingSymbol is not null && AttributeHelper.ShouldAnalyzeNode(context.ContainingSymbol)
-                              && !AttributeHelper.HasIgnoreAllocationAttribute(context.ContainingSymbol));
-            if (analyze)
-                AnalyzeNode(context);
-        }
+    protected abstract void AnalyzeNode(SyntaxNodeAnalysisContext context);
+
+    public override void Initialize(AnalysisContext context)
+    {
+        context.EnableConcurrentExecution();
+        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+
+        context.RegisterSyntaxNodeAction(
+            syntaxNodeContext =>
+            {
+                if (ShouldAnalyzeNode(syntaxNodeContext))
+                    AnalyzeNode(syntaxNodeContext);
+            },
+            Expressions
+        );
     }
 }

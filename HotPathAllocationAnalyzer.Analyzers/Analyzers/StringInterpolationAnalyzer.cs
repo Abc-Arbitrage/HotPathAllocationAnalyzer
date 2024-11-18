@@ -18,18 +18,16 @@ public class StringInterpolationAnalyzer : WhitelistedAnalyzer
     {
     }
 
-    public static DiagnosticDescriptor InterpolatedStringRule = new("HAA801", "String interpolation allocation", "Please use a custom handler for the string interpolation to avoid allocations", "Performance", DiagnosticSeverity.Error, true);
+    public static readonly DiagnosticDescriptor InterpolatedStringRule = new("HAA801", "String interpolation allocation", "Please use a custom handler for the string interpolation to avoid allocations", "Performance", DiagnosticSeverity.Error, true);
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(InterpolatedStringRule);
 
-    private static readonly object[] EmptyMessageArgs = { };
-    
-    protected override SyntaxKind[] Expressions { get; } = new[]
-    {
-        SyntaxKind.InterpolatedStringExpression,
-    };
+    protected override SyntaxKind[] Expressions { get; } =
+    [
+        SyntaxKind.InterpolatedStringExpression
+    ];
 
-    protected override void AnalyzeNode(SyntaxNodeAnalysisContext context)
+    protected override void AnalyzeNode(WhitelistedAnalysisContext analysisContext, SyntaxNodeAnalysisContext context)
     {
         var node = context.Node;
         var semanticModel = context.SemanticModel;
@@ -37,16 +35,17 @@ public class StringInterpolationAnalyzer : WhitelistedAnalyzer
 
         if (node is not InterpolatedStringExpressionSyntax interpolation)
             return;
+        object[] emptyMessageArgs = [];
         if (node.Parent is not ArgumentSyntax)
         {
-            reportDiagnostic(Diagnostic.Create(InterpolatedStringRule, interpolation.GetLocation(), EmptyMessageArgs));
+            reportDiagnostic(Diagnostic.Create(InterpolatedStringRule, interpolation.GetLocation(), emptyMessageArgs));
             return;
         }
             
         var typeInfo = semanticModel.GetTypeInfo(node);
         var typeName = typeInfo.ConvertedType?.ToString();
-        if (typeName != null && _whitelistedSymbols.Contains(typeName))
+        if (typeName != null && analysisContext.IsWhitelisted(typeName))
             return;
-        reportDiagnostic(Diagnostic.Create(InterpolatedStringRule, interpolation.GetLocation(), EmptyMessageArgs));
+        reportDiagnostic(Diagnostic.Create(InterpolatedStringRule, interpolation.GetLocation(), emptyMessageArgs));
     }
 }
