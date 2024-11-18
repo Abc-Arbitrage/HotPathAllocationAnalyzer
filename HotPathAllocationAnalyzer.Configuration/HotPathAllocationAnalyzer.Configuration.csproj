@@ -3,21 +3,12 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <OutputType>Exe</OutputType>
-        <Nullable>enable</Nullable>
         <RootNamespace>HotPathAllocationAnalyzer.Configuration</RootNamespace>
+        <IsPackable>true</IsPackable>
         <PackageId>HotPathAllocationAnalyzer.Configuration</PackageId>
-        <PackageVersion>1.0.12</PackageVersion>
-        <PackageLicenseUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer/blob/master/LICENSE</PackageLicenseUrl>
-        <PackageProjectUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</RepositoryUrl>
-        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <Description>
             This package should be installed only on the project used to define the HotPathAlloacationAnalyzer whitelist
         </Description>
-        <PackageReleaseNotes>Remove roslyn dependencies for attributes dll</PackageReleaseNotes>
-        <PackageTags>hotpath performance clr allocations boxing closure displayclass delegate enumerator newobj roslyn analyzer diagnostic</PackageTags>
-        <NoPackageAnalysis>true</NoPackageAnalysis>
-        <NuGetAuditMode>direct</NuGetAuditMode>
     </PropertyGroup>
     
     <ItemGroup>
@@ -33,15 +24,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\HotPathAllocationAnalyzer\HotPathAllocationAnalyzer.csproj" />
+        <ProjectReference Include="..\HotPathAllocationAnalyzer\HotPathAllocationAnalyzer.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <Compile Include="..\HotPathAllocationAnalyzer.Analyzers\Helpers\**\*.cs" Link="Helpers\%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
-    
-    <Target Name="ReplaceVersion" BeforeTargets="CoreCompile">
-        <XmlPoke XmlInputPath="build\HotPathAllocationAnalyzer.Configuration.targets" Value="$(PackageVersion)" Query="Project/PropertyGroup/HotPathAllocationAnalyzerConfigurationVersion" />
-    </Target>
     
 </Project>

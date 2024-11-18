@@ -2,17 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    </PropertyGroup>
-
-    <PropertyGroup>
+        <IsPackable>true</IsPackable>
         <PackageId>HotPathAllocationAnalyzer</PackageId>
-        <PackageVersion>1.0.12</PackageVersion>
-        <Authors>Abc Arbitrage;Microsoft</Authors>
-        <PackageLicenseUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer/blob/master/LICENSE</PackageLicenseUrl>
-        <PackageProjectUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</RepositoryUrl>
-        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <Description>
             Roslyn Analyzer detecting heap allocation in *hot path*
 
@@ -20,10 +11,6 @@
             - explicit allocation
             - implicit allocations (boxing, display classes a.k.a closures, implicit delegate creations, ...)
         </Description>
-        <PackageReleaseNotes>Add MakeSafe overload with string symbol name</PackageReleaseNotes>
-        <Copyright>Copyright</Copyright>
-        <PackageTags>hotpath;performance;clr;allocations;boxing;closure;displayclass;delegate;enumerator;newobj;roslyn;analyzer;diagnostic</PackageTags>
-        <NoPackageAnalysis>true</NoPackageAnalysis>
     </PropertyGroup>
 
     <ItemGroup>

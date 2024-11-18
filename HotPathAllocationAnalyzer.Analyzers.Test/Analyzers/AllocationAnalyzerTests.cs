@@ -22,17 +22,17 @@ namespace HotPathAllocationAnalyzer.Test.Analyzers
         public string Content { get; set; }
 
         public override SourceText GetText(CancellationToken cancellationToken = new CancellationToken())
-        => SourceText.From(Content);
+            => SourceText.From(Content);
 
         public override string Path { get; }
     }
 
     public abstract class AllocationAnalyzerTests
     {
-        private static readonly List<MetadataReference> references = (from item in AppDomain.CurrentDomain.GetAssemblies() 
-                                                                      where !item.IsDynamic && item.Location != null && item.Location != string.Empty 
-                                                                      select MetadataReference.CreateFromFile(item.Location))
-                                                                     .Cast<MetadataReference>().ToList();
+        private static readonly List<MetadataReference> _references = (from item in AppDomain.CurrentDomain.GetAssemblies()
+                                                                       where !item.IsDynamic && !string.IsNullOrEmpty(item.Location)
+                                                                       select MetadataReference.CreateFromFile(item.Location))
+                                                                      .Cast<MetadataReference>().ToList();
 
         protected IList<SyntaxNode> GetExpectedDescendants(IEnumerable<SyntaxNode> nodes, ImmutableArray<SyntaxKind> expected)
         {
@@ -53,19 +53,23 @@ namespace HotPathAllocationAnalyzer.Test.Analyzers
                         continue;
                     }
 
-                    if (child.ChildNodes().Count() > 0)
+                    if (child.ChildNodes().Any())
                         descendants.AddRange(GetExpectedDescendants(child.ChildNodes(), expected));
                 }
             }
+
             return descendants;
         }
 
-        protected Info ProcessCode(DiagnosticAnalyzer analyzer, string sampleProgram,
-            ImmutableArray<SyntaxKind> expected, bool allowBuildErrors = false, TestAdditionalFile[] additionalFiles = null)
+        protected Info ProcessCode(DiagnosticAnalyzer analyzer,
+                                   string sampleProgram,
+                                   ImmutableArray<SyntaxKind> expected,
+                                   bool allowBuildErrors = false,
+                                   TestAdditionalFile[]? additionalFiles = null)
         {
             var options = new CSharpParseOptions(kind: SourceCodeKind.Script, languageVersion: LanguageVersion.CSharp10);
             var tree = CSharpSyntaxTree.ParseText(sampleProgram, options);
-            var compilation = CSharpCompilation.Create("Test", new[] { tree }, references);
+            var compilation = CSharpCompilation.Create("Test", [tree], _references);
 
             var diagnostics = compilation.GetDiagnostics();
             if (diagnostics.Count(d => d.Severity == DiagnosticSeverity.Error) > 0)
@@ -81,9 +85,9 @@ namespace HotPathAllocationAnalyzer.Test.Analyzers
             var matches = GetExpectedDescendants(tree.GetRoot().ChildNodes(), expected);
 
             // Run the code tree through the analyzer and record the allocations it reports
-            var analyzerAdditionalFiles = (additionalFiles ?? Array.Empty<TestAdditionalFile>()).Cast<AdditionalText>().ToImmutableArray();
+            var analyzerAdditionalFiles = (additionalFiles ?? []).Cast<AdditionalText>().ToImmutableArray();
             var analyzerOptions = new AnalyzerOptions(analyzerAdditionalFiles);
-            var compilationWithAnalyzers = compilation.WithAnalyzers(ImmutableArray.Create(analyzer), analyzerOptions);
+            var compilationWithAnalyzers = compilation.WithAnalyzers([analyzer], analyzerOptions);
             var allocations = compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync().GetAwaiter().GetResult().Distinct(DiagnosticEqualityComparer.Instance).ToList();
 
             return new Info
@@ -100,13 +104,13 @@ namespace HotPathAllocationAnalyzer.Test.Analyzers
 
         protected class Info
         {
-            public CSharpParseOptions Options { get; set; }
-            public SyntaxTree Tree { get; set; }
-            public CSharpCompilation Compilation { get; set; }
-            public ImmutableArray<Diagnostic> Diagnostics { get; set; }
-            public SemanticModel SemanticModel { get; set; }
-            public IList<SyntaxNode> Matches { get; set; }
-            public List<Diagnostic> Allocations { get; set; }
+            public required CSharpParseOptions Options { get; set; }
+            public required SyntaxTree Tree { get; set; }
+            public required CSharpCompilation Compilation { get; set; }
+            public required ImmutableArray<Diagnostic> Diagnostics { get; set; }
+            public required SemanticModel SemanticModel { get; set; }
+            public required IList<SyntaxNode> Matches { get; set; }
+            public required List<Diagnostic> Allocations { get; set; }
         }
     }
 }

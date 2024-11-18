@@ -1,5 +1,8 @@
 using HotPathAllocationAnalyzer.Support;
 
+#pragma warning disable CS8629 // Nullable value type may be null.
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+
 namespace HotPathAllocationAnalyzer.Test
 {
     public class TestConfiguration : AllocationConfiguration

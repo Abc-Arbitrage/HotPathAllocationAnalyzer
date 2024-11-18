@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using HotPathAllocationAnalyzer.Analyzers;
 using HotPathAllocationAnalyzer.Test.Analyzers;
 using Microsoft.CodeAnalysis.CSharp;
@@ -28,7 +27,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
 
             var analyser = new MethodCallAnalyzer();
 
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.InvocationExpression]);
             Assert.AreEqual(1, info.Allocations.Count);
         }
 
@@ -54,7 +53,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
 
             var analyser = new MethodCallAnalyzer();
 
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.InvocationExpression]);
             Assert.AreEqual(0, info.Allocations.Count);
         }
 
@@ -86,7 +85,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
 
             var analyser = new MethodCallAnalyzer();
 
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.InvocationExpression]);
             Assert.AreEqual(0, info.Allocations.Count);
         }
 
@@ -110,7 +109,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
 
             var analyser = new MethodCallAnalyzer();
 
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.InvocationExpression]);
             Assert.AreEqual(0, info.Allocations.Count);
         }
 
@@ -144,7 +143,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
 
             var analyser = new MethodCallAnalyzer();
 
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.InvocationExpression]);
             Assert.AreEqual(0, info.Allocations.Count);
         }
 
@@ -163,7 +162,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
 
             var analyser = new MethodCallAnalyzer();
 
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.InvocationExpression]);
             Assert.AreEqual(1, info.Allocations.Count);
         }
 
@@ -186,7 +185,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
 
             var analyser = new MethodCallAnalyzer();
 
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.InvocationExpression]);
             Assert.AreEqual(0, info.Allocations.Count);
         }
 
@@ -208,7 +207,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
 
             var analyser = new MethodCallAnalyzer();
 
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.InvocationExpression]);
             Assert.AreEqual(0, info.Allocations.Count);
         }
 
@@ -230,7 +229,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
 
             var analyser = new MethodCallAnalyzer();
 
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.InvocationExpression]);
             Assert.AreEqual(1, info.Allocations.Count);
         }
 
@@ -252,7 +251,7 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
             analyser.AddToWhiteList("string.IsNormalized()");
             analyser.AddToWhiteList("string.Contains(string)");
 
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression, SyntaxKind.ClassDeclaration));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.InvocationExpression, SyntaxKind.ClassDeclaration]);
             Assert.AreEqual(0, info.Allocations.Count);
         }
 
@@ -275,8 +274,9 @@ string.Length
 string.IsNormalized()
 string.Equals(string)";
             var additionalFile = new TestAdditionalFile("whitelist.txt", whitelist);
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression),
-                                   additionalFiles: new []{additionalFile});
+            var info = ProcessCode(analyser, sample,
+                                   [SyntaxKind.InvocationExpression],
+                                   additionalFiles: [additionalFile]);
             Assert.AreEqual(0, info.Allocations.Count);
         }
 
@@ -299,7 +299,7 @@ string.Equals(string)";
             var analyser = new MethodCallAnalyzer();
             analyser.AddToWhiteList("System.Collections.Generic.List<T>.IndexOf(T)");
 
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.InvocationExpression]);
             Assert.AreEqual(0, info.Allocations.Count);
         }
 
@@ -322,7 +322,7 @@ string.Equals(string)";
             var analyser = new MethodCallAnalyzer();
             analyser.AddToWhiteList("System.Collections.Generic.List<double>.IndexOf(double)");
 
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.InvocationExpression]);
             Assert.AreEqual(1, info.Allocations.Count);
         }
     }

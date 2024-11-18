@@ -35,9 +35,10 @@ namespace HotPathAllocationAnalyzer.Test.ManualTests
             var workspace = new AdhocWorkspace();
             var project = analyzer.AddToWorkspace(workspace)
                                   .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true, metadataImportOptions: MetadataImportOptions.Public ))
-                                  .WithAnalyzerReferences(new AnalyzerReference[0]);
+                                  .WithAnalyzerReferences(Array.Empty<AnalyzerReference>());
 
-            var trees = project.Documents.Select(x => x.GetSyntaxTreeAsync().Result)
+            var trees = project.Documents
+                               .Select(x => x.GetSyntaxTreeAsync().Result!)
                                .ToArray();
 
             // Run the code tree through the analyzer and record the allocations it reports

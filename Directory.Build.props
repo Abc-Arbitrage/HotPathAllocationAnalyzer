@@ -1,0 +1,23 @@
+<Project>
+
+    <PropertyGroup>
+        <PackageVersion>1.0.13</PackageVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <LangVersion>12.0</LangVersion>
+        <AnalysisLevel>8.0</AnalysisLevel>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <NuGetAuditMode>direct</NuGetAuditMode>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Authors>Abc Arbitrage;Microsoft</Authors>
+        <PackageLicenseUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer/blob/master/LICENSE</PackageLicenseUrl>
+        <PackageProjectUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Abc-Arbitrage/HotPathAllocationAnalyzer</RepositoryUrl>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <PackageTags>hotpath;performance;clr;allocations;boxing;closure;displayclass;delegate;enumerator;newobj;roslyn;analyzer;diagnostic</PackageTags>
+    </PropertyGroup>
+</Project>

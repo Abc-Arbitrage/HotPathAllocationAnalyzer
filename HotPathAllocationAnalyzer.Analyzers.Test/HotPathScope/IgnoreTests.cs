@@ -273,9 +273,9 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
 ";
             
             var analyser = new ExplicitAllocationAnalyzer();
-            var expectedSyntax = analyser.GetType().GetProperty("Expressions", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(analyser) as SyntaxKind[];
+            var expectedSyntax = analyser.GetType().GetProperty("Expressions", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(analyser) as SyntaxKind[];
 
-            var info = ProcessCode(analyser, sample, expectedSyntax.ToImmutableArray());
+            var info = ProcessCode(analyser, sample, [..expectedSyntax!]);
             Assert.AreEqual(3, info.Allocations.Count);
         }
     }
