@@ -11,18 +11,18 @@ namespace HotPathAllocationAnalyzer.Analyzers
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class TypeConversionAllocationAnalyzer : AllocationAnalyzer
     {
-        public static DiagnosticDescriptor ValueTypeToReferenceTypeConversionRule = new DiagnosticDescriptor("HAA0601", "Value type to reference type conversion causing boxing allocation", "Value type to reference type conversion causes boxing at call site (here), and unboxing at the callee-site. Consider using generics if applicable", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor ValueTypeToReferenceTypeConversionRule = new("HAA0601", "Value type to reference type conversion causing boxing allocation", "Value type to reference type conversion causes boxing at call site (here), and unboxing at the callee-site - consider using generics if applicable", "Performance", DiagnosticSeverity.Error, true);
 
-        public static DiagnosticDescriptor DelegateOnStructInstanceRule = new DiagnosticDescriptor("HAA0602", "Delegate on struct instance caused a boxing allocation", "Struct instance method being used for delegate creation, this will result in a boxing instruction", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor DelegateOnStructInstanceRule = new("HAA0602", "Delegate on struct instance caused a boxing allocation", "Struct instance method being used for delegate creation, this will result in a boxing instruction", "Performance", DiagnosticSeverity.Error, true);
 
-        public static DiagnosticDescriptor MethodGroupAllocationRule = new DiagnosticDescriptor("HAA0603", "Delegate allocation from a method group", "This will allocate a delegate instance", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor MethodGroupAllocationRule = new("HAA0603", "Delegate allocation from a method group", "This will allocate a delegate instance", "Performance", DiagnosticSeverity.Error, true);
 
-        public static DiagnosticDescriptor ReadonlyMethodGroupAllocationRule = new DiagnosticDescriptor("HAA0604", "Delegate allocation from a method group", "This will allocate a delegate instance", "Performance", DiagnosticSeverity.Error, true);
+        public static readonly DiagnosticDescriptor ReadonlyMethodGroupAllocationRule = new("HAA0604", "Delegate allocation from a method group", "This will allocate a delegate instance", "Performance", DiagnosticSeverity.Error, true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ValueTypeToReferenceTypeConversionRule, DelegateOnStructInstanceRule, MethodGroupAllocationRule, ReadonlyMethodGroupAllocationRule);
 
-        protected override SyntaxKind[] Expressions => new[]
-        {
+        protected override SyntaxKind[] Expressions =>
+        [
             SyntaxKind.SimpleAssignmentExpression,
             SyntaxKind.ReturnStatement,
             SyntaxKind.YieldReturnStatement,
@@ -33,10 +33,10 @@ namespace HotPathAllocationAnalyzer.Analyzers
             SyntaxKind.ForEachStatement,
             SyntaxKind.EqualsValueClause,
             SyntaxKind.Argument,
-            SyntaxKind.ArrowExpressionClause,
-        };
+            SyntaxKind.ArrowExpressionClause
+        ];
 
-        private static readonly object[] EmptyMessageArgs = { };
+        private static readonly object[] _emptyMessageArgs = [];
 
         public TypeConversionAllocationAnalyzer()
         {
@@ -154,7 +154,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
 
                 if (leftT.Type?.IsValueType == true && rightT.Type?.IsReferenceType == true)
                 {
-                    reportDiagnostic(Diagnostic.Create(ValueTypeToReferenceTypeConversionRule, binaryExpression.Left.GetLocation(), EmptyMessageArgs));
+                    reportDiagnostic(Diagnostic.Create(ValueTypeToReferenceTypeConversionRule, binaryExpression.Left.GetLocation(), _emptyMessageArgs));
                     HeapAllocationAnalyzerEventSource.Logger.BoxingAllocation(filePath);
                 }
 
@@ -175,7 +175,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
         {
             var typeInfo = semanticModel.GetTypeInfo(interpolation.Expression, cancellationToken);
             if (typeInfo.Type?.IsValueType == true) {
-                reportDiagnostic(Diagnostic.Create(ValueTypeToReferenceTypeConversionRule, interpolation.Expression.GetLocation(), EmptyMessageArgs));
+                reportDiagnostic(Diagnostic.Create(ValueTypeToReferenceTypeConversionRule, interpolation.Expression.GetLocation(), _emptyMessageArgs));
                 HeapAllocationAnalyzerEventSource.Logger.BoxingAllocation(filePath);
             }
         }
@@ -189,7 +189,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
 
                 if (castTypeInfo.Type?.IsReferenceType == true && expressionTypeInfo.Type?.IsValueType == true)
                 {
-                    reportDiagnostic(Diagnostic.Create(ValueTypeToReferenceTypeConversionRule, castExpression.Expression.GetLocation(), EmptyMessageArgs));
+                    reportDiagnostic(Diagnostic.Create(ValueTypeToReferenceTypeConversionRule, castExpression.Expression.GetLocation(), _emptyMessageArgs));
                 }
             }
         }
@@ -235,7 +235,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
         {
             if (conversionInfo.IsBoxing)
             {
-                reportDiagnostic(Diagnostic.Create(ValueTypeToReferenceTypeConversionRule, location, EmptyMessageArgs));
+                reportDiagnostic(Diagnostic.Create(ValueTypeToReferenceTypeConversionRule, location, _emptyMessageArgs));
                 HeapAllocationAnalyzerEventSource.Logger.BoxingAllocation(filePath);
             }
         }
@@ -258,7 +258,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
                     if (node.IsKind(SyntaxKind.IdentifierName))
                     {
                         if (semanticModel.GetSymbolInfo(node, cancellationToken).Symbol is IMethodSymbol) {
-                            reportDiagnostic(Diagnostic.Create(MethodGroupAllocationRule, location, EmptyMessageArgs));
+                            reportDiagnostic(Diagnostic.Create(MethodGroupAllocationRule, location, _emptyMessageArgs));
                             HeapAllocationAnalyzerEventSource.Logger.MethodGroupAllocation(filePath);
                         }
                     }
@@ -268,12 +268,12 @@ namespace HotPathAllocationAnalyzer.Analyzers
                         {
                             if (isAssignmentToReadonly)
                             {
-                                reportDiagnostic(Diagnostic.Create(ReadonlyMethodGroupAllocationRule, location, EmptyMessageArgs));
+                                reportDiagnostic(Diagnostic.Create(ReadonlyMethodGroupAllocationRule, location, _emptyMessageArgs));
                                 HeapAllocationAnalyzerEventSource.Logger.ReadonlyMethodGroupAllocation(filePath);
                             }
                             else
                             {
-                                reportDiagnostic(Diagnostic.Create(MethodGroupAllocationRule, location, EmptyMessageArgs));
+                                reportDiagnostic(Diagnostic.Create(MethodGroupAllocationRule, location, _emptyMessageArgs));
                                 HeapAllocationAnalyzerEventSource.Logger.MethodGroupAllocation(filePath);
                             }
                         }
@@ -281,7 +281,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
                     else if (node is ArrowExpressionClauseSyntax arrowClause)
                     {
                         if (semanticModel.GetSymbolInfo(arrowClause.Expression, cancellationToken).Symbol is IMethodSymbol) {
-                            reportDiagnostic(Diagnostic.Create(MethodGroupAllocationRule, location, EmptyMessageArgs));
+                            reportDiagnostic(Diagnostic.Create(MethodGroupAllocationRule, location, _emptyMessageArgs));
                             HeapAllocationAnalyzerEventSource.Logger.MethodGroupAllocation(filePath);
                         }
                     }
@@ -289,7 +289,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
 
                 if (IsStructInstanceMethod(node, semanticModel, cancellationToken))
                 {
-                    reportDiagnostic(Diagnostic.Create(DelegateOnStructInstanceRule, location, EmptyMessageArgs));
+                    reportDiagnostic(Diagnostic.Create(DelegateOnStructInstanceRule, location, _emptyMessageArgs));
                 }
             }
         }

@@ -21,17 +21,17 @@ namespace HotPathAllocationAnalyzer.Helpers
             return HasNoAllocationAttribute(containingSymbol);
         }
         
-        public static bool HasNoAllocationAttribute(ISymbol containingSymbol)
+        public static bool HasNoAllocationAttribute(ISymbol? containingSymbol)
         {
             return FindAttribute(containingSymbol, AllocationRules.IsNoAllocationAttribute);
         }
         
-        public static bool HasIgnoreAllocationAttribute(ISymbol containingSymbol)
+        public static bool HasIgnoreAllocationAttribute(ISymbol? containingSymbol)
         {
             return FindAttribute(containingSymbol, AllocationRules.IsIgnoreAllocationAttribute);
         }
 
-        private static bool FindAttribute(ISymbol containingSymbol, Func<AttributeData, bool> attribute)
+        private static bool FindAttribute(ISymbol? containingSymbol, Func<AttributeData, bool> attribute)
         {
             try
             {
@@ -70,7 +70,7 @@ namespace HotPathAllocationAnalyzer.Helpers
             foreach (var iface in type.AllInterfaces)
             {
                 var interfaceMethods = iface.GetMembers().OfType<IMethodSymbol>();
-                var interfaceMethod = interfaceMethods.SingleOrDefault(x => type.FindImplementationForInterfaceMember(x)?.Equals(method) ?? false);
+                var interfaceMethod = interfaceMethods.SingleOrDefault(x => SymbolEqualityComparer.Default.Equals(type.FindImplementationForInterfaceMember(x), method));
                 if (interfaceMethod?.GetAttributes().Any(attribute)?? false)
                     return true;
             }

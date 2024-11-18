@@ -30,7 +30,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
         private void Analyze(SyntaxNodeAnalysisContext context)
         {
             var analyze = _forceEnableAnalysis
-                          || (AttributeHelper.ShouldAnalyzeNode(context.ContainingSymbol)
+                          ||  (context.ContainingSymbol is not null && AttributeHelper.ShouldAnalyzeNode(context.ContainingSymbol)
                               && !AttributeHelper.HasIgnoreAllocationAttribute(context.ContainingSymbol));
             if (analyze)
                 AnalyzeNode(context);

@@ -63,7 +63,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
             }
         }
         
-        private static void ClosureCaptureDataFlowAnalysis(DataFlowAnalysis flow, Action<Diagnostic> reportDiagnostic, Location location)
+        private static void ClosureCaptureDataFlowAnalysis(DataFlowAnalysis? flow, Action<Diagnostic> reportDiagnostic, Location location)
         {
             if (flow == null || flow.Captured.Length <= 0)
             {

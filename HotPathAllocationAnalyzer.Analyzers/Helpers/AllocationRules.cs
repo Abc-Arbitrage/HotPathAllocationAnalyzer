@@ -15,33 +15,33 @@ namespace HotPathAllocationAnalyzer.Helpers
         
         public static bool IsNoAllocationAttribute(AttributeData attribute)
         {
-            return attribute.AttributeClass.Name == nameof(NoAllocation)
+            return attribute.AttributeClass?.Name == nameof(NoAllocation)
                 && attribute.AttributeClass.ContainingNamespace.ToDisplayString() == typeof(NoAllocation).Namespace;
         }
 
         public static bool IsIgnoreAllocationAttribute(AttributeData attribute)
         {
-            return attribute.AttributeClass.Name == nameof(IgnoreAllocation)
+            return attribute.AttributeClass?.Name == nameof(IgnoreAllocation)
                 && attribute.AttributeClass.ContainingNamespace.ToDisplayString() == typeof(IgnoreAllocation).Namespace;
         }
 
         public static bool IsCompilerGeneratedAttribute(AttributeData attribute)
         {
-            return attribute.AttributeClass.Name == nameof(CompilerGeneratedAttribute)
+            return attribute.AttributeClass?.Name == nameof(CompilerGeneratedAttribute)
                    && attribute.AttributeClass.ContainingNamespace.ToDisplayString() == typeof(CompilerGeneratedAttribute).Namespace;
         }
 
         public static bool IsMakeSafeAttribute(AttributeData attribute)
         {
-            return attribute.AttributeClass.Name == nameof(MakeSafe)
+            return attribute.AttributeClass?.Name == nameof(MakeSafe)
                    && attribute.AttributeClass.ContainingNamespace.ToDisplayString() == typeof(MakeSafe).Namespace;
         }
 
-        public static ClassDeclarationSyntax GetConfigurationClass(SyntaxNode syntaxNode, SemanticModel semanticModel)
+        public static ClassDeclarationSyntax? GetConfigurationClass(SyntaxNode syntaxNode, SemanticModel semanticModel)
         {
-            bool IsConfigurationBaseType(ITypeSymbol typeSymbol)
+            bool IsConfigurationBaseType(ITypeSymbol? typeSymbol)
             {
-                return typeSymbol.Name == nameof(AllocationConfiguration)
+                return typeSymbol?.Name == nameof(AllocationConfiguration)
                        && typeSymbol.ContainingNamespace.ToString() == typeof(AllocationConfiguration).Namespace;
                 
             }

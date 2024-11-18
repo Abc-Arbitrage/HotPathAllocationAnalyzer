@@ -5,6 +5,8 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <IsPackable>false</IsPackable>
     <RootNamespace>HotPathAllocationAnalyzer.Test</RootNamespace>
+    <NoWarn>$(NoWarn);NU1608</NoWarn>
+    <NuGetAuditMode>direct</NuGetAuditMode>
   </PropertyGroup>
 
   <ItemGroup>

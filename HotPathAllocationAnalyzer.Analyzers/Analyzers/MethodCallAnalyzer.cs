@@ -72,7 +72,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
             return fields.Any() || (propertyInfo.GetMethod?.GetAttributes().Any(AllocationRules.IsCompilerGeneratedAttribute) ?? false);
         }
 
-        private static bool IsInSafeScope(SemanticModel semanticModel, SyntaxNode symbol)
+        private static bool IsInSafeScope(SemanticModel semanticModel, SyntaxNode? symbol)
         {
             if (symbol == null)
                 return false;

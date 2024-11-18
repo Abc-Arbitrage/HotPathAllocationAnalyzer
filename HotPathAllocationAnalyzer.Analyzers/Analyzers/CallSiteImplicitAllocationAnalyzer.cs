@@ -10,15 +10,15 @@ namespace HotPathAllocationAnalyzer.Analyzers
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class CallSiteImplicitAllocationAnalyzer : AllocationAnalyzer
     {
-        public static DiagnosticDescriptor ParamsParameterRule = new DiagnosticDescriptor("HAA0101", "Array allocation for params parameter", "This call site is calling into a function with a 'params' parameter. This results in an array allocation", "Performance", DiagnosticSeverity.Warning, true);
+        public static readonly DiagnosticDescriptor ParamsParameterRule = new("HAA0101", "Array allocation for params parameter", "This call site is calling into a function with a 'params' parameter which results in an array allocation", "Performance", DiagnosticSeverity.Warning, true);
 
-        public static DiagnosticDescriptor ValueTypeNonOverridenCallRule = new DiagnosticDescriptor("HAA0102", "Non-overridden virtual method call on value type", "Non-overridden virtual method call on a value type adds a boxing or constrained instruction", "Performance", DiagnosticSeverity.Warning, true);
+        public static readonly DiagnosticDescriptor ValueTypeNonOverridenCallRule = new("HAA0102", "Non-overridden virtual method call on value type", "Non-overridden virtual method call on a value type adds a boxing or constrained instruction", "Performance", DiagnosticSeverity.Warning, true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ParamsParameterRule, ValueTypeNonOverridenCallRule);
 
-        protected override SyntaxKind[] Expressions => new[] { SyntaxKind.InvocationExpression };
+        protected override SyntaxKind[] Expressions => [SyntaxKind.InvocationExpression];
 
-        private static readonly object[] EmptyMessageArgs = { };
+        private static readonly object[] _emptyMessageArgs = [];
 
         public CallSiteImplicitAllocationAnalyzer()
         {
@@ -61,12 +61,12 @@ namespace HotPathAllocationAnalyzer.Analyzers
                     continue;
                 }
 
-                bool isEmpty = (argument.Value as IArrayCreationOperation)?.Initializer.ElementValues.IsEmpty == true;
+                bool isEmpty = (argument.Value as IArrayCreationOperation)?.Initializer?.ElementValues.IsEmpty == true;
 
                 // Up to net45 the System.Array.Empty<T> singleton didn't existed so an empty params array was still causing some memory allocation.
                 if (argument.IsImplicit && (!isEmpty || !compilationHasSystemArrayEmpty))
                 {
-                    reportDiagnostic(Diagnostic.Create(ParamsParameterRule, node.GetLocation(), EmptyMessageArgs));
+                    reportDiagnostic(Diagnostic.Create(ParamsParameterRule, node.GetLocation(), _emptyMessageArgs));
                 }
 
                 break;
@@ -81,7 +81,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
                 var containingType = methodInfo.ContainingType.ToString();
                 if (string.Equals(containingType, "System.ValueType", StringComparison.OrdinalIgnoreCase) || string.Equals(containingType, "System.Enum", StringComparison.OrdinalIgnoreCase))
                 {
-                    reportDiagnostic(Diagnostic.Create(ValueTypeNonOverridenCallRule, node.GetLocation(), EmptyMessageArgs));
+                    reportDiagnostic(Diagnostic.Create(ValueTypeNonOverridenCallRule, node.GetLocation(), _emptyMessageArgs));
                     HeapAllocationAnalyzerEventSource.Logger.NonOverridenVirtualMethodCallOnValueType(filePath);
                 }
             }

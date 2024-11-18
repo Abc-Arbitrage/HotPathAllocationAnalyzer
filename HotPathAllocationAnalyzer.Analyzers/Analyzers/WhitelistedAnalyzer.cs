@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -23,6 +24,8 @@ public abstract class WhitelistedAnalyzer : AllocationAnalyzer
     protected bool _whitelistFound = false;
     protected readonly HashSet<string> _whitelistedSymbols = new();
 
+    [SuppressMessage("MicrosoftCodeAnalysisCorrectness", "RS1025:Configure generated code analysis")]
+    [SuppressMessage("MicrosoftCodeAnalysisCorrectness", "RS1026:Enable concurrent execution")]
     public override void Initialize(AnalysisContext context)
     {
         base.Initialize(context);

@@ -7,7 +7,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
 {
     internal static class SyntaxHelper
     {
-        public static T FindContainer<T>(this SyntaxNode tokenParent) where T : SyntaxNode
+        public static T? FindContainer<T>(this SyntaxNode tokenParent) where T : SyntaxNode
         {
             if (tokenParent is T invocation)
             {
@@ -41,7 +41,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
                 current = current.Parent;
                 if (current == null)
                     return null;
-                if (current.Kind() != path[index])
+                if (!current.IsKind(path[index]))
                     return null;
                 index++;
             }

@@ -62,7 +62,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
 
             if (node is InitializerExpressionSyntax objectInitializerSyntax)
             {
-                if (node.Kind() != SyntaxKind.ObjectInitializerExpression)
+                if (!node.IsKind(SyntaxKind.ObjectInitializerExpression))
                     return;
 
                 var (ancestorType, ancestor) = objectInitializerSyntax.FindAncestor(SyntaxKind.ObjectCreationExpression,

@@ -10,15 +10,15 @@ namespace HotPathAllocationAnalyzer.Analyzers
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class ConcatenationAllocationAnalyzer : AllocationAnalyzer
     {
-        public static DiagnosticDescriptor StringConcatenationAllocationRule = new DiagnosticDescriptor("HAA0201", "Implicit string concatenation allocation", "Implicit string concatenation allocation", "Performance", DiagnosticSeverity.Error, true, string.Empty, "https://docs.microsoft.com/en-us/dotnet/standard/base-types/stringbuilder");
+        public static readonly DiagnosticDescriptor StringConcatenationAllocationRule = new("HAA0201", "Implicit string concatenation allocation", "Implicit string concatenation allocation", "Performance", DiagnosticSeverity.Error, true, string.Empty, "https://docs.microsoft.com/en-us/dotnet/standard/base-types/stringbuilder");
 
-        public static DiagnosticDescriptor ValueTypeToReferenceTypeInAStringConcatenationRule = new DiagnosticDescriptor("HAA0202", "Value type to reference type conversion allocation for string concatenation", "Value type ({0}) is being boxed to a reference type for a string concatenation.", "Performance", DiagnosticSeverity.Error, true, string.Empty, "https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing");
+        public static readonly DiagnosticDescriptor ValueTypeToReferenceTypeInAStringConcatenationRule = new("HAA0202", "Value type to reference type conversion allocation for string concatenation", "Value type ({0}) is being boxed to a reference type for a string concatenation", "Performance", DiagnosticSeverity.Error, true, string.Empty, "https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing");
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(StringConcatenationAllocationRule, ValueTypeToReferenceTypeInAStringConcatenationRule);
 
-        protected override SyntaxKind[] Expressions => new[] {SyntaxKind.AddExpression, SyntaxKind.AddAssignmentExpression};
+        protected override SyntaxKind[] Expressions => [SyntaxKind.AddExpression, SyntaxKind.AddAssignmentExpression];
 
-        private static readonly object[] EmptyMessageArgs = { };
+        private static readonly object[] _emptyMessageArgs = [];
 
         public ConcatenationAllocationAnalyzer()
         {
@@ -56,7 +56,7 @@ namespace HotPathAllocationAnalyzer.Analyzers
 
                 if (left.Type?.SpecialType == SpecialType.System_String || right.Type?.SpecialType == SpecialType.System_String)
                 {
-                    reportDiagnostic(Diagnostic.Create(StringConcatenationAllocationRule, node.GetLocation(), EmptyMessageArgs));
+                    reportDiagnostic(Diagnostic.Create(StringConcatenationAllocationRule, node.GetLocation(), _emptyMessageArgs));
                     HeapAllocationAnalyzerEventSource.Logger.StringConcatenationAllocation(filePath);
                 }
             }
