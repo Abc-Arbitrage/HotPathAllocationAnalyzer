@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using System.Linq;
+﻿using System.Linq;
 using HotPathAllocationAnalyzer.Analyzers;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,29 +11,32 @@ namespace HotPathAllocationAnalyzer.Test.Analyzers
         [TestMethod]
         public void TypeConversionAllocation_ArgumentSyntax()
         {
-            var sampleProgram =
-@"using System;
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System;
 
-var result = fooObjCall(10); // Allocation
-var temp = new MyObject(10); // Allocation
+                var result = fooObjCall(10); // Allocation
+                var temp = new MyObject(10); // Allocation
 
-private string fooObjCall(object obj)
-{
-    return obj.ToString();
-}
+                private string fooObjCall(object obj)
+                {
+                    return obj.ToString();
+                }
 
-public class MyObject
-{
-    private Object Obj;
-
-    public MyObject(object obj)
-    {
-        this.Obj = obj;
-    }
-}";
+                public class MyObject
+                {
+                    private Object Obj;
+                
+                    public MyObject(object obj)
+                    {
+                        this.Obj = obj;
+                    }
+                }
+                """;
 
             var analyser = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.Argument));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.Argument]);
 
             Assert.AreEqual(2, info.Allocations.Count);
             // Diagnostic: (3,25): warning HeapAnalyzerBoxingRule: Value type to reference type conversion causes boxing at call site (here), and unboxing at the callee-site. Consider using generics if applicable ***
@@ -46,49 +48,52 @@ public class MyObject
         [TestMethod]
         public void TypeConversionAllocation_ArgumentSyntax_WithDelegates()
         {
-            var sampleProgram =
-@"using System;
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System;
 
-public class MyClass
-{
-    public void Testing()
-    {
-        var @class = new MyClass();
-        @class.ProcessFunc(fooObjCall); // implicit, so Allocation
-        @class.ProcessFunc(new Func<object, string>(fooObjCall)); // Explicit, so NO Allocation
-    }
+                public class MyClass
+                {
+                    public void Testing()
+                    {
+                        var @class = new MyClass();
+                        @class.ProcessFunc(fooObjCall); // implicit, so Allocation
+                        @class.ProcessFunc(new Func<object, string>(fooObjCall)); // Explicit, so NO Allocation
+                    }
+                
+                    public void ProcessFunc(Func<object, string> func)
+                    {
+                    }
+                
+                    private string fooObjCall(object obj)
+                    {
+                        return obj.ToString();
+                    }
+                }
 
-    public void ProcessFunc(Func<object, string> func)
-    {
-    }
-
-    private string fooObjCall(object obj)
-    {
-        return obj.ToString();
-    }
-}
-
-public struct MyStruct
-{
-    public void Testing()
-    {
-        var @struct = new MyStruct();
-        @struct.ProcessFunc(fooObjCall); // implicit allocation + boxing
-        @struct.ProcessFunc(new Func<object, string>(fooObjCall)); // Explicit allocation + boxing
-    }
-
-    public void ProcessFunc(Func<object, string> func)
-    {
-    }
-
-    private string fooObjCall(object obj)
-    {
-        return obj.ToString();
-    }
-}";
+                public struct MyStruct
+                {
+                    public void Testing()
+                    {
+                        var @struct = new MyStruct();
+                        @struct.ProcessFunc(fooObjCall); // implicit allocation + boxing
+                        @struct.ProcessFunc(new Func<object, string>(fooObjCall)); // Explicit allocation + boxing
+                    }
+                
+                    public void ProcessFunc(Func<object, string> func)
+                    {
+                    }
+                
+                    private string fooObjCall(object obj)
+                    {
+                        return obj.ToString();
+                    }
+                }
+                """;
 
             var analyser = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.Argument));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.Argument]);
 
             Assert.AreEqual(4, info.Allocations.Count);
             // Diagnostic: (8,28): warning HeapAnalyzerMethodGroupAllocationRule: This will allocate a delegate instance
@@ -103,21 +108,24 @@ public struct MyStruct
         [TestMethod]
         public void TypeConversionAllocation_ReturnStatementSyntax()
         {
-            var sampleProgram =
-@"using System;
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System;
 
-var result1 = new MyObject().Obj; // Allocation
-var result2 = new MyObject().ObjNoAllocation; // Allocation
+                var result1 = new MyObject().Obj; // Allocation
+                var result2 = new MyObject().ObjNoAllocation; // Allocation
 
-public class MyObject
-{
-    public Object Obj { get { return 0; } }
-
-    public Object ObjNoAllocation { get { return 0.ToString(); } }
-}";
+                public class MyObject
+                {
+                    public Object Obj { get { return 0; } }
+                
+                    public Object ObjNoAllocation { get { return 0.ToString(); } }
+                }
+                """;
 
             var analyser = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ReturnStatement));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.ReturnStatement]);
 
             Assert.AreEqual(1, info.Allocations.Count);
 
@@ -128,32 +136,35 @@ public class MyObject
         [TestMethod]
         public void TypeConversionAllocation_YieldStatementSyntax()
         {
-            var sampleProgram =
-@"using System;
-using System.Collections.Generic;
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System;
+                using System.Collections.Generic;
 
-foreach (var item in GetItems())
-{
-}
+                foreach (var item in GetItems())
+                {
+                }
 
-foreach (var item in GetItemsNoAllocation())
-{
-}
+                foreach (var item in GetItemsNoAllocation())
+                {
+                }
 
-public IEnumerable<object> GetItems()
-{
-    yield return 0; // Allocation
-    yield break;
-}
+                public IEnumerable<object> GetItems()
+                {
+                    yield return 0; // Allocation
+                    yield break;
+                }
 
-public IEnumerable<int> GetItemsNoAllocation()
-{
-    yield return 0; // NO Allocation (IEnumerable<int>)
-    yield break;
-}";
+                public IEnumerable<int> GetItemsNoAllocation()
+                {
+                    yield return 0; // NO Allocation (IEnumerable<int>)
+                    yield break;
+                }
+                """;
 
             var analyser = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.YieldReturnStatement));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.YieldReturnStatement]);
 
             Assert.AreEqual(1, info.Allocations.Count);
 
@@ -166,19 +177,21 @@ public IEnumerable<int> GetItemsNoAllocation()
         [TestMethod]
         public void TypeConversionAllocation_BinaryExpressionSyntax()
         {
-            var sampleProgram =
-@"using System;
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System;
 
-object x = ""blah"";
-object a1 = x ?? 0; // Allocation
-object a2 = x ?? 0.ToString(); // No Allocation
+                object x = "blah";
+                object a1 = x ?? 0; // Allocation
+                object a2 = x ?? 0.ToString(); // No Allocation
 
-var b1 = 10 as object; // Allocation
-var b2 = 10.ToString() as object; // No Allocation
-";
+                var b1 = 10 as object; // Allocation
+                var b2 = 10.ToString() as object; // No Allocation
+                """;
 
             var analyser = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.CoalesceExpression, SyntaxKind.AsExpression));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.CoalesceExpression, SyntaxKind.AsExpression]);
 
             Assert.AreEqual(2, info.Allocations.Count);
 
@@ -191,41 +204,44 @@ var b2 = 10.ToString() as object; // No Allocation
         [TestMethod]
         public void TypeConversionAllocation_BinaryExpressionSyntax_WithDelegates()
         {
-            var sampleProgram =
-@"using System;
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System;
 
-public class MyClass
-{
-    public void Testing()
-    {
-        Func<object, string> temp = null;
-        var result1 = temp ?? fooObjCall; // implicit, so Allocation
-        var result2 = temp ?? new Func<object, string>(fooObjCall); // Explicit, so NO Allocation
-    }
+                public class MyClass
+                {
+                    public void Testing()
+                    {
+                        Func<object, string> temp = null;
+                        var result1 = temp ?? fooObjCall; // implicit, so Allocation
+                        var result2 = temp ?? new Func<object, string>(fooObjCall); // Explicit, so NO Allocation
+                    }
+                
+                    private string fooObjCall(object obj)
+                    {
+                        return obj.ToString();
+                    }
+                }
 
-    private string fooObjCall(object obj)
-    {
-        return obj.ToString();
-    }
-}
-
-public struct MyStruct
-{
-    public void Testing()
-    {
-        Func<object, string> temp = null;
-        var result1 = temp ?? fooObjCall; // implicit allocation + boxing
-        var result2 = temp ?? new Func<object, string>(fooObjCall); // Explicit allocation + boxing
-    }
-
-    private string fooObjCall(object obj)
-    {
-        return obj.ToString();
-    }
-}";
+                public struct MyStruct
+                {
+                    public void Testing()
+                    {
+                        Func<object, string> temp = null;
+                        var result1 = temp ?? fooObjCall; // implicit allocation + boxing
+                        var result2 = temp ?? new Func<object, string>(fooObjCall); // Explicit allocation + boxing
+                    }
+                
+                    private string fooObjCall(object obj)
+                    {
+                        return obj.ToString();
+                    }
+                }
+                """;
 
             var analyser = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.CoalesceExpression, SyntaxKind.AsExpression));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.CoalesceExpression, SyntaxKind.AsExpression]);
 
             Assert.AreEqual(4, info.Allocations.Count);
 
@@ -242,29 +258,38 @@ public struct MyStruct
         public void TypeConversionAllocation_EqualsValueClauseSyntax()
         {
             // for (object i = 0;;)
-            var sampleProgram =
-@"using System;
 
-for (object i = 0;;) // Allocation
-{
-}
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System;
 
-for (int i = 0;;) // NO Allocation
-{
-}";
+                for (object i = 0;;) // Allocation
+                {
+                }
+
+                for (int i = 0;;) // NO Allocation
+                {
+                }
+                """;
 
             var analyser = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(
-                SyntaxKind.SimpleAssignmentExpression,
-                SyntaxKind.ReturnStatement,
-                SyntaxKind.YieldReturnStatement,
-                SyntaxKind.CastExpression,
-                SyntaxKind.AsExpression,
-                SyntaxKind.CoalesceExpression,
-                SyntaxKind.ConditionalExpression,
-                SyntaxKind.ForEachStatement,
-                SyntaxKind.EqualsValueClause,
-                SyntaxKind.Argument));
+            var info = ProcessCode(
+                analyser,
+                sampleProgram,
+                [
+                    SyntaxKind.SimpleAssignmentExpression,
+                    SyntaxKind.ReturnStatement,
+                    SyntaxKind.YieldReturnStatement,
+                    SyntaxKind.CastExpression,
+                    SyntaxKind.AsExpression,
+                    SyntaxKind.CoalesceExpression,
+                    SyntaxKind.ConditionalExpression,
+                    SyntaxKind.ForEachStatement,
+                    SyntaxKind.EqualsValueClause,
+                    SyntaxKind.Argument
+                ]
+            );
 
             Assert.AreEqual(1, info.Allocations.Count);
 
@@ -275,39 +300,42 @@ for (int i = 0;;) // NO Allocation
         [TestMethod]
         public void TypeConversionAllocation_EqualsValueClauseSyntax_WithDelegates()
         {
-            var sampleProgram =
-@"using System;
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System;
 
-public class MyClass
-{
-    public void Testing()
-    {
-        Func<object, string> func2 = fooObjCall; // implicit, so Allocation
-        Func<object, string> func1 = new Func<object, string>(fooObjCall); // Explicit, so NO Allocation
-    }
+                public class MyClass
+                {
+                    public void Testing()
+                    {
+                        Func<object, string> func2 = fooObjCall; // implicit, so Allocation
+                        Func<object, string> func1 = new Func<object, string>(fooObjCall); // Explicit, so NO Allocation
+                    }
+                
+                    private string fooObjCall(object obj)
+                    {
+                        return obj.ToString();
+                    }
+                }
 
-    private string fooObjCall(object obj)
-    {
-        return obj.ToString();
-    }
-}
-
-public struct MyStruct
-{
-    public void Testing()
-    {
-        Func<object, string> func2 = fooObjCall; // implicit allocation + boxing
-        Func<object, string> func1 = new Func<object, string>(fooObjCall); // Explicit allocation + boxing
-    }
-
-    private string fooObjCall(object obj)
-    {
-        return obj.ToString();
-    }
-}";
+                public struct MyStruct
+                {
+                    public void Testing()
+                    {
+                        Func<object, string> func2 = fooObjCall; // implicit allocation + boxing
+                        Func<object, string> func1 = new Func<object, string>(fooObjCall); // Explicit allocation + boxing
+                    }
+                
+                    private string fooObjCall(object obj)
+                    {
+                        return obj.ToString();
+                    }
+                }
+                """;
 
             var analyser = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.CoalesceExpression, SyntaxKind.EqualsValueClause));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.CoalesceExpression, SyntaxKind.EqualsValueClause]);
 
             Assert.AreEqual(4, info.Allocations.Count);
 
@@ -326,35 +354,39 @@ public struct MyStruct
         public void TypeConversionAllocation_EqualsValueClause_ExplicitMethodGroupAllocation_Bug()
         {
             // See https://github.com/mjsabby/RoslynHotPathAllocationAnalyzer/issues/2
-            var sampleProgram =
-@"using System;
 
-public class MyClass
-{
-    public void Testing()
-    {
-        Action methodGroup = this.Method;
-    }
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System;
 
-    private void Method()
-    {
-    }
-}
+                public class MyClass
+                {
+                    public void Testing()
+                    {
+                        Action methodGroup = this.Method;
+                    }
+                
+                    private void Method()
+                    {
+                    }
+                }
 
-public struct MyStruct
-{
-    public void Testing()
-    {
-        Action methodGroup = this.Method;
-    }
-
-    private void Method()
-    {
-    }
-}";
+                public struct MyStruct
+                {
+                    public void Testing()
+                    {
+                        Action methodGroup = this.Method;
+                    }
+                
+                    private void Method()
+                    {
+                    }
+                }
+                """;
 
             var analyser = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.EqualsValueClause));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.EqualsValueClause]);
 
             Assert.AreEqual(3, info.Allocations.Count);
         }
@@ -362,16 +394,18 @@ public struct MyStruct
         [TestMethod]
         public void TypeConversionAllocation_ConditionalExpressionSyntax()
         {
-            var sampleProgram =
-@"using System;
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System;
 
-object obj = ""test"";
-object test1 = true ? 0 : obj; // Allocation
-object test2 = true ? 0.ToString() : obj; // NO Allocation
-";
+                object obj = "test";
+                object test1 = true ? 0 : obj; // Allocation
+                object test2 = true ? 0.ToString() : obj; // NO Allocation
+                """;
 
             var analyser = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ConditionalExpression));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.ConditionalExpression]);
 
             Assert.AreEqual(1, info.Allocations.Count);
 
@@ -382,15 +416,17 @@ object test2 = true ? 0.ToString() : obj; // NO Allocation
         [TestMethod]
         public void TypeConversionAllocation_CastExpressionSyntax()
         {
-            var sampleProgram =
-@"using System;
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System;
 
-var f1 = (object)5; // Allocation
-var f2 = (object)""5""; // NO Allocation
-";
+                var f1 = (object)5; // Allocation
+                var f2 = (object)"5"; // NO Allocation
+                """;
 
             var analyser = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.CastExpression));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.CastExpression]);
 
             Assert.AreEqual(1, info.Allocations.Count);
 
@@ -399,52 +435,59 @@ var f2 = (object)""5""; // NO Allocation
         }
 
         [TestMethod]
-        public void TypeConversionAllocation_ArgumentWithImplicitStringCastOperator() {
-            const string programWithoutImplicitCastOperator = @"
+        public void TypeConversionAllocation_ArgumentWithImplicitStringCastOperator()
+        {
+            // language=csharp
+            const string programWithoutImplicitCastOperator =
+                """
                 public struct AStruct
                 {
                     public static void Dump(AStruct astruct)
                     {
                         System.Console.WriteLine(astruct);
                     }
-                }
-            ";
+                }      
+                """;
 
-            const string programWithImplicitCastOperator = @"
+            // language=csharp
+            const string programWithImplicitCastOperator =
+                """
                 public struct AStruct
                 {
                     public readonly string WrappedString;
-
+                
                     public AStruct(string s)
                     {
-                        WrappedString = s ?? """";
+                        WrappedString = s ?? "";
                     }
-
+                
                     public static void Dump(AStruct astruct)
                     {
                         System.Console.WriteLine(astruct);
                     }
-
+                
                     public static implicit operator string(AStruct astruct)
                     {
                         return astruct.WrappedString;
                     }
                 }
-            ";
+                """;
 
             var analyzer = new TypeConversionAllocationAnalyzer(true);
 
-            var info0 = ProcessCode(analyzer, programWithoutImplicitCastOperator, ImmutableArray.Create(SyntaxKind.Argument));
-            AssertEx.ContainsDiagnostic(info0.Allocations, id: TypeConversionAllocationAnalyzer.ValueTypeToReferenceTypeConversionRule.Id, line: 6, character: 50);
-            
-            var info1 = ProcessCode(analyzer, programWithImplicitCastOperator, ImmutableArray.Create(SyntaxKind.Argument));
+            var info0 = ProcessCode(analyzer, programWithoutImplicitCastOperator, [SyntaxKind.Argument]);
+            AssertEx.ContainsDiagnostic(info0.Allocations, id: TypeConversionAllocationAnalyzer.ValueTypeToReferenceTypeConversionRule.Id, line: 5, character: 34);
+
+            var info1 = ProcessCode(analyzer, programWithImplicitCastOperator, [SyntaxKind.Argument]);
             Assert.AreEqual(0, info1.Allocations.Count);
         }
 
-
         [TestMethod]
-        public void TypeConversionAllocation_YieldReturnImplicitStringCastOperator() {
-            const string programWithoutImplicitCastOperator = @"
+        public void TypeConversionAllocation_YieldReturnImplicitStringCastOperator()
+        {
+            // language=csharp
+            const string programWithoutImplicitCastOperator =
+                """
                 public struct AStruct
                 {
                     public System.Collections.Generic.IEnumerator<object> GetEnumerator()
@@ -452,29 +495,31 @@ var f2 = (object)""5""; // NO Allocation
                         yield return this;
                     }
                 }
-            ";
+                """;
 
-            const string programWithImplicitCastOperator = @"
+            // language=csharp
+            const string programWithImplicitCastOperator =
+                """
                 public struct AStruct
                 {
                     public System.Collections.Generic.IEnumerator<string> GetEnumerator()
                     {
                         yield return this;
                     }
-
+                
                     public static implicit operator string(AStruct astruct)
                     {
-                        return """";
+                        return "";
                     }
                 }
-            ";
+                """;
 
             var analyzer = new TypeConversionAllocationAnalyzer(true);
 
-            var info0 = ProcessCode(analyzer, programWithoutImplicitCastOperator, ImmutableArray.Create(SyntaxKind.Argument));
-            AssertEx.ContainsDiagnostic(info0.Allocations, id: TypeConversionAllocationAnalyzer.ValueTypeToReferenceTypeConversionRule.Id, line: 6, character: 38);
+            var info0 = ProcessCode(analyzer, programWithoutImplicitCastOperator, [SyntaxKind.Argument]);
+            AssertEx.ContainsDiagnostic(info0.Allocations, id: TypeConversionAllocationAnalyzer.ValueTypeToReferenceTypeConversionRule.Id, line: 5, character: 22);
 
-            var info1 = ProcessCode(analyzer, programWithImplicitCastOperator, ImmutableArray.Create(SyntaxKind.Argument));
+            var info1 = ProcessCode(analyzer, programWithImplicitCastOperator, [SyntaxKind.Argument]);
             Assert.AreEqual(0, info1.Allocations.Count);
         }
 
@@ -482,185 +527,220 @@ var f2 = (object)""5""; // NO Allocation
         public void TypeConversionAllocation_DelegateAssignmentToReadonly_DoNotWarn()
         {
             string[] snippets =
-            {
-                @"private readonly System.Func<string, bool> fileExists = System.IO.File.Exists;",
-                @"private static readonly System.Func<string, bool> fileExists = System.IO.File.Exists;",
-                @"private System.Func<string, bool> fileExists { get; } = System.IO.File.Exists;",
-                @"private static System.Func<string, bool> fileExists { get; } = System.IO.File.Exists;"
-            };
+            [
+                "private readonly System.Func<string, bool> fileExists = System.IO.File.Exists;",
+                "private static readonly System.Func<string, bool> fileExists = System.IO.File.Exists;",
+                "private System.Func<string, bool> fileExists { get; } = System.IO.File.Exists;",
+                "private static System.Func<string, bool> fileExists { get; } = System.IO.File.Exists;"
+            ];
 
             var analyzer = new TypeConversionAllocationAnalyzer(true);
             foreach (var snippet in snippets)
             {
-                var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(SyntaxKind.Argument));
+                var info = ProcessCode(analyzer, snippet, [SyntaxKind.Argument]);
                 Assert.AreEqual(1, info.Allocations.Count(x => x.Id == TypeConversionAllocationAnalyzer.ReadonlyMethodGroupAllocationRule.Id), snippet);
             }
         }
 
         [TestMethod]
-        public void TypeConversionAllocation_ExpressionBodiedPropertyBoxing_WithBoxing() {
-            const string snippet = @"
+        public void TypeConversionAllocation_ExpressionBodiedPropertyBoxing_WithBoxing()
+        {
+            // language=csharp
+            const string snippet =
+                """
                 class Program
                 {
                     object Obj => 1;
                 }
-            ";
+                """;
 
             var analyzer = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(
-                SyntaxKind.ArrowExpressionClause));
-            AssertEx.ContainsDiagnostic(info.Allocations, id: TypeConversionAllocationAnalyzer.ValueTypeToReferenceTypeConversionRule.Id, line: 4, character: 35);
+            var info = ProcessCode(analyzer,
+                                   snippet,
+                                   [
+                                       SyntaxKind.ArrowExpressionClause
+                                   ]);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: TypeConversionAllocationAnalyzer.ValueTypeToReferenceTypeConversionRule.Id, line: 3, character: 19);
         }
 
         [TestMethod]
-        public void TypeConversionAllocation_ExpressionBodiedPropertyBoxing_WithoutBoxing() {
-            const string snippet = @"
+        public void TypeConversionAllocation_ExpressionBodiedPropertyBoxing_WithoutBoxing()
+        {
+            // language=csharp
+            const string snippet =
+                """
                 class Program
                 {
                     object Obj => 1.ToString();
                 }
-            ";
+                """;
 
             var analyzer = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(
-                SyntaxKind.ArrowExpressionClause));
+            var info = ProcessCode(analyzer,
+                                   snippet,
+                                   [
+                                       SyntaxKind.ArrowExpressionClause
+                                   ]);
             Assert.AreEqual(0, info.Allocations.Count);
         }
 
         [TestMethod]
-        public void TypeConversionAllocation_ExpressionBodiedPropertyDelegate() {
-            const string snippet = @"
+        public void TypeConversionAllocation_ExpressionBodiedPropertyDelegate()
+        {
+            // language=csharp
+            const string snippet =
+                """
                 using System;
                 class Program
                 {
                     void Function(int i) { } 
-
+                
                     Action<int> Obj => Function;
                 }
-            ";
+                """;
 
             var analyzer = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(
-                SyntaxKind.ArrowExpressionClause));
-            AssertEx.ContainsDiagnostic(info.Allocations, id: TypeConversionAllocationAnalyzer.MethodGroupAllocationRule.Id, line: 7, character: 40);
+            var info = ProcessCode(analyzer,
+                                   snippet,
+                                   [
+                                       SyntaxKind.ArrowExpressionClause
+                                   ]);
+            AssertEx.ContainsDiagnostic(info.Allocations, id: TypeConversionAllocationAnalyzer.MethodGroupAllocationRule.Id, line: 6, character: 24);
         }
 
         [TestMethod]
-        [Description("Tests that an explicit delegate creation does not trigger HAA0603. " +
-            "It should be handled by HAA0502.")]
-        public void TypeConversionAllocation_ExpressionBodiedPropertyExplicitDelegate_NoWarning() {
-            const string snippet = @"
+        [Description("Tests that an explicit delegate creation does not trigger HAA0603. " + "It should be handled by HAA0502.")]
+        public void TypeConversionAllocation_ExpressionBodiedPropertyExplicitDelegate_NoWarning()
+        {
+            // language=csharp
+            const string snippet =
+                """
                 using System;
                 class Program
                 {
                     void Function(int i) { } 
-
+                
                     Action<int> Obj => new Action<int>(Function);
                 }
-            ";
+                """;
 
             var analyzer = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(
-                SyntaxKind.ArrowExpressionClause));
+            var info = ProcessCode(analyzer,
+                                   snippet,
+                                   [
+                                       SyntaxKind.ArrowExpressionClause
+                                   ]);
             Assert.AreEqual(0, info.Allocations.Count);
         }
 
         [TestMethod]
-        public void TypeConversionAllocation_NoDiagnosticWhenPassingDelegateAsArgument() {
-            const string snippet = @"
-using System;
-struct Foo
-{
-    void Do(Action process)
-    {
-        DoMore(process); // Analyzer triggers warning here, indicating 'process' will be boxed.
-    }
-
-    void DoMore(Action process)
-    {
-        process();
-    }
-}
-            ";
+        public void TypeConversionAllocation_NoDiagnosticWhenPassingDelegateAsArgument()
+        {
+            // language=csharp
+            const string snippet =
+                """
+                using System;
+                struct Foo
+                {
+                    void Do(Action process)
+                    {
+                        DoMore(process); // Analyzer triggers warning here, indicating 'process' will be boxed.
+                    }
+                
+                    void DoMore(Action process)
+                    {
+                        process();
+                    }
+                }
+                """;
 
             var analyzer = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(SyntaxKind.Argument));
-            AssertEx.ContainsNoDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 7, 16 );
+            var info = ProcessCode(analyzer, snippet, [SyntaxKind.Argument]);
+            AssertEx.ContainsNoDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 7, 16);
         }
-        
+
         [TestMethod]
-        public void TypeConversionAllocation_ReportBoxingAllocationForPassingStructInstanceMethodForDelegateConstructor() {
-            const string snippet = @"
-using System;
-public struct MyStruct {
-    public void Testing() {
-        var @struct = new MyStruct();
-        @struct.ProcessFunc(new Func<object, string>(FooObjCall));
-    }
-
-    public void ProcessFunc(Func<object, string> func) {
-    }
-
-    private string FooObjCall(object obj) {
-        return obj.ToString();
-    }
-}
-            ";
+        public void TypeConversionAllocation_ReportBoxingAllocationForPassingStructInstanceMethodForDelegateConstructor()
+        {
+            // language=csharp
+            const string snippet =
+                """
+                using System;
+                public struct MyStruct {
+                    public void Testing() {
+                        var @struct = new MyStruct();
+                        @struct.ProcessFunc(new Func<object, string>(FooObjCall));
+                    }
+                
+                    public void ProcessFunc(Func<object, string> func) {
+                    }
+                
+                    private string FooObjCall(object obj) {
+                        return obj.ToString();
+                    }
+                }
+                """;
 
             var analyzer = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(SyntaxKind.Argument));
-            AssertEx.ContainsDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 6, 54 );
-        } 
-        
-        [TestMethod]
-        public void TypeConversionAllocation_DoNotReportBoxingAllocationForPassingStructStaticMethodForDelegateConstructor() {
-            const string snippet = @"
-using System;
-public struct MyStruct {
-    public void Testing() {
-        var @struct = new MyStruct();
-        @struct.ProcessFunc(new Func<object, string>(FooObjCall));
-    }
-
-    public void ProcessFunc(Func<object, string> func) {
-    }
-
-    private static string FooObjCall(object obj) {
-        return obj.ToString();
-    }
-}
-            ";
-
-            var analyzer = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(SyntaxKind.Argument));
-            AssertEx.ContainsNoDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 6, 54 );
+            var info = ProcessCode(analyzer, snippet, [SyntaxKind.Argument]);
+            AssertEx.ContainsDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 5, 54);
         }
-        
-        [TestMethod]
-        public void TypeConversionAllocation_DoNotReportInlineDelegateAsStructInstanceMethods() {
-            const string snippet = @"
-using System;
-public struct MyStruct {
-    public void Testing() {
-        var ints = new[] { 5, 4, 3, 2, 1 };
-        Array.Sort(ints, delegate(int x, int y) { return x - y; });
-        Array.Sort(ints, (x, y) => x - y);
-        DoSomething(() => throw new Exception());
-        DoSomething(delegate() { throw new Exception(); });
-    }
 
-    private static void DoSomething(Action action)
-    {
-    }
-}
-            ";
+        [TestMethod]
+        public void TypeConversionAllocation_DoNotReportBoxingAllocationForPassingStructStaticMethodForDelegateConstructor()
+        {
+            // language=csharp
+            const string snippet =
+                """
+                using System;
+                public struct MyStruct {
+                    public void Testing() {
+                        var @struct = new MyStruct();
+                        @struct.ProcessFunc(new Func<object, string>(FooObjCall));
+                    }
+                
+                    public void ProcessFunc(Func<object, string> func) {
+                    }
+                
+                    private static string FooObjCall(object obj) {
+                        return obj.ToString();
+                    }
+                }
+                """;
 
             var analyzer = new TypeConversionAllocationAnalyzer(true);
-            var info = ProcessCode(analyzer, snippet, ImmutableArray.Create(SyntaxKind.Argument));
-            AssertEx.ContainsNoDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 6, 26 );
-            AssertEx.ContainsNoDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 7, 26 );
-            AssertEx.ContainsNoDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 8, 26 );
-            AssertEx.ContainsNoDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 9, 26 );
+            var info = ProcessCode(analyzer, snippet, [SyntaxKind.Argument]);
+            AssertEx.ContainsNoDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 6, 54);
+        }
+
+        [TestMethod]
+        public void TypeConversionAllocation_DoNotReportInlineDelegateAsStructInstanceMethods()
+        {
+            // language=csharp
+            const string snippet =
+                """
+                using System;
+                public struct MyStruct {
+                    public void Testing() {
+                        var ints = new[] { 5, 4, 3, 2, 1 };
+                        Array.Sort(ints, delegate(int x, int y) { return x - y; });
+                        Array.Sort(ints, (x, y) => x - y);
+                        DoSomething(() => throw new Exception());
+                        DoSomething(delegate() { throw new Exception(); });
+                    }
+                
+                    private static void DoSomething(Action action)
+                    {
+                    }
+                }
+                """;
+
+            var analyzer = new TypeConversionAllocationAnalyzer(true);
+            var info = ProcessCode(analyzer, snippet, [SyntaxKind.Argument]);
+            AssertEx.ContainsNoDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 6, 26);
+            AssertEx.ContainsNoDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 7, 26);
+            AssertEx.ContainsNoDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 8, 26);
+            AssertEx.ContainsNoDiagnostic(info.Allocations, TypeConversionAllocationAnalyzer.DelegateOnStructInstanceRule.Id, 9, 26);
         }
     }
 }

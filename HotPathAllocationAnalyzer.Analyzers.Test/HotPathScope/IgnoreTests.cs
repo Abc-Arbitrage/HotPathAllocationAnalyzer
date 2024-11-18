@@ -13,12 +13,15 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         [TestMethod]
         public void AnalyzeProgram_IgnoreWhenThereIsNoRestrictedAttributes()
         {
+            // language=csharp
             const string sample =
-                @"using System;
-                
+                """
+                using System;
+
                 public void CreateString() {
                     string str = new string('a', 5);
-                }";
+                }
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer();
 
@@ -29,14 +32,17 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         [TestMethod]
         public void AnalyzeProgram_AnalyzeWhenThereIsARestrictedAttributes()
         {
+            // language=csharp
             const string sample =
-                @"using System;
+                """
+                using System;
                 using HotPathAllocationAnalyzer.Support;
 
                 [NoAllocation]
                 public void CreateString() {
                     string str = new string('a', 5);
-                }";
+                }
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer();
 
@@ -49,9 +55,10 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         {
             //language=cs
             const string sample =
-                @"using System;
+                """
+                using System;
                 using HotPathAllocationAnalyzer.Support;
-
+                
                 interface IFoo     
                 {
                     [NoAllocation]
@@ -63,7 +70,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                     public void CreateString() {
                         string str = new string('a', 5);
                     }
-                }";
+                }
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer();
 
@@ -76,7 +84,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         {
             //language=cs
             const string sample =
-                @"using System;
+                """
+                using System;
                 using HotPathAllocationAnalyzer.Support;
 
                 [NoAllocation]
@@ -90,7 +99,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                     public override void CreateString() {
                         string str = new string('a', 5);
                     }
-                }";
+                }
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer();
 
@@ -103,7 +113,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         {
             //language=cs
             const string sample =
-                @"using System;
+                """
+                using System;
                 using HotPathAllocationAnalyzer.Support;
 
                 [NoAllocation]
@@ -118,7 +129,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                     public override void CreateString() {
                         string str = new string('a', 5);
                     }
-                }";
+                }
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer();
 
@@ -131,7 +143,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         {
             //language=cs
             const string sample =
-                @"using System;
+                """
+                using System;
                 using HotPathAllocationAnalyzer.Support;
 
                 interface IFoo     
@@ -145,7 +158,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                     void IFoo.CreateString() {
                         string str = new string('a', 5);
                     }
-                }";
+                }
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer();
 
@@ -158,7 +172,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         {
             //language=cs
             const string sample =
-                @"using System;
+                """
+                using System;
                 using HotPathAllocationAnalyzer.Support;
 
                 class BaseFoo     
@@ -172,7 +187,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                     public override void CreateString() {
                         string str = new string('a', 5);
                     }
-                }";
+                }
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer();
 
@@ -185,7 +201,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         {
             //language=cs
             const string sample =
-                @"using System;
+                """
+                using System;
                 using HotPathAllocationAnalyzer.Support;
 
                 class BaseFoo     
@@ -204,7 +221,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                     public override void CreateString() {
                         string str = new string('a', 5);
                     }
-                }";
+                }
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer();
 
@@ -217,7 +235,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         {
             //language=cs
             const string sample =
-                @"using System;
+                """
+                using System;
                 using HotPathAllocationAnalyzer.Support;
 
                 interface IFoo     
@@ -236,7 +255,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                     public override void CreateString() {
                         string str = new string('a', 5);
                     }
-                }";
+                }
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer();
 
@@ -249,28 +269,28 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         {
             //language=cs
             const string sample =
-                @"using System.Collections.Generic;
+                """
+                using System.Collections.Generic;
                 using HotPathAllocationAnalyzer.Support;
                                                                
                 public class Foo {
-                
-                [NoAllocation]
-                public List<int> A {get; set;} = new List<int>(); // should not allocate
-                                
-                [NoAllocation]
-                public List<int> B
-                {
-                    get { return new List<int>();} //should allocate
-                    set
+                    [NoAllocation]
+                    public List<int> A {get; set;} = new List<int>(); // should not allocate
+                                    
+                    [NoAllocation]
+                    public List<int> B
                     {
-                        value = new List<int>(); //should allocate
+                        get { return new List<int>();} //should allocate
+                        set
+                        {
+                            value = new List<int>(); //should allocate
+                        }
                     }
+                    
+                    [NoAllocation]
+                    public List<int> C => new List<int>(); //should allocate
                 }
-                
-                [NoAllocation]
-                public List<int> C => new List<int>(); //should allocate
-         }
-";
+                """;
             
             var analyser = new ExplicitAllocationAnalyzer();
             var expectedSyntax = analyser.GetType().GetProperty("Expressions", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(analyser) as SyntaxKind[];

@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using System.Reflection;
+﻿using System.Reflection;
 using HotPathAllocationAnalyzer.Analyzers;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,26 +11,29 @@ namespace HotPathAllocationAnalyzer.Test.Analyzers
         [TestMethod]
         public void ExplicitAllocation_InitializerExpressionSyntax()
         {
-            var sampleProgram =
-                @"using System;
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System;
 
-var @struct = new TestStruct { Name = ""Bob""};
-var @class = new TestClass { Name = ""Bob"", Age=42 };
+                var @struct = new TestStruct { Name = "Bob"};
+                var @class = new TestClass { Name = "Bob", Age=42 };
 
-public struct TestStruct
-{
-    public string Name { get; set; }
-}
+                public struct TestStruct
+                {
+                    public string Name { get; set; }
+                }
 
-public class TestClass
-{
-    public string Name { get; set; }
-    public int Age {get; set;}
-}";
+                public class TestClass
+                {
+                    public string Name { get; set; }
+                    public int Age {get; set;}
+                }
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer(true);
             // SyntaxKind.ObjectInitializerExpression IS linked to InitializerExpressionSyntax (naming is a bit confusing)
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ObjectInitializerExpression));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.ObjectInitializerExpression]);
 
             Assert.AreEqual(2, info.Allocations.Count);
             // Diagnostic: (4,14): info HeapAnalyzerExplicitNewObjectRule: Explicit new reference type allocation
@@ -44,13 +46,16 @@ public class TestClass
         [TestMethod]
         public void ExplicitAllocation_ImplicitArrayCreationExpressionSyntax()
         {
-            var sampleProgram =
-                @"using System.Collections.Generic;
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System.Collections.Generic;
 
-int[] intData = new[] { 123, 32, 4 };";
+                int[] intData = new[] { 123, 32, 4 };
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ImplicitArrayCreationExpression));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.ImplicitArrayCreationExpression]);
 
             Assert.AreEqual(1, info.Allocations.Count);
             // Diagnostic: (3,17): info HeapAnalyzerImplicitNewArrayCreationRule: Implicit new array creation allocation
@@ -60,13 +65,16 @@ int[] intData = new[] { 123, 32, 4 };";
         [TestMethod]
         public void ExplicitAllocation_AnonymousObjectCreationExpressionSyntax()
         {
-            var sampleProgram =
-                @"using System;
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System;
 
-var temp = new { A = 123, Name = ""Test"", };";
+                var temp = new { A = 123, Name = "Test", };
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.AnonymousObjectCreationExpression));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.AnonymousObjectCreationExpression]);
 
             Assert.AreEqual(1, info.Allocations.Count);
             // Diagnostic: (3,12): info HeapAnalyzerExplicitNewAnonymousObjectRule: Explicit new anonymous object allocation
@@ -76,13 +84,16 @@ var temp = new { A = 123, Name = ""Test"", };";
         [TestMethod]
         public void ExplicitAllocation_ArrayCreationExpressionSyntax()
         {
-            var sampleProgram =
-                @"using System.Collections.Generic;
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System.Collections.Generic;
 
-int[] intData = new int[] { 123, 32, 4 };";
+                int[] intData = new int[] { 123, 32, 4 };
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ArrayCreationExpression));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.ArrayCreationExpression]);
 
             Assert.AreEqual(1, info.Allocations.Count);
             // Diagnostic: (3,17): info HeapAnalyzerExplicitNewArrayRule: Implicit new array creation allocation
@@ -92,14 +103,17 @@ int[] intData = new int[] { 123, 32, 4 };";
         [TestMethod]
         public void ExplicitAllocation_ObjectCreationExpressionSyntax()
         {
-            var sampleProgram =
-                @"using System;
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System;
 
-var allocation = new String('a', 10);
-var noAllocation = new DateTime();";
+                var allocation = new String('a', 10);
+                var noAllocation = new DateTime();
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ObjectCreationExpression));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.ObjectCreationExpression]);
 
             Assert.AreEqual(1, info.Allocations.Count);
             // Diagnostic: (3,18): info HeapAnalyzerExplicitNewObjectRule: Explicit new reference type allocation
@@ -109,29 +123,31 @@ var noAllocation = new DateTime();";
         [TestMethod]
         public void ExplicitAllocation_ObjectCreationExpressionSyntax2()
         {
-            var sampleProgram =
-                @"using System;
-using System.Collections.Generic;
-using HotPathAllocationAnalyzer.Support;
-
-    class Foo
-    {
-        [NoAllocation]
-        private static void Bar()
-        {
-            var data = new DateTime();
-        }
-
-        [NoAllocation]
-        private static void Bis()
-        {
-            var data = new List<int>();
-        }
-    }
-";
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System;
+                using System.Collections.Generic;
+                using HotPathAllocationAnalyzer.Support;
+                
+                    class Foo
+                    {
+                        [NoAllocation]
+                        private static void Bar()
+                        {
+                            var data = new DateTime();
+                        }
+                
+                        [NoAllocation]
+                        private static void Bis()
+                        {
+                            var data = new List<int>();
+                        }
+                    }
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer();
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ObjectCreationExpression));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.ObjectCreationExpression]);
 
             Assert.AreEqual(1, info.Allocations.Count);
             // Diagnostic: (3,18): info HeapAnalyzerExplicitNewObjectRule: Explicit new reference type allocation
@@ -141,18 +157,20 @@ using HotPathAllocationAnalyzer.Support;
         [TestMethod]
         public void ExplicitAllocation_LetClauseSyntax()
         {
-            var sampleProgram =
-                @"using System.Collections.Generic;
-using System.Linq;
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System.Collections.Generic;
+                using System.Linq;
 
-int[] intData = new[] { 123, 32, 4 };
-var result = (from a in intData
-              let b = a * 3
-              select b).ToList();
-";
+                int[] intData = new[] { 123, 32, 4 };
+                var result = (from a in intData
+                              let b = a * 3
+                              select b).ToList();
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.LetClause));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.LetClause]);
 
             Assert.AreEqual(2, info.Allocations.Count);
             // Diagnostic: (4,17): info HeapAnalyzerImplicitNewArrayCreationRule: Implicit new array creation allocation
@@ -165,41 +183,44 @@ var result = (from a in intData
         [TestMethod]
         public void ExplicitAllocation_AllSyntax()
         {
-            var sampleProgram =
-                @"using System;
-using System.Collections.Generic;
-using System.Linq;
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System;
+                using System.Collections.Generic;
+                using System.Linq;
 
-var @struct = new TestStruct { Name = ""Bob"" };
-var @class = new TestClass { Name = ""Bob"" };
+                var @struct = new TestStruct { Name = "Bob" };
+                var @class = new TestClass { Name = "Bob" };
 
-int[] intDataImplicit = new[] { 123, 32, 4 };
+                int[] intDataImplicit = new[] { 123, 32, 4 };
 
-var temp = new { A = 123, Name = ""Test"", };
+                var temp = new { A = 123, Name = "Test", };
 
-int[] intDataExplicit = new int[] { 123, 32, 4 };
+                int[] intDataExplicit = new int[] { 123, 32, 4 };
 
-var allocation = new String('a', 10);
-var noAllocation = new DateTime();
+                var allocation = new String('a', 10);
+                var noAllocation = new DateTime();
 
-int[] intDataLinq = new int[] { 123, 32, 4 };
-var result = (from a in intDataLinq
-              let b = a * 3
-              select b).ToList();
+                int[] intDataLinq = new int[] { 123, 32, 4 };
+                var result = (from a in intDataLinq
+                              let b = a * 3
+                              select b).ToList();
 
-public struct TestStruct
-{
-    public string Name { get; set; }
-}
+                public struct TestStruct
+                {
+                    public string Name { get; set; }
+                }
 
-public class TestClass
-{
-    public string Name { get; set; }
-}";
+                public class TestClass
+                {
+                    public string Name { get; set; }
+                }
+                """;
 
             // This test is here so that we use SyntaxKindsOfInterest explicitly, to make sure it works
             var analyser = new ExplicitAllocationAnalyzer(true);
-            var info = ProcessCode(analyser, sampleProgram, ImmutableArray.Create(SyntaxKind.ObjectCreationExpression, SyntaxKind.AnonymousObjectCreationExpression, SyntaxKind.ArrayInitializerExpression, SyntaxKind.CollectionInitializerExpression, SyntaxKind.ComplexElementInitializerExpression, SyntaxKind.ObjectInitializerExpression, SyntaxKind.ArrayCreationExpression, SyntaxKind.ImplicitArrayCreationExpression, SyntaxKind.LetClause));
+            var info = ProcessCode(analyser, sampleProgram, [SyntaxKind.ObjectCreationExpression, SyntaxKind.AnonymousObjectCreationExpression, SyntaxKind.ArrayInitializerExpression, SyntaxKind.CollectionInitializerExpression, SyntaxKind.ComplexElementInitializerExpression, SyntaxKind.ObjectInitializerExpression, SyntaxKind.ArrayCreationExpression, SyntaxKind.ImplicitArrayCreationExpression, SyntaxKind.LetClause]);
 
             Assert.AreEqual(8, info.Allocations.Count);
             // Diagnostic: (6,14): info HeapAnalyzerExplicitNewObjectRule: Explicit new reference type allocation
@@ -223,56 +244,58 @@ public class TestClass
         [TestMethod]
         public void ExplicitAllocation_TargetTypeNew()
         {
-            var sampleProgram =
-                @"using System;
-using System.Collections.Generic;
+            // language=csharp
+            const string sampleProgram =
+                """
+                using System;
+                using System.Collections.Generic;
 
-public static class Foo
-{
-    public static int Bar(List<int> collection)
-    {
-        return 42;
-    }
-}
+                public static class Foo
+                {
+                    public static int Bar(List<int> collection)
+                    {
+                        return 42;
+                    }
+                }
 
-public class PropertyTests
-{
-    public List<int> A {get; set;}
-    public HashSet<int> B {get; set;}
-    public DateTime Date {get; set;}
-}
+                public class PropertyTests
+                {
+                    public List<int> A {get; set;}
+                    public HashSet<int> B {get; set;}
+                    public DateTime Date {get; set;}
+                }
 
-public struct PropertyStructTests
-{
-    public List<int> A {get; set;}
-    public HashSet<int> B {get; set;}
-    public DateTime Date {get; set;}
-}
-List<int> collection = new(); //allocate
-DateTime date = new(); //no allocation
+                public struct PropertyStructTests
+                {
+                    public List<int> A {get; set;}
+                    public HashSet<int> B {get; set;}
+                    public DateTime Date {get; set;}
+                }
+                List<int> collection = new(); //allocate
+                DateTime date = new(); //no allocation
 
-Dictionary<int, List<int>> field = new() {
-{1, new() { 1, 2, 3 } }
-}; //allocate 2 time
+                Dictionary<int, List<int>> field = new() {
+                {1, new() { 1, 2, 3 } }
+                }; //allocate 2 time
 
-Foo.Bar(new()); //allocate
+                Foo.Bar(new()); //allocate
 
-(int a, int b) t = new(); //does not allocate
+                (int a, int b) t = new(); //does not allocate
 
-var toto = new PropertyTests() 
-{ //The initialization expression raise one allocation no matter the number of property
-    A = new(),
-    B = new() {1, 3, 5} ,
-    Date = new()
-};
+                var toto = new PropertyTests() 
+                { //The initialization expression raise one allocation no matter the number of property
+                    A = new(),
+                    B = new() {1, 3, 5} ,
+                    Date = new()
+                };
 
-var structTest = new PropertyStructTests() 
-{ 
-    A = new(), // allocate
-    B = new() {1, 3, 5} , // allocate
-    Date = new() // does not allocate
-};
-";
+                var structTest = new PropertyStructTests() 
+                { 
+                    A = new(), // allocate
+                    B = new() {1, 3, 5} , // allocate
+                    Date = new() // does not allocate
+                };
+                """;
             var analyser = new ExplicitAllocationAnalyzer(true);
 
             var expected = analyser.GetType().GetProperty("Expressions", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(analyser) as SyntaxKind[];
@@ -290,30 +313,33 @@ var structTest = new PropertyStructTests()
             AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 45, character: 9);
             AssertEx.ContainsDiagnostic(info.Allocations, id: ExplicitAllocationAnalyzer.TargetTypeNewRule.Id, line: 46, character: 9);
         }
-        
+
         [TestMethod]
         public void ExplicitAllocation_MethodReturns()
         {
-            var sampleProgram = @"
-using System;
-using System.Collections.Generic;
-public class Foo
-{
-    public List<int> Data {get; set;}
+            // language=csharp
+            const string sampleProgram =
+                """
 
-    public List<int> A(){
-        return new() {1,5,6}; //allocate
-    }
-
-    public List<int> B(){
-        return Data; //does not allocate
-    }
-
-    public (List<int> Data, int Size) C(){
-        return (new(32), 56); //allocate;
-    }
-}
-";
+                using System;
+                using System.Collections.Generic;
+                public class Foo
+                {
+                    public List<int> Data {get; set;}
+                
+                    public List<int> A(){
+                        return new() {1,5,6}; //allocate
+                    }
+                
+                    public List<int> B(){
+                        return Data; //does not allocate
+                    }
+                
+                    public (List<int> Data, int Size) C(){
+                        return (new(32), 56); //allocate;
+                    }
+                }
+                """;
             var analyser = new ExplicitAllocationAnalyzer(true);
             var expected = analyser.GetType().GetProperty("Expressions", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(analyser) as SyntaxKind[];
             var info = ProcessCode(analyser, sampleProgram, [..expected!]);
@@ -323,13 +349,17 @@ public class Foo
         [TestMethod]
         public void ExplicitAllocation_IgnoreExceptions()
         {
-            var sampleProgram = @"
-using System;
+            // language=csharp
+            const string sampleProgram =
+                """
 
-throw new Exception(""Agrou"");
-throw new(""Grou"");
-throw new ArgumentException(""Foo"");
-";
+                using System;
+
+                throw new Exception("Agrou");
+                throw new("Grou");
+                throw new ArgumentException("Foo");
+
+                """;
             var analyser = new ExplicitAllocationAnalyzer(true);
             var expected = analyser.GetType().GetProperty("Expressions", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(analyser) as SyntaxKind[];
             var info = ProcessCode(analyser, sampleProgram, [..expected!]);

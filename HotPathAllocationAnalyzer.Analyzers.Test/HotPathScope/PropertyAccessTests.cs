@@ -14,17 +14,19 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         {
             //language=cs
             const string sample =
-                @"using System;
+                """
+                using System;
                 using HotPathAllocationAnalyzer.Support;
                 
                 [NoAllocation]
                 public int PerfCritical(string str) {
                     return str.Length;
-                }";
+                }
+                """;
 
             var analyser = new MethodCallAnalyzer();
             
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.InvocationExpression]);
             Assert.AreEqual(1, info.Allocations.Count);
         }    
         
@@ -33,7 +35,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         {
             //language=cs
             const string sample =
-                @"using System;
+                """
+                using System;
                 using System.Collections.Generic;
                 using HotPathAllocationAnalyzer.Support;
                 
@@ -45,11 +48,12 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 [NoAllocation]
                 public List<int> PerfCritical(Foo foo) {
                     return foo.Data;
-                }";
+                }
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer();
             
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectCreationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.ObjectCreationExpression]);
             Assert.AreEqual(0, info.Allocations.Count);
         }
         
@@ -58,7 +62,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         {
             //language=cs
             const string sample =
-                @"using System;
+                """
+                using System;
                 using System.Collections.Generic;
                 using HotPathAllocationAnalyzer.Support;
                 
@@ -70,11 +75,12 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 [NoAllocation]
                 public List<int> PerfCritical(Foo foo) {
                     return foo.Data;
-                }";
+                }
+                """;
 
             var analyser = new ExplicitAllocationAnalyzer();
             
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.ObjectCreationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.ObjectCreationExpression]);
             Assert.AreEqual(1, info.Allocations.Count);
         }
                 
@@ -83,7 +89,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         {
             //language=cs
             const string sample =
-                @"using System;
+                """
+                using System;
                 using HotPathAllocationAnalyzer.Support;
                 
                 public interface IFoo 
@@ -99,11 +106,12 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 [NoAllocation]
                 public string PerfCritical(Foo f) {
                     return f.Name;
-                }";
+                }
+                """;
 
             var analyser = new MethodCallAnalyzer();
             
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.InvocationExpression]);
             Assert.AreEqual(0, info.Allocations.Count);
         }        
         
@@ -112,7 +120,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         {
             //language=cs
             const string sample =
-                @"using System;
+                """
+                using System;
                 using HotPathAllocationAnalyzer.Support;
                 
                 public class FooBase 
@@ -128,11 +137,12 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 [NoAllocation]
                 public string PerfCritical(Foo f) {
                     return f.Name;
-                }";
+                }
+                """;
 
             var analyser = new MethodCallAnalyzer();
             
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.InvocationExpression]);
             Assert.AreEqual(0, info.Allocations.Count);
         }
 
@@ -141,7 +151,8 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         {
             //language=cs
             const string sample =
-                @"using System;
+                """
+                using System;
                 using HotPathAllocationAnalyzer.Support;
 
                 public class DateProvider
@@ -152,11 +163,12 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 [NoAllocation]
                 public DateTime PerfCritical(DateProvider dp) {
                     return dp.Date.Value;
-                }";
+                }
+                """;
 
             var analyser = new MethodCallAnalyzer();
             analyser.AddToWhiteList("System.Nullable<T>.Value");
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.InvocationExpression]);
             Assert.AreEqual(0, info.Allocations.Count);
         }
         
@@ -165,13 +177,14 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
         {
             //language=cs
             const string sample =
-                @"using System;
+                """
+                using System;
                 using HotPathAllocationAnalyzer.Support;
                 
                 public abstract class FooBase
                 {
                     public string FullName;
-                    public string Name { get; } = ""Hello"";
+                    public string Name { get; } = "Hello";
                     public int[] Data { get; } = new int[10];
                 }
                 
@@ -184,13 +197,14 @@ namespace HotPathAllocationAnalyzer.Test.HotPathScope
                 public int PerfCritical(Foo f) 
                 {
                     return f.Name.Length + + f.FullName.Length + f.Data.Length;
-                }";
+                }
+                """;
 
             var analyser = new MethodCallAnalyzer();
             analyser.AddToWhiteList("string.Length");
             analyser.AddToWhiteList("System.Array.Length");
             
-            var info = ProcessCode(analyser, sample, ImmutableArray.Create(SyntaxKind.InvocationExpression));
+            var info = ProcessCode(analyser, sample, [SyntaxKind.InvocationExpression]);
             Assert.AreEqual(0, info.Allocations.Count);
         }
     }
