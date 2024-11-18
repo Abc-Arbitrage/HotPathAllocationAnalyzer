@@ -53,7 +53,7 @@ public abstract class WhitelistedAnalyzer : AllocationAnalyzer
         if (!_whitelistFound)
             details += " (no whitelist found)";
         else if (_whitelistedSymbols.Count == 0)
-            details += $" (empty whitelist')";
+            details += $" (empty whitelist)";
             
         context.ReportDiagnostic(Diagnostic.Create(diagnosticDescriptor, node.GetLocation(), details));
         logger.Invoke(node.SyntaxTree.FilePath);
